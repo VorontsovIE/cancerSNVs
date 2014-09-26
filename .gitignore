@@ -1,0 +1,16 @@
+*.txt
+*.xls
+*.xlsx
+*.csv
+*.ods
+*.odp
+*.ppt
+*.pptx
+*.pdf
+*.jar
+*.gz
+*.zip
+hocomoco/
+thresholds/
+shuffled_mutations/
+statistical_significance/
