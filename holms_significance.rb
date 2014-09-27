@@ -2,8 +2,8 @@ $:.unshift File.absolute('lib', __dir__)
 require 'statistical_significance'
 
 
-input_file = ARGV[0]
 with_header = ARGV.delete('--with-header')
+input_file = ARGV[0]
 
 unless input_file
   raise "Specify input file with data in format:\n" +
