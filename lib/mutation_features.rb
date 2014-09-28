@@ -1,3 +1,4 @@
+# Attention! only sequences of length: 25+1+25 are allowed
 def cpg_mutation?(sequence)
   (sequence[26] == 'C' && sequence[30] == 'G') || (sequence[26] == 'G' && sequence[24] == 'C')
 end

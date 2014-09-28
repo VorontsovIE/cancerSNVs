@@ -43,3 +43,22 @@ module BreastCancerSNPs
     end
   end
 end
+
+
+def combine_conditions(*conditions)
+  ->(*args, &block) do
+    conditions.all?{|condition| condition.call(*args, &block) }
+  end
+end
+
+def mutation_in_set_checker(mutations_subset)
+  ->(name_snp, motif_name, fold_change, pvalue_1, pvalue_2) { mutations_subset.include?(name_snp.split("_")[0]) }
+end
+
+def disrupted_site_checker(fold_change_cutoff)
+  ->(name_snp, motif_name, fold_change, pvalue_1, pvalue_2) { fold_change <= (1.0 / fold_change_cutoff) }
+end
+
+def created_site_checker(fold_change_cutoff)
+  ->(name_snp, motif_name, fold_change, pvalue_1, pvalue_2) { fold_change >= fold_change_cutoff }
+end
