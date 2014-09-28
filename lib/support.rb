@@ -1,15 +1,3 @@
-def count_each_element(values)
-  result = {}
-  values.each do |value|
-    if result.has_key?(value)
-        result[value] += 1
-    else
-        result[value] = 1
-    end
-  end
-  result
-end
-
 module BreastCancerSNPs
   class OutputConfigurator
     attr_reader :filename_result, :motif_names
@@ -41,9 +29,21 @@ module BreastCancerSNPs
     def motif_statistics(file_prefix, motif_counts)
       output_counts_for_each_motif(filename_w_prefix(file_prefix), motif_counts)
     end
+
   end
 end
 
+def count_each_element(values)
+  result = {}
+  values.each do |value|
+    if result.has_key?(value)
+        result[value] += 1
+    else
+        result[value] = 1
+    end
+  end
+  result
+end
 
 def combine_conditions(*conditions)
   ->(*args, &block) do

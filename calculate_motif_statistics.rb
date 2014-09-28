@@ -4,35 +4,26 @@ require 'statistical_significance'
 require 'mutation_features'
 require 'support'
 
-mutation_infos_filename = ARGV[0]   # real_mutations.txt
-filename_result = ARGV[1] # results_real_mutations.txt --> cpg_promoter_results_real_mutations.txt, tpc_intronic_results_real_mutations.txt
+mutation_infos_filename = ARGV[0]   # cancer.txt
+filename_result = ARGV[1]           # results/cancer.txt --> results/cpg_promoter_cancer.txt,
+                                    #                        results/tpc_intronic_cancer.txt, ...
 
 raise 'Specify input file with mutation infos and output filename for results(actually 4 files will be created)'  unless mutation_infos_filename && filename_result
-# Dir.mkdir File.dirname(filename_result) unless Dir.exist?(File.dirname(filename_result))
 
 motif_names = File.readlines('./motif_names.txt').map(&:strip)
 
 output_configurator = BreastCancerSNPs::OutputConfigurator.new(filename_result, motif_names)
 
 
-snp_splitted = File.readlines('./SNPs.txt').map{|el| el.split("\t")}
-
-cpg_names = snp_splitted.select {|mut_name, sequence| cpg_mutation?(sequence) }.map{|mut_name, sequence| mut_name }.to_set
-tpc_names = snp_splitted.select {|mut_name, sequence| tpc_mutation?(sequence) }.map{|mut_name, sequence| mut_name }.to_set
-all_names = snp_splitted.map{|mut_name, sequence| mut_name }.to_set
-
-# $stderr.puts "CpG: #{cpg_names.size}\nTpC: #{tpc_names.size}"
+snps_splitted = File.readlines('./SNPs.txt').map{|el| el.chomp.split("\t")}
+cpg_names = mutation_names_by_mutation_context(snps_splitted){|mut_name, sequence| cpg_mutation?(sequence) }
+tpc_names = mutation_names_by_mutation_context(snps_splitted){|mut_name, sequence| tpc_mutation?(sequence) }
+all_names = mutation_names_by_mutation_context(snps_splitted){ true }
 
 mut_types = File.readlines('./SUBSTITUTIONS_13Apr2012_snz_promoter_markup2.txt').drop(1).map{|el| data = el.split("\t"); [data[0], data[17]] };
-
-intronic_mutation_names = mut_types.select{|mut_name, mut_type| intronic_mutation?(mut_type) }
-                              .map{|mut_name, mut_type| mut_name}.to_set
-promoter_mutation_names = mut_types.select{|mut_name, mut_type| promoter_mutation?(mut_type) }
-                              .map{|mut_name, mut_type| mut_name}.to_set
-regulatory_mutation_names = mut_types.select{|mut_name, mut_type| intronic_mutation?(mut_type) || promoter_mutation?(mut_type) }
-                                .map{|mut_name, mut_type| mut_name}.to_set
-
-# mut_types_intronic_promoter = mut_types.select {|mut_name, mut_type| mut_type == 'Intronic,Promoter' }
+intronic_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name, mut_type| intronic_mutation?(mut_type) }
+promoter_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name, mut_type| promoter_mutation?(mut_type) }
+regulatory_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name, mut_type| intronic_mutation?(mut_type) || promoter_mutation?(mut_type) }
 
 cpg_intronic_names = cpg_names & intronic_mutation_names
 tpc_intronic_names = tpc_names & intronic_mutation_names
