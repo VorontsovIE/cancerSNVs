@@ -1,9 +1,11 @@
+require 'fileutils'
+
 module BreastCancerSNPs
   class OutputConfigurator
     attr_reader :filename_result, :motif_names
     def initialize(filename_result, motif_names)
       @filename_result, @motif_names = filename_result, motif_names
-      Dir.mkdir dirname unless Dir.exist?(dirname)
+      FileUtils.mkdir_p(dirname) unless Dir.exist?(dirname)
     end
 
     def dirname
@@ -66,7 +68,7 @@ end
 def count_each_motif_mutations(all_mutations_filename)
   File.open(all_mutations_filename) do |f|
     # "27610826_3 MAZ_f1  -7  direct  cggctgaGgaggaggag -7  direct  cggctgaCgaggaggag G/C 1.1218764110455249E-4 9.602413003842941E-4  0.11683275970285215"
-    mutated_sites = f.each_line.drop(1).select do |line|
+    mutated_sites = f.each_line.lazy.drop(1).select do |line|
       name_snp, motif_name,
                 pos_1,orientation_1,seq_1,
                 pos_2,orientation_2,seq_2,

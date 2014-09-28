@@ -8,13 +8,6 @@ class FileCombiner
     raise "Header mode can be one of:\n :no_header, :one, :zero, :all"  unless [:no_header, :one, :zero, :all].include?(mode)
   end
 
-  # def header_column
-  #   if mode == :no_header
-  #     file_contents.first.map{|line| line.split("\t").first }
-  #   else
-  #     nil
-  #   end
-  # end
   def each_line
     loop do
       yield next_line
