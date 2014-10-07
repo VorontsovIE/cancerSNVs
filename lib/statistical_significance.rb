@@ -21,7 +21,6 @@ end
 
 
 def calculate_holms_correction(pvalues)
-  result = nil
   with_temp_file('uncorrected_pvalues.txt') do |uncorrected_pvalues_file|
     pvalues.each do |pvalue| 
       uncorrected_pvalues_file.puts(pvalue)
@@ -42,8 +41,7 @@ def calculate_holms_correction(pvalues)
       end
 
       corrected_pvalues_file.open
-      result = corrected_pvalues_file.readlines.map(&:strip).map(&:to_f)
+      corrected_pvalues_file.readlines.map(&:strip).map(&:to_f)
     end
   end
-  result
 end
