@@ -1,11 +1,11 @@
 require 'optparse'
 
-class FileCombiner
+class FileColumnCombiner
   attr_reader :mode, :files
   def initialize(mode, filenames)
     @mode = mode
     @files = filenames.map{|filename| File.open(filename) }
-    raise "Header mode can be one of:\n :no_header, :one, :zero, :all"  unless [:no_header, :one, :zero, :all].include?(mode)
+    raise "Header mode can be one of:\n :one, :zero, :all"  unless [:one, :zero, :all].include?(mode)
   end
 
   def each_line
@@ -27,7 +27,7 @@ class FileCombiner
     first_line = @files.first.readline.chomp
     rest_lines = @files.drop(1).map(&:readline).map(&:chomp)
     case mode
-    when :no_header, :all
+    when :all
       [first_line, *rest_lines].join("\t")
     when :one
       header, first_line = first_line.split("\t", 2)
@@ -41,18 +41,19 @@ class FileCombiner
   end
 end
 
-mode = :no_header
+mode = :all
 OptionParser.new do |opts|
-  opts.on('--header [MODE]', 'Has header column (sic!); Mode is one/zero/all') {|value|
+  opts.on('--header [MODE]',  "Has header column (sic!); Mode is one/zero/all. If MODE not specifed, `one` is supposed.\n" +
+                              "If option not specified, tool works like `all` is supplied") {|value|
     mode = value ? value.to_sym : :one
-    raise "Header mode can be one of: 'one', 'zero', 'all'"  unless [:one, :zero, :all].include?(mode)
+    raise "Header mode can be one of: 'one', 'zero', 'all'."  unless [:one, :zero, :all].include?(mode)
   }
 end.parse!(ARGV)
 
 files = ARGV
 raise "Specify at least one file"  unless files.size >= 1
 
-combiner = FileCombiner.new(mode, files)
+combiner = FileColumnCombiner.new(mode, files)
 combiner.each_line do |line|
   puts line
 end
