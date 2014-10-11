@@ -7,7 +7,7 @@ require 'histogram'
 
 
 def invlog(pvalue)
-  -Math.log2(pvalue)
+  -Math.log10(pvalue)
 end
 
 def context_type(name_snp, context_types)
@@ -15,7 +15,10 @@ def context_type(name_snp, context_types)
   context_pair && context_pair.first
 end
 
-create_histogram = ->{ Histogram.new(invlog(0.0005), invlog(1e-15), 1.0) }
+from = invlog(0.0005)
+to = invlog(1e-7)
+range = from...to
+create_histogram = ->{ Histogram.new(from, to, 0.5) }
 
 motif_names = File.readlines('source_data/motif_names.txt').map(&:strip)
 
@@ -55,14 +58,13 @@ motif_names.each do |motif_name|
 end
 
 total = 0
-each_mutation_infos('source_data/cancer_SNPs.txt') do |name_snp, motif_name, fold_change, pvalue_1, pvalue_2|
+each_mutation_infos('source_data/cancer_SNPs.txt') do |line, name_snp, motif_name, fold_change, pvalue_1, pvalue_2|
   next  unless pvalue_1 < 0.0005
   next  unless regulatory_mutation_names.include?(name_snp.split("_")[0])
   # context = context_type(name_snp.split("_")[0], context_types)
   # next  unless context
   # cancer_histograms_in_context[motif_name][ context ].add_element( invlog(pvalue_1) )
-  cancer_histograms[motif_name].add_element( invlog(pvalue_1) )
-  total += 1
+  cancer_histograms[motif_name].add_element( invlog(pvalue_1) ) && total += 1
 end
 
 $stderr.puts "Loaded #{total}"
@@ -72,10 +74,9 @@ new_total = 0
 num_iteration = 0
 
 $stderr.puts "Start shuffle reading"
-loop do
+# loop do
   num_iteration += 1
-  #!!!!!!!!!! HALF
-  each_mutation_infos('source_data/half_shuffle_SNPs.txt') do |name_snp, motif_name, fold_change, pvalue_1, pvalue_2|
+  each_mutation_infos('source_data/shuffle_SNPs.txt') do |line, name_snp, motif_name, fold_change, pvalue_1, pvalue_2|
     next  unless pvalue_1 < 0.0005
     next  unless regulatory_mutation_names.include?(name_snp.split("_")[0])
     # context = context_type(name_snp.split("_")[0], context_types)
@@ -92,18 +93,25 @@ loop do
     # end
     if shuffle_histograms[motif_name].elements_total < cancer_histograms[motif_name].elements_total
       val = invlog(pvalue_1)
-      if shuffle_histograms[motif_name].bin_for_value(val) < cancer_histograms[motif_name].bin_for_value(val)
-        shuffle_histograms[motif_name].add_element(val)
-        new_total += 1
-        # puts line
-        # !!! add_to_output !!!
+      if range.include?(val) && shuffle_histograms[motif_name].bin_for_value(val) < cancer_histograms[motif_name].bin_for_value(val)
+        shuffle_histograms[motif_name].add_element(val) && new_total += 1
+        puts line
       end
     end
 
     raise StopIteration  if new_total >= total
-  
   end
+
   $stderr.puts "End of file reached #{new_total}"
-end
+  motif_names.each do |motif|
+    unless shuffle_histograms[motif].elements_total == cancer_histograms[motif].elements_total
+      $stderr.puts "#{motif} -- #{shuffle_histograms[motif].elements_total}; #{cancer_histograms[motif].elements_total}"
+      shuffle_histograms[motif].each_bin.zip(cancer_histograms[motif].each_bin).each do |(shuffle_bin_range, shuffle_count),(cancer_bin_range, cancer_count)|
+        $stderr.puts "\t#{shuffle_bin_range} == #{cancer_bin_range} --> #{shuffle_count}\t#{cancer_count}" if shuffle_count != cancer_count
+      end
+    end
+  end
+  $stderr.puts "Final end of file #{new_total}"
+# end
 
 $stderr.puts "Finished #{new_total}"
