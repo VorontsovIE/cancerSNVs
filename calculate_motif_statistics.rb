@@ -40,7 +40,11 @@ regulatory_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name
 
 
 disrupted_and_in_set_checker = ->(mutations_subset) do
-  combine_conditions(disrupted_site_checker(5), mutation_in_set_checker(mutations_subset))
+  combine_conditions(is_site_checker(0.0005), disrupted_site_checker(5), mutation_in_set_checker(mutations_subset))
+end
+
+is_site_and_in_set_checker = ->(mutations_subset) do
+  combine_conditions(is_site_checker(0.0005), mutation_in_set_checker(mutations_subset))
 end
 
 disrupted_motifs_in_set = ->(mutations_subset) do
@@ -48,10 +52,11 @@ disrupted_motifs_in_set = ->(mutations_subset) do
 end
 
 motifs_in_set = ->(mutations_subset) do
-  count_each_motif_mutations(mutation_infos_filename, &mutation_in_set_checker(mutations_subset))
+  count_each_motif_mutations(mutation_infos_filename, &is_site_and_in_set_checker.call(mutations_subset))
 end
 
-mutation_types = {regulatory: regulatory_mutation_names, intronic: intronic_mutation_names, promoter: promoter_mutation_names}
+# mutation_types = {regulatory: regulatory_mutation_names, intronic: intronic_mutation_names, promoter: promoter_mutation_names}
+mutation_types = {regulatory: regulatory_mutation_names}
 context_types = {cpg: cpg_names, tpc: tpc_names, not_cpg_tpc: not_cpg_tpc_names, any_context: any_context_names}
 
 mutation_types.each do |mutation_type, mutation_type_nameset|
