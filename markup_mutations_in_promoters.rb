@@ -16,7 +16,7 @@ end
 
 gene_tss_by_chromosome = Hash.new{|h,k| h[k] = [] }
 
-File.open('gene_tss.txt') do |f|
+File.open('source_data/gene_tss.txt') do |f|
   f.each_line do |line|
     chr, strand, tss = line.chomp.split("\t").last(3)
     if strand == '1'
