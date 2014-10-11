@@ -55,16 +55,21 @@ def combine_conditions(*conditions)
 end
 
 def mutation_in_set_checker(mutations_subset)
-  Proc.new do |name_snp, motif_name, fold_change, pvalue_1, pvalue_2| mutations_subset.include?(name_snp.split("_")[0]); end
+  Proc.new do |line, name_snp, motif_name, fold_change, pvalue_1, pvalue_2| mutations_subset.include?(name_snp.split("_")[0]); end
 end
 
 def disrupted_site_checker(fold_change_cutoff)
-  Proc.new do |name_snp, motif_name, fold_change, pvalue_1, pvalue_2| fold_change <= (1.0 / fold_change_cutoff); end
+  Proc.new do |line, name_snp, motif_name, fold_change, pvalue_1, pvalue_2| fold_change <= (1.0 / fold_change_cutoff); end
 end
 
 def created_site_checker(fold_change_cutoff)
-  Proc.new do |name_snp, motif_name, fold_change, pvalue_1, pvalue_2| fold_change >= fold_change_cutoff; end
+  Proc.new do |line, name_snp, motif_name, fold_change, pvalue_1, pvalue_2| fold_change >= fold_change_cutoff; end
 end
+
+def is_site_checker(pvalue_threshold)
+  Proc.new do |line, name_snp, motif_name, fold_change, pvalue_1, pvalue_2| pvalue_1 <= pvalue_threshold; end
+end
+
 
 def each_mutation_infos(all_mutations_filename)
   return enum_for(:each_mutation_infos, all_mutations_filename)  unless block_given?
@@ -86,13 +91,13 @@ def each_mutation_infos(all_mutations_filename)
       pvalue_2 = pvalue_2.to_f
       fold_change = fold_change.to_f
 
-      yield name_snp, motif_name, fold_change, pvalue_1, pvalue_2
+      yield line, name_snp, motif_name, fold_change, pvalue_1, pvalue_2
     end
   end
 end
 
 def count_each_motif_mutations(all_mutations_filename, &block)
   mutated_sites = each_mutation_infos(all_mutations_filename).select(&block)
-  mutated_motifs = mutated_sites.map{|name_snp, motif_name, fold_change, pvalue_1, pvalue_2| motif_name }
+  mutated_motifs = mutated_sites.map{|line, name_snp, motif_name, fold_change, pvalue_1, pvalue_2| motif_name }
   count_each_element(mutated_motifs)
 end
