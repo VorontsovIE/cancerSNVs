@@ -24,7 +24,7 @@ tpc_names = mutation_names_by_mutation_context(snps_splitted){|mut_name, sequenc
 not_cpg_tpc_names = mutation_names_by_mutation_context(snps_splitted){|mut_name, sequence| !tpc_mutation?(sequence) && !cpg_mutation?(sequence) }
 any_context_names = mutation_names_by_mutation_context(snps_splitted){ true }
 ########
-mut_types = File.readlines('source_data/SUBSTITUTIONS_13Apr2012_snz_promoter_markup2.txt').drop(1).map{|el| data = el.split("\t"); [data[0], data[17]] };
+mut_types = File.readlines('source_data/SUBSTITUTIONS_13Apr2012_snz_promoter_markup2.txt').drop(1).map{|el| data = el.split("\t"); [data[0], data[17]] }
 intronic_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name, mut_type| intronic_mutation?(mut_type) }
 promoter_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name, mut_type| promoter_mutation?(mut_type) }
 regulatory_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name, mut_type| intronic_mutation?(mut_type) || promoter_mutation?(mut_type) }
@@ -40,22 +40,6 @@ regulatory_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name
 # $stderr.puts "CpG regulatory: #{cpg_regulatory_names.size}\nTpC regulatory: #{tpc_regulatory_names.size}"
 
 
-disrupted_and_in_set_checker = ->(mutations_subset) do
-  combine_conditions(is_site_checker(0.0005), disrupted_site_checker(5), mutation_in_set_checker(mutations_subset))
-end
-
-is_site_and_in_set_checker = ->(mutations_subset) do
-  combine_conditions(is_site_checker(0.0005), mutation_in_set_checker(mutations_subset))
-end
-
-disrupted_motifs_in_set = ->(mutations_subset) do
-  count_each_motif_mutations(mutation_infos_filename, &disrupted_and_in_set_checker.call(mutations_subset))
-end
-
-motifs_in_set = ->(mutations_subset) do
-  count_each_motif_mutations(mutation_infos_filename, &is_site_and_in_set_checker.call(mutations_subset))
-end
-
 # mutation_types = {regulatory: regulatory_mutation_names, intronic: intronic_mutation_names, promoter: promoter_mutation_names}
 mutation_types = {regulatory: regulatory_mutation_names}
 context_types = {cpg: cpg_names, tpc: tpc_names, not_cpg_tpc: not_cpg_tpc_names, any_context: any_context_names}
@@ -63,9 +47,9 @@ context_types = {cpg: cpg_names, tpc: tpc_names, not_cpg_tpc: not_cpg_tpc_names,
 mutation_types.each do |mutation_type, mutation_type_nameset|
   context_types.each do |context_type, context_type_nameset|
     mutations_nameset = mutation_type_nameset & context_type_nameset
-    output_configurator.motif_statistics("#{mutation_type}_#{context_type}_disrupted_", disrupted_motifs_in_set.call(mutations_nameset))
+    output_configurator.motif_statistics("#{mutation_type}_#{context_type}_disrupted_", disrupted_motifs_in_set(mutation_infos_filename, mutations_nameset))
     $stderr.puts "#{mutation_type}, #{context_type} -- disrupted"
-    output_configurator.motif_statistics("#{mutation_type}_#{context_type}_total_", motifs_in_set.call(mutations_nameset))
+    output_configurator.motif_statistics("#{mutation_type}_#{context_type}_total_", motifs_in_set(mutation_infos_filename, mutations_nameset))
     $stderr.puts "#{mutation_type}, #{context_type} -- total"
   end
 end

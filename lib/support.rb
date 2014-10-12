@@ -19,6 +19,7 @@ def combine_conditions(*conditions)
   end
 end
 
+#############
 def mutation_in_set_checker(mutations_subset)
   Proc.new do |line, name_snp, motif_name, fold_change, pvalue_1, pvalue_2| mutations_subset.include?(name_snp.split("_")[0]); end
 end
@@ -35,6 +36,23 @@ def is_site_checker(pvalue_threshold)
   Proc.new do |line, name_snp, motif_name, fold_change, pvalue_1, pvalue_2| pvalue_1 <= pvalue_threshold; end
 end
 
+##############
+def disrupted_and_in_set_checker(mutations_subset)
+  combine_conditions(is_site_checker(0.0005), mutation_in_set_checker(mutations_subset), disrupted_site_checker(5))
+end
+
+def is_site_and_in_set_checker(mutations_subset)
+  combine_conditions(is_site_checker(0.0005), mutation_in_set_checker(mutations_subset))
+end
+
+def disrupted_motifs_in_set(mutation_infos_filename, mutations_subset)
+  count_each_motif_mutations(mutation_infos_filename, &disrupted_and_in_set_checker(mutations_subset))
+end
+
+def motifs_in_set(mutation_infos_filename, mutations_subset)
+  count_each_motif_mutations(mutation_infos_filename, &is_site_and_in_set_checker(mutations_subset))
+end
+##############
 
 def each_mutation_infos(all_mutations_filename)
   return enum_for(:each_mutation_infos, all_mutations_filename)  unless block_given?
