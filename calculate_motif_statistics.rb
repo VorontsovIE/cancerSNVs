@@ -3,6 +3,7 @@ require 'set'
 require 'statistical_significance'
 require 'mutation_features'
 require 'support'
+require 'output_configurator'
 
 mutation_infos_filename = ARGV[0]   # cancer.txt
 filename_result = ARGV[1]           # results/cancer.txt --> results/cpg_promoter_cancer.txt,
