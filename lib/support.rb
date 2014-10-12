@@ -1,4 +1,5 @@
 require 'fileutils'
+require 'set'
 
 def count_each_element(values)
   result = {}
