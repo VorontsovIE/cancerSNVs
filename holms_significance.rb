@@ -15,17 +15,17 @@ end
 
 lines = File.readlines(input_file)
 header = lines.shift  if with_header
-data = lines.map{|line| line.strip.split("\t").map(&:to_i) }
+data = lines.map{|line| line.strip.split("\t") }
 
 if with_header_column
   header_column = data.map(&:first)
-  counts = data.map{|line| line.drop(1) }
+  counts = data.map{|line| line.drop(1).map(&:to_i) }
 else
-  counts = data
+  counts = data.map{|line| line.map(&:to_i) }
 end
 
 
-pvalues = data.map{|disrupted_shuffle, disrupted_cancer, total_shuffle, total_cancer|
+pvalues = counts.map{|disrupted_shuffle, disrupted_cancer, total_shuffle, total_cancer|
   calculate_fisher_test(disrupted_shuffle, disrupted_cancer, total_shuffle, total_cancer)
 }
 
