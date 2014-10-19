@@ -30,11 +30,11 @@ promoter_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name, 
 regulatory_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name, mut_type| intronic_mutation?(mut_type) || promoter_mutation?(mut_type) }
 ############
 
-# $stderr.puts "CpG: #{cpg_names.size}; TpC: #{tpc_names.size}; non-CpG-non-TpC: #{not_cpg_tpc_names.size}"
-# $stderr.puts  "regulatory: #{regulatory_mutation_names.size}; " +
-#               "regulatory CpG: #{(cpg_names & regulatory_mutation_names).size}; " +
-#               "regulatory TpC: #{(tpc_names & regulatory_mutation_names).size}; " +
-#               "non-CpG-non-TpC: #{(not_cpg_tpc_names & regulatory_mutation_names).size}"
+$stderr.puts "CpG: #{cpg_names.size}; TpC: #{tpc_names.size}; non-CpG-non-TpC: #{not_cpg_tpc_names.size}"
+$stderr.puts  "regulatory: #{regulatory_mutation_names.size}; " +
+              "regulatory CpG: #{(cpg_names & regulatory_mutation_names).size}; " +
+              "regulatory TpC: #{(tpc_names & regulatory_mutation_names).size}; " +
+              "non-CpG-non-TpC: #{(not_cpg_tpc_names & regulatory_mutation_names).size}"
 # exit 1
 # $stderr.puts "CpG intronic: #{cpg_intronic_names.size}\nCpG promoter: #{cpg_promoter_names.size}\nTpC intronic: #{tpc_intronic_names.size}\nTpC promoter: #{tpc_promoter_names.size}"
 # $stderr.puts "Regulatory: #{regulatory_mutation_names.size}"
