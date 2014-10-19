@@ -5,66 +5,146 @@ require 'mutation_features'
 require 'support'
 require 'histogram'
 
-
-def invlog(pvalue)
-  -Math.log10(pvalue)
+class Range
+  def round_to_s(rate)
+    from = self.begin.round(rate)
+    to = self.end.round(rate)
+    exclude_end? ? "#{from}...#{to}" : "#{from}..#{to}"
+  end
 end
 
+
 def context_type(name_snp, context_types)
-  context_pair = context_types.detect{|context_type, context_type_nameset| context_type_nameset.include?(name_snp) }
-  context_pair && context_pair.first
+  context_types.select{|context_type, context_type_nameset| context_type_nameset.include?(name_snp) }
+              .map{|context_type, context_type_nameset| context_type }
+end
+def context_type(name_snp, context_types)
+  context_pair = [ context_types.detect{|context_type, context_type_nameset| context_type_nameset.include?(name_snp) } ]
+                              .compact
+                              .map{|context_type, context_type_nameset| context_type }
+end
+
+def print_histogram_discrepancies(histogram_1, histogram_2, msg = nil)
+  unless histogram_1.elements_total == histogram_2.elements_total
+    $stderr.puts(msg)  if msg
+    $stderr.puts "#{histogram_1.elements_total}; #{histogram_2.elements_total}"
+    bin_1_iterator = histogram_1.each_bin
+    bin_2_iterator = histogram_2.each_bin
+    bin_1_iterator.zip(bin_2_iterator).each do |(bin_range_1, bin_1_count), (bin_range_2, bin_2_count)|
+      $stderr.puts "#{bin_range_1.round_to_s(3)}\t#{bin_1_count}\t#{bin_2_count}"  if bin_1_count != bin_2_count
+    end
+  end
+end
+
+def print_discrepancies_different_contexts(motif_names, context_types, histogram_1, histogram_2)
+  motif_names.each do |motif|
+    context_types.each_key do |context_type|
+      print_histogram_discrepancies(histogram_1[motif][context_type], histogram_2[motif][context_type], "#{motif},#{context_type}")
+    end
+  end
+end
+
+def add_pvalue_to_histogram(histogram, pvalue)
+  val = invlog(pvalue)
+  success = histogram.add_element(val)
+  success ? 1 : 0
+end
+
+def fit_pvalue_to_histogram(histogram_target, histogram_goal, pvalue)
+  val = invlog(pvalue)
+  count_target = histogram_target.bin_for_value(val)
+  count_goal = histogram_goal.bin_for_value(val)
+  if count_target && count_target < count_goal
+    result = add_pvalue_to_histogram(histogram_target, pvalue)
+    yield
+    result
+  else
+    0
+  end
+end
+
+def invlog(pvalue)
+  -Math.log2(pvalue)
 end
 
 from = invlog(0.0005)
 to = invlog(1e-7)
-range = from...to
-create_histogram = ->{ Histogram.new(from, to, 0.5) }
+# range = from...to
+create_histogram = ->{ Histogram.new(from, to, 1.0) }
+
+use_different_contexts = true
 
 motif_names = File.readlines('source_data/motif_names.txt').map(&:strip)
 
-# snps_splitted = File.readlines('source_data/SNPs.txt').map{|el| el.chomp.split("\t")}
-# cpg_names = mutation_names_by_mutation_context(snps_splitted){|mut_name, sequence| cpg_mutation?(sequence) }
-# tpc_names = mutation_names_by_mutation_context(snps_splitted){|mut_name, sequence| tpc_mutation?(sequence) }
-# not_cpg_tpc_names = mutation_names_by_mutation_context(snps_splitted){|mut_name, sequence| !tpc_mutation?(sequence) && !cpg_mutation?(sequence) }
-# any_context_names = mutation_names_by_mutation_context(snps_splitted){ true }
+snps_splitted = File.readlines('source_data/SNPs.txt').map{|el| el.chomp.split("\t")}
+cpg_names = mutation_names_by_mutation_context(snps_splitted){|mut_name, sequence| cpg_mutation?(sequence) }
+tpc_names = mutation_names_by_mutation_context(snps_splitted){|mut_name, sequence| tpc_mutation?(sequence) }
+not_cpg_tpc_names = mutation_names_by_mutation_context(snps_splitted){|mut_name, sequence| !tpc_mutation?(sequence) && !cpg_mutation?(sequence) }
+any_context_names = mutation_names_by_mutation_context(snps_splitted){ true }
 
 mut_types = File.readlines('source_data/SUBSTITUTIONS_13Apr2012_snz_promoter_markup2.txt').drop(1).map{|el| data = el.split("\t"); [data[0], data[17]] };
 intronic_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name, mut_type| intronic_mutation?(mut_type) }
 promoter_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name, mut_type| promoter_mutation?(mut_type) }
 regulatory_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name, mut_type| intronic_mutation?(mut_type) || promoter_mutation?(mut_type) }
 
-# context_types = { #cpg: cpg_names & regulatory_mutation_names,
-#                   #tpc: tpc_names & regulatory_mutation_names,
-#                   #not_cpg_tpc: not_cpg_tpc_names & regulatory_mutation_names,
-#                   any_context: any_context_names & regulatory_mutation_names }
-
-# cancer_histograms_in_context = Hash.new{|hsh,k| hsh[k] = {} }
-# shuffle_histograms_in_context = Hash.new{|hsh,k| hsh[k] = {} }
+# context_types = { cpg: cpg_names & regulatory_mutation_names,
+#                   tpc: tpc_names & regulatory_mutation_names,
+#                   not_cpg_tpc: not_cpg_tpc_names & regulatory_mutation_names#,
+#                   # any_context: any_context_names & regulatory_mutation_names
+#                 }
 
 
-# motif_names.each do |motif_name|
-#   context_types.each do |context_type, context_type_nameset|
-#     cancer_histograms_in_context[motif_name][context_type] = create_histogram.call
-#     shuffle_histograms_in_context[motif_name][context_type] = create_histogram.call
-#   end
-# end
+context_types = { tpcpg: tpc_names & cpg_names & regulatory_mutation_names,
+                  cpg: cpg_names & regulatory_mutation_names,
+                  tpc: tpc_names & regulatory_mutation_names,
+                  not_cpg_tpc: not_cpg_tpc_names & regulatory_mutation_names#,
+                  # any_context: any_context_names & regulatory_mutation_names
+                }
 
-cancer_histograms = {}
-shuffle_histograms = {}
 
-motif_names.each do |motif_name|
-  cancer_histograms[motif_name] = create_histogram.call
-  shuffle_histograms[motif_name] = create_histogram.call
+
+mutations_filename = 'source_data/subsets/cancer_SNPs_regulatory_is_site.txt'
+mutations_shuffle_filename = 'source_data/subsets/shuffle_SNPs_regulatory_is_site.txt'
+# mutations_filename = 'source_data/cancer_SNPs.txt'
+# mutations_shuffle_filename = 'source_data/shuffle_SNPs.txt'
+
+if use_different_contexts
+  cancer_histograms_in_context = {}
+  shuffle_histograms_in_context = {}
+
+  motif_names.each do |motif_name|
+    cancer_histograms_in_context[motif_name] = {}
+    shuffle_histograms_in_context[motif_name] = {}
+    context_types.each_key do |context_type|
+      cancer_histograms_in_context[motif_name][context_type] = create_histogram.call
+      shuffle_histograms_in_context[motif_name][context_type] = create_histogram.call
+    end
+  end
+else
+  cancer_histograms = {}
+  shuffle_histograms = {}
+
+  motif_names.each do |motif_name|
+    cancer_histograms[motif_name] = create_histogram.call
+    shuffle_histograms[motif_name] = create_histogram.call
+  end
 end
 
+
 total = 0
-each_mutation_infos('source_data/cancer_SNPs.txt') do |line, name_snp, motif_name, fold_change, pvalue_1, pvalue_2|
-  next  unless pvalue_1 < 0.0005
+each_mutation_infos(mutations_filename) do |line, name_snp, motif_name, fold_change, pvalue_1, pvalue_2|
+  next  unless pvalue_1 <= 0.0005
   next  unless regulatory_mutation_names.include?(name_snp.split("_")[0])
-  # context = context_type(name_snp.split("_")[0], context_types)
-  # next  unless context
-  # cancer_histograms_in_context[motif_name][ context ].add_element( invlog(pvalue_1) )
-  cancer_histograms[motif_name].add_element( invlog(pvalue_1) ) && total += 1
+
+  if use_different_contexts
+    contexts = context_type(name_snp.split("_")[0], context_types)
+    raise 'Unknown context'  if contexts.empty?
+    contexts.each do |context|
+      total += add_pvalue_to_histogram(cancer_histograms_in_context[motif_name][context], pvalue_1)
+    end
+  else
+    total += add_pvalue_to_histogram(cancer_histograms[motif_name], pvalue_1)
+  end
 end
 
 $stderr.puts "Loaded #{total}"
@@ -72,46 +152,50 @@ $stderr.puts "Loaded #{total}"
 
 new_total = 0
 num_iteration = 0
-
 $stderr.puts "Start shuffle reading"
-# loop do
+loop do
   num_iteration += 1
-  each_mutation_infos('source_data/shuffle_SNPs.txt') do |line, name_snp, motif_name, fold_change, pvalue_1, pvalue_2|
-    next  unless pvalue_1 < 0.0005
+  each_mutation_infos(mutations_shuffle_filename) do |line, name_snp, motif_name, fold_change, pvalue_1, pvalue_2|
+    next  unless pvalue_1 <= 0.0005
     next  unless regulatory_mutation_names.include?(name_snp.split("_")[0])
-    # context = context_type(name_snp.split("_")[0], context_types)
-    # next  unless context
-          
-    # if shuffle_histograms_in_context[motif_name][context].elements_total < cancer_histograms_in_context[motif_name][context].elements_total
-    #   val = invlog(pvalue_1)
-    #   if shuffle_histograms_in_context[motif_name][context].bin_for_value(val) < cancer_histograms_in_context[motif_name][context].bin_for_value(val)
-    #     shuffle_histograms_in_context[motif_name][context].add_element(val)
-    #     new_total += 1
-    #     # puts line
-    #     # !!! add_to_output !!!
-    #   end
-    # end
-    if shuffle_histograms[motif_name].elements_total < cancer_histograms[motif_name].elements_total
-      val = invlog(pvalue_1)
-      if range.include?(val) && shuffle_histograms[motif_name].bin_for_value(val) < cancer_histograms[motif_name].bin_for_value(val)
-        shuffle_histograms[motif_name].add_element(val) && new_total += 1
-        puts line
+
+    if use_different_contexts
+      contexts = context_type(name_snp.split("_")[0], context_types)
+      raise 'Unknown context'  if contexts.empty?
+      contexts.each do |context|
+        new_total += fit_pvalue_to_histogram( shuffle_histograms_in_context[motif_name][context],
+                                              cancer_histograms_in_context[motif_name][context],
+                                              pvalue_1) { puts line }
       end
+    else
+      new_total += fit_pvalue_to_histogram( shuffle_histograms[motif_name],
+                                        cancer_histograms[motif_name],
+                                        pvalue_1) { puts line }
     end
 
     raise StopIteration  if new_total >= total
   end
 
-  $stderr.puts "End of file reached #{new_total}"
-  motif_names.each do |motif|
-    unless shuffle_histograms[motif].elements_total == cancer_histograms[motif].elements_total
-      $stderr.puts "#{motif} -- #{shuffle_histograms[motif].elements_total}; #{cancer_histograms[motif].elements_total}"
-      shuffle_histograms[motif].each_bin.zip(cancer_histograms[motif].each_bin).each do |(shuffle_bin_range, shuffle_count),(cancer_bin_range, cancer_count)|
-        $stderr.puts "\t#{shuffle_bin_range} == #{cancer_bin_range} --> #{shuffle_count}\t#{cancer_count}" if shuffle_count != cancer_count
+
+
+  if use_different_contexts
+    motif_names.each do |motif|
+      context_types.each_key do |context_type|
+        print_histogram_discrepancies(shuffle_histograms_in_context[motif][context_type],
+                                      cancer_histograms_in_context[motif][context_type],
+                                      "\n#{motif},#{context_type}")
       end
     end
+  else
+    motif_names.each do |motif|
+      print_histogram_discrepancies(shuffle_histograms[motif],
+                                    cancer_histograms[motif],
+                                    "\n#{motif}")
+    end
   end
-  $stderr.puts "Final end of file #{new_total}"
-# end
+
+  $stderr.puts "End of file reached #{new_total}"
+  raise StopIteration # Now we run the only iteration
+end
 
 $stderr.puts "Finished #{new_total}"
