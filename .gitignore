@@ -10,6 +10,7 @@
 *.jar
 *.gz
 *.zip
+*.log
 hocomoco/
 thresholds/
 shuffled_mutations/
