@@ -21,7 +21,9 @@ class Histogram
   end
 
   def bin_index(value)
-    return nil  unless range.include?(value)
+    return size - 1  if value >= to
+    # return nil  unless range.include?(value)
+    return nil  if value < from
     # raise ArgumentError, "value #{value} out of range [#{from}, #{to})"  unless range.include?(value)
     index = ((value - from) / step).floor
   end
