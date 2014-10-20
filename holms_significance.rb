@@ -1,42 +1,36 @@
 $:.unshift File.absolute_path('lib', __dir__)
 require 'statistical_significance'
+require 'table'
+require 'optparse'
 
+pvalue_calculator = PvalueCalculator.new(class_counts: :class_and_total)
+pvalue_corrector = HolmsPvalueCorrector.new
 
-with_header = ARGV.delete('--with-header')
-with_header_column = ARGV.delete('--with-header-column')
-input_file = ARGV[0]
+with_header_row = false
+with_header_column = false
 
-unless input_file
-  raise "Specify input file with data in format:\n" +
-        "disrupted_shuffle disrupted_cancer total_shuffle total_cancer\n" + 
-        "..."
+OptionParser.new do |opts|
+  opts.on('--no-correction', 'Don\'t correct pvalues') { pvalue_corrector = IdlePvalueCorrector.new }
+
+  opts.on('--class-and-total-counts', 'Counts should be either in two_classes or class_and_total (default) format') { |value|
+    pvalue_calculator = PvalueCalculator.new(class_counts: :class_and_total)
+  }
+  opts.on('--two-classes-counts', 'Counts should be either in two_classes or class_and_total (default) format') { |value|
+    pvalue_calculator = PvalueCalculator.new(class_counts: :two_classes)
+  }
+
+  opts.on('--with-header', 'Input file has header row') { with_header_row = true }
+  opts.on('--with-header-column', 'Input file has header column') { with_header_column = true }
+end.parse!(ARGV)
+
+table = Table.read(ARGF, with_header_row: with_header_row, with_header_column: with_header_column)
+pvalues = table.map do |line|
+  class_counts = line.map(&:to_i)
+  raise "Bad input, should be 4 class count columns. See line:\n#{line.inspect}"  unless class_counts.size == 4
+  pvalue_calculator.calculate(class_counts)
 end
 
+pvalues_corrected = pvalue_corrector.correct(pvalues)
 
-lines = File.readlines(input_file)
-header = lines.shift  if with_header
-data = lines.map{|line| line.strip.split("\t") }
-
-if with_header_column
-  header_column = data.map(&:first)
-  counts = data.map{|line| line.drop(1).map(&:to_i) }
-else
-  counts = data.map{|line| line.map(&:to_i) }
-end
-
-
-pvalues = counts.map{|disrupted_shuffle, disrupted_cancer, total_shuffle, total_cancer|
-  calculate_fisher_test(disrupted_shuffle, disrupted_cancer, total_shuffle, total_cancer)
-}
-
-holms_corrections = calculate_holms_correction(pvalues)
-
-if with_header_column
-  holms_corrections.zip(header_column).each do |pvalue_corrected, header_column_value|
-    puts "#{header_column_value}\t#{pvalue_corrected}"
-  end
-else
-  holms_corrections.each do |pvalue_corrected|
-    puts pvalue_corrected
-  end
-end
+table.add_column('P-value', pvalues_corrected)
+table.output($stdout)

@@ -11,12 +11,12 @@ def load_motif_qualities(filename)
 end
 
 def combine_results(mutation_type, context_type, shuffle_type_filename)
-  IO.popen(["ruby",  "combine_files.rb",
-                    "results/disrupted/#{shuffle_type_filename}/#{mutation_type}_#{context_type}_disrupted_shuffle.txt",
-                    "results/disrupted/cancer/#{mutation_type}_#{context_type}_disrupted_cancer.txt",
-                    "results/disrupted/#{shuffle_type_filename}/#{mutation_type}_#{context_type}_total_shuffle.txt",
-                    "results/disrupted/cancer/#{mutation_type}_#{context_type}_total_cancer.txt",
-                    "--header", "one"]) do |counts_io|
+  files = ["results/disrupted/#{shuffle_type_filename}/#{mutation_type}_#{context_type}_disrupted_shuffle.txt",
+          "results/disrupted/cancer/#{mutation_type}_#{context_type}_disrupted_cancer.txt",
+          "results/disrupted/#{shuffle_type_filename}/#{mutation_type}_#{context_type}_total_shuffle.txt",
+          "results/disrupted/cancer/#{mutation_type}_#{context_type}_total_cancer.txt"]
+  # FileColumnCombiner.new(:one, files)
+  IO.popen(["ruby",  "combine_files.rb", *files, "--header", "one"]) do |counts_io|
     with_temp_file("counts.txt") do |counts_fw|
       counts_fw.puts("motif\tdisrupted shuffle\tdisrupted cancer\ttotal shuffle\ttotal cancer")
       counts_fw.print(counts_io.read)
