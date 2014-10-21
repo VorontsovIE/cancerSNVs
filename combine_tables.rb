@@ -1,5 +1,5 @@
 $:.unshift File.absolute_path('lib', __dir__)
-require 'table_combiner'
+require 'file_combiner'
 require 'optparse'
 
 mode = :all

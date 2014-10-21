@@ -1,4 +1,3 @@
-
 $:.unshift File.absolute_path('lib', __dir__)
 require 'set'
 require 'statistical_significance'

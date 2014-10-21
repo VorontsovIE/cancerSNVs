@@ -1,5 +1,6 @@
 require 'tempfile'
 require 'rubystats'
+require_relative 'table'
 
 def with_temp_file(filename, &block)
   temp_file = Tempfile.new(filename)
@@ -68,4 +69,14 @@ class IdlePvalueCorrector
   def correct(pvalues)
     pvalues
   end
+end
+
+def calculate_corrected_pvalues(counts_table, pvalue_calculator, pvalue_corrector, header: [:pvalue, 'P-value'])
+  pvalues = counts_table.each.map do |line|
+    class_counts = line.map(&:to_i)
+    raise "Bad input, should be 4 class count columns. See line:\n#{line.inspect}"  unless class_counts.size == 4
+    pvalue_calculator.calculate(class_counts)
+  end
+  corrected_pvalues = pvalue_corrector.correct(pvalues)
+  Table.new(corrected_pvalues.map{|value| [value] }, header_row: [header], header_column: nil)
 end

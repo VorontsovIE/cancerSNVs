@@ -1,10 +1,14 @@
-# Column-by-column combiner
-class FileColumnCombiner
-  attr_reader :mode
-  def initialize(mode, filenames)
-    @mode = mode
-    @files = filenames.map{|filename| File.open(filename) }
-    raise "Header mode can be one of:\n :one, :zero, :all"  unless [:one, :zero, :all].include?(mode)
+require_relative 'table'
+
+class TableColumnCombiner
+  attr_reader :tables
+  def initialize(tables)
+    @tables = tables
+    @table_iterators = tables.map(&:each)
+  end
+
+  def combine
+    Table.new(each_line.to_a, header_row: header_row, header_column: header_column)
   end
 
   def each_line
@@ -14,69 +18,44 @@ class FileColumnCombiner
     end
   end
 
+  def header_row
+    tables.map{|t| t.header_row }.inject(&:+)
+  end
+
+  def header_column
+    Table::Header.common_header(tables.map(&:header_column))
+  end
+
   def check_end!
-    if @files.all?(&:eof?)
+    if @table_iterators.all?(&:eof?)
       raise StopIteration
-    elsif @files.any?(&:eof?)
-      raise "Some of files ended, but not all"
+    elsif @table_iterators.any?(&:eof?)
+      raise "Some of files ended, but not all of them"
     end
   end
 
   def next_line
     check_end!
-    first_line = @files.first.readline.chomp
-    rest_lines = @files.drop(1).map(&:readline).map(&:chomp)
-    case mode
-    when :all
-      [first_line, *rest_lines].join("\t")
-    when :one
-      header, first_line = first_line.split("\t", 2)
-      rest_lines = rest_lines.map{|line| line.split("\t", 2)[1] }
-      [header, first_line, *rest_lines].join("\t")
-    when :zero
-      header, first_line = first_line.split("\t", 2)
-      rest_lines = rest_lines.map{|line| line.split("\t", 2)[1] }
-      [first_line, *rest_lines].join("\t")
-    end
+    @table_iterators.map(&:next).inject(&:+)
   end
 end
 
-# Row-by-row combiner
-class FileRowCombiner
-  attr_reader :mode
-  def initialize(mode, filenames)
-    @mode = mode
-    @filenames = filenames
-    @file_number = 0
-    raise "Header mode can be one of:\n :one, :zero, :all"  unless [:one, :zero, :all].include?(mode)
+
+class TableRowCombiner
+  attr_reader :tables
+  def initialize(tables)
+    @tables = tables
   end
 
-  def yield_first_line_if_necessary(first_row)
-    case mode
-    when :one
-      yield first_row  if @file_number == 1 
-    when :zero
-    when :all
-      yield first_row
-    end
-  end
-  
-  def yield_from_stream(stream, &block)
-    yield_first_line_if_necessary(stream.readline, &block)
-    stream.each_line do |line|
-      yield line
-    end
+  def combine
+    Table.new(tables.flat_map(&:lines), header_row: header_row, header_column: header_column)
   end
 
-  protected :yield_from_stream, :yield_first_line_if_necessary
+  def header_row
+    Table::Header.common_header(tables.map(&:header_row))
+  end
 
-  def each_line(&block)
-    return enum_for(:each_line)  unless block_given?
-    @filenames.each do |filename|
-      @file_number += 1
-      File.open(filename) do |f|
-        yield_from_stream(f, &block)
-      end
-    end
+  def header_column
+    tables.map{|t| t.header_column }.inject(&:+)
   end
 end
