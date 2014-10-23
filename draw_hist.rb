@@ -10,9 +10,9 @@ def invlog(pvalue)
 end
 
 motif = ARGV[0]
-mutation_infos_filename = ARGV[1] # 'source_data/cancer_SNPs.txt'
+mutated_site_infos_filename = ARGV[1] # 'source_data/cancer_SNPs.txt'
 
-raise "Specify motif name and file with mutation infos "  unless motif && mutation_infos_filename
+raise "Specify motif name and file with mutation infos "  unless motif && mutated_site_infos_filename
 # motifs = ['AP2A_f2', 'ESR1_do', 'NFKB1_f1']
 
 from = invlog(0.0005)
@@ -30,13 +30,12 @@ regulatory_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name
 
 histogram = create_histogram.call
 
-
 total = 0
-each_mutation_infos(mutation_infos_filename) do |line, name_snp, motif_name, fold_change, pvalue_1, pvalue_2|
-  next  unless motif == motif_name
-  next  unless pvalue_1 <= 0.0005
-  next  unless regulatory_mutation_names.include?(name_snp.split("_")[0])
-  histogram.add_element( invlog(pvalue_1) ) && total += 1
+each_mutated_site_info(mutated_site_infos_filename) do |mutated_site_info|
+  next  unless motif == mutated_site_info.motif_name
+  next  unless mutated_site_info.pvalue_1 <= 0.0005
+  next  unless regulatory_mutation_names.include?(mutated_site_info.normalized_snp_name)
+  histogram.add_element( invlog(mutated_site_info.pvalue_1) ) && total += 1
 end
 
 $stderr.puts "Loaded #{total}"

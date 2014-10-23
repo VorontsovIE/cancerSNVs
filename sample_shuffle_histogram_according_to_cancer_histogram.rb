@@ -103,10 +103,10 @@ context_types = { tpcpg: tpc_names & cpg_names & regulatory_mutation_names,
 
 
 
-mutations_filename = 'source_data/subsets/cancer_SNPs_regulatory_is_site.txt'
-mutations_shuffle_filename = 'source_data/subsets/shuffle_SNPs_regulatory_is_site.txt'
-# mutations_filename = 'source_data/cancer_SNPs.txt'
-# mutations_shuffle_filename = 'source_data/shuffle_SNPs.txt'
+mutated_site_infos_cancer_filename = 'source_data/subsets/cancer_SNPs_regulatory_is_site.txt'
+mutated_site_infos_shuffle_filename = 'source_data/subsets/shuffle_SNPs_regulatory_is_site.txt'
+# mutated_site_infos_cancer_filename = 'source_data/cancer_SNPs.txt'
+# mutated_site_infos_shuffle_filename = 'source_data/shuffle_SNPs.txt'
 
 if use_different_contexts
   cancer_histograms_in_context = {}
@@ -132,18 +132,18 @@ end
 
 
 total = 0
-each_mutation_infos(mutations_filename) do |line, name_snp, motif_name, fold_change, pvalue_1, pvalue_2|
-  next  unless pvalue_1 <= 0.0005
-  next  unless regulatory_mutation_names.include?(name_snp.split("_")[0])
+each_mutated_site_info(mutated_site_infos_cancer_filename) do |mutated_site_info|
+  next  unless mutated_site_info.pvalue_1 <= 0.0005
+  next  unless regulatory_mutation_names.include?(mutated_site_info.normalized_snp_name)
 
   if use_different_contexts
-    contexts = context_type(name_snp.split("_")[0], context_types)
+    contexts = context_type(mutated_site_info.normalized_snp_name, context_types)
     raise 'Unknown context'  if contexts.empty?
     contexts.each do |context|
-      total += add_pvalue_to_histogram(cancer_histograms_in_context[motif_name][context], pvalue_1)
+      total += add_pvalue_to_histogram(cancer_histograms_in_context[mutated_site_info.motif_name][context], mutated_site_info.pvalue_1)
     end
   else
-    total += add_pvalue_to_histogram(cancer_histograms[motif_name], pvalue_1)
+    total += add_pvalue_to_histogram(cancer_histograms[mutated_site_info.motif_name], mutated_site_info.pvalue_1)
   end
 end
 
@@ -155,22 +155,22 @@ num_iteration = 0
 $stderr.puts "Start shuffle reading"
 loop do
   num_iteration += 1
-  each_mutation_infos(mutations_shuffle_filename) do |line, name_snp, motif_name, fold_change, pvalue_1, pvalue_2|
-    next  unless pvalue_1 <= 0.0005
-    next  unless regulatory_mutation_names.include?(name_snp.split("_")[0])
+  each_mutated_site_info(mutated_site_infos_shuffle_filename) do |mutated_site_info|
+    next  unless mutated_site_info.pvalue_1 <= 0.0005
+    next  unless regulatory_mutation_names.include?(mutated_site_info.normalized_snp_name)
 
     if use_different_contexts
-      contexts = context_type(name_snp.split("_")[0], context_types)
+      contexts = context_type(mutated_site_info.normalized_snp_name, context_types)
       raise 'Unknown context'  if contexts.empty?
       contexts.each do |context|
-        new_total += fit_pvalue_to_histogram( shuffle_histograms_in_context[motif_name][context],
-                                              cancer_histograms_in_context[motif_name][context],
-                                              pvalue_1) { puts line }
+        new_total += fit_pvalue_to_histogram( shuffle_histograms_in_context[mutated_site_info.motif_name][context],
+                                              cancer_histograms_in_context[mutated_site_info.motif_name][context],
+                                              mutated_site_info.pvalue_1) { puts mutated_site_info.line }
       end
     else
-      new_total += fit_pvalue_to_histogram( shuffle_histograms[motif_name],
-                                        cancer_histograms[motif_name],
-                                        pvalue_1) { puts line }
+      new_total += fit_pvalue_to_histogram( shuffle_histograms[mutated_site_info.motif_name],
+                                            cancer_histograms[mutated_site_info.motif_name],
+                                            mutated_site_info.pvalue_1) { puts mutated_site_info.line }
     end
 
     raise StopIteration  if new_total >= total

@@ -64,9 +64,9 @@ $stderr.puts "ensg-hgnc conversion loaded"
 
 
 disrupting_mutations = Hash.new{|hsh,k| hsh[k] = []}
-mutated_sites = each_mutation_infos('source_data/cancer_SNPs.txt').select(&disrupted_and_in_set_checker(regulatory_mutation_names))
-mutated_sites.each{|line, name_snp, motif_name, fold_change, pvalue_1, pvalue_2|
-  disrupting_mutations[motif_name] << [name_snp.split("_")[0], fold_change, pvalue_1, pvalue_2]
+mutated_sites = each_mutated_site_info('source_data/cancer_SNPs.txt').select(&disrupted_and_in_set_checker(regulatory_mutation_names))
+mutated_sites.each{|mutated_site_info|
+  disrupting_mutations[mutated_site_info.motif_name] << mutated_site_info
 }
 
 # $stderr.puts disrupting_mutations['HIF1A_si'].inspect
@@ -80,7 +80,8 @@ motif_for_analysis = File.readlines('source_data/motif_names.txt').map(&:strip)
 puts "motif\tmut_name\tchr\tpos\tmut_type\tcontext\tensg\tensg_to_hgnc[ensg]\tfold_change\tpvalue_1\tpvalue_2"
 motif_for_analysis.each do |motif|
   ensgs = []
-  disrupting_mutations[motif].each do |mut_name, fold_change, pvalue_1, pvalue_2|
+  disrupting_mutations[motif].each do |mutated_site_info|
+    mut_name = mutated_site_info.normalized_snp_name
     chr, pos, mut_type = mut_infos[mut_name]
     context = context_type(mut_name, context_types)
     pos = pos.to_i
@@ -88,7 +89,8 @@ motif_for_analysis.each do |motif|
       interval.chromosome.to_s == chr.to_s && interval.include_position?(pos)
     end.each do |interval, ensg|
       ensgs << ensg
-      puts "#{motif}\t#{mut_name}\t#{chr}\t#{pos}\t#{mut_type}\t#{context}\t#{ensg}\t#{ensg_to_hgnc[ensg]}\t#{fold_change}\t#{pvalue_1}\t#{pvalue_2}"
+      puts [motif, mut_name, chr, pos, mut_type, context, ensg, ensg_to_hgnc[ensg],
+            mutated_site_info.fold_change, mutated_site_info.pvalue_1, mutated_site_info.pvalue_2 ].join("\t")
     end
   end
   $stderr.puts motif

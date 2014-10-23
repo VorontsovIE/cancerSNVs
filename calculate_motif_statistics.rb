@@ -5,11 +5,11 @@ require 'mutation_features'
 require 'support'
 require 'output_configurator'
 
-mutation_infos_filename = ARGV[0]   # cancer.txt
+mutated_site_infos_filename = ARGV[0]   # cancer.txt
 filename_result = ARGV[1]           # results/cancer.txt --> results/cpg_promoter_cancer.txt,
                                     #                        results/tpc_intronic_cancer.txt, ...
 
-raise 'Specify input file with mutation infos and output filename for results(actually 4 files will be created)'  unless mutation_infos_filename && filename_result
+raise 'Specify input file with mutation infos and output filename for results(actually 4 files will be created)'  unless mutated_site_infos_filename && filename_result
 
 motif_names = File.readlines('source_data/motif_names.txt').map(&:strip)
 
@@ -48,9 +48,9 @@ context_types = {cpg: cpg_names, tpc: tpc_names, not_cpg_tpc: not_cpg_tpc_names,
 mutation_types.each do |mutation_type, mutation_type_nameset|
   context_types.each do |context_type, context_type_nameset|
     mutations_nameset = mutation_type_nameset & context_type_nameset
-    output_configurator.motif_statistics("#{mutation_type}_#{context_type}_disrupted_", disrupted_motifs_in_set(mutation_infos_filename, mutations_nameset))
+    output_configurator.motif_statistics("#{mutation_type}_#{context_type}_disrupted_", disrupted_motifs_in_set(mutated_site_infos_filename, mutations_nameset))
     $stderr.puts "#{mutation_type}, #{context_type} -- disrupted"
-    output_configurator.motif_statistics("#{mutation_type}_#{context_type}_total_", motifs_in_set(mutation_infos_filename, mutations_nameset))
+    output_configurator.motif_statistics("#{mutation_type}_#{context_type}_total_", motifs_in_set(mutated_site_infos_filename, mutations_nameset))
     $stderr.puts "#{mutation_type}, #{context_type} -- total"
   end
 end
