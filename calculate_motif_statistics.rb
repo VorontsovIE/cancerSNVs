@@ -48,9 +48,11 @@ context_types = {cpg: cpg_names, tpc: tpc_names, not_cpg_tpc: not_cpg_tpc_names,
 mutation_types.each do |mutation_type, mutation_type_nameset|
   context_types.each do |context_type, context_type_nameset|
     mutations_nameset = mutation_type_nameset & context_type_nameset
-    output_configurator.motif_statistics("#{mutation_type}_#{context_type}_disrupted_", disrupted_motifs_in_set(mutated_site_infos_filename, mutations_nameset))
+    output_configurator.motif_statistics( "#{mutation_type}_#{context_type}_disrupted_",
+                                          disrupted_motifs_in_set(mutated_site_infos_filename, mutations_nameset) )
     $stderr.puts "#{mutation_type}, #{context_type} -- disrupted"
-    output_configurator.motif_statistics("#{mutation_type}_#{context_type}_total_", motifs_in_set(mutated_site_infos_filename, mutations_nameset))
+    output_configurator.motif_statistics( "#{mutation_type}_#{context_type}_total_",
+                                          motifs_in_set(mutated_site_infos_filename, mutations_nameset) )
     $stderr.puts "#{mutation_type}, #{context_type} -- total"
   end
 end

@@ -16,12 +16,7 @@ end
 
 def context_type(name_snp, context_types)
   context_types.select{|context_type, context_type_nameset| context_type_nameset.include?(name_snp) }
-              .map{|context_type, context_type_nameset| context_type }
-end
-def context_type(name_snp, context_types)
-  context_pair = [ context_types.detect{|context_type, context_type_nameset| context_type_nameset.include?(name_snp) } ]
-                              .compact
-                              .map{|context_type, context_type_nameset| context_type }
+                .map{|context_type, context_type_nameset| context_type }
 end
 
 def print_histogram_discrepancies(histogram_1, histogram_2, msg = nil)
@@ -31,30 +26,31 @@ def print_histogram_discrepancies(histogram_1, histogram_2, msg = nil)
     bin_1_iterator = histogram_1.each_bin
     bin_2_iterator = histogram_2.each_bin
     bin_1_iterator.zip(bin_2_iterator).each do |(bin_range_1, bin_1_count), (bin_range_2, bin_2_count)|
-      $stderr.puts "#{bin_range_1.round_to_s(3)}\t#{bin_1_count}\t#{bin_2_count}"  if bin_1_count != bin_2_count
+      $stderr.puts [bin_range_1.round_to_s(3), bin_1_count, bin_2_count].join("\t")  if bin_1_count != bin_2_count
     end
   end
 end
 
-def print_discrepancies_different_contexts(motif_names, context_types, histogram_1, histogram_2)
+def print_discrepancies_different_contexts(motif_names, context_types, histograms_1, histograms_2)
   motif_names.each do |motif|
     context_types.each_key do |context_type|
-      print_histogram_discrepancies(histogram_1[motif][context_type], histogram_2[motif][context_type], "#{motif},#{context_type}")
+      print_histogram_discrepancies(histograms_1[motif][context_type], histograms_2[motif][context_type], "#{motif},#{context_type}")
     end
   end
 end
 
 def add_pvalue_to_histogram(histogram, pvalue)
   val = invlog(pvalue)
-  success = histogram.add_element(val)
-  success ? 1 : 0
+  histogram.add_element(val)
+  histogram.in_range?(val) ? 1 : 0
 end
 
 def fit_pvalue_to_histogram(histogram_target, histogram_goal, pvalue)
   val = invlog(pvalue)
-  count_target = histogram_target.bin_for_value(val)
-  count_goal = histogram_goal.bin_for_value(val)
-  if count_target && count_target < count_goal
+  count_target = histogram_target.bin_count_for_value(val)
+  count_goal = histogram_goal.bin_count_for_value(val)
+  # if count_target && count_target < count_goal
+  if count_target < count_goal
     result = add_pvalue_to_histogram(histogram_target, pvalue)
     yield
     result
@@ -67,10 +63,8 @@ def invlog(pvalue)
   -Math.log2(pvalue)
 end
 
-from = invlog(0.0005)
-to = invlog(1e-7)
 # range = from...to
-create_histogram = ->{ Histogram.new(from, to, 1.0) }
+create_histogram = ->{ Histogram.new(invlog(0.0005), invlog(1e-7), 1.0) }
 
 use_different_contexts = true
 
@@ -133,17 +127,20 @@ end
 
 total = 0
 each_mutated_site_info(mutated_site_infos_cancer_filename) do |mutated_site_info|
-  next  unless mutated_site_info.pvalue_1 <= 0.0005
-  next  unless regulatory_mutation_names.include?(mutated_site_info.normalized_snp_name)
+  motif_name = mutated_site_info.motif_name
+  pvalue_1 = mutated_site_info.pvalue_1
+  snp_name = mutated_site_info.normalized_snp_name
+  next  unless pvalue_1 <= 0.0005
+  next  unless regulatory_mutation_names.include?(snp_name)
 
   if use_different_contexts
-    contexts = context_type(mutated_site_info.normalized_snp_name, context_types)
+    contexts = context_type(snp_name, context_types)
     raise 'Unknown context'  if contexts.empty?
     contexts.each do |context|
-      total += add_pvalue_to_histogram(cancer_histograms_in_context[mutated_site_info.motif_name][context], mutated_site_info.pvalue_1)
+      total += add_pvalue_to_histogram(cancer_histograms_in_context[motif_name][context], pvalue_1)
     end
   else
-    total += add_pvalue_to_histogram(cancer_histograms[mutated_site_info.motif_name], mutated_site_info.pvalue_1)
+    total += add_pvalue_to_histogram(cancer_histograms[motif_name], pvalue_1)
   end
 end
 
@@ -156,21 +153,24 @@ $stderr.puts "Start shuffle reading"
 loop do
   num_iteration += 1
   each_mutated_site_info(mutated_site_infos_shuffle_filename) do |mutated_site_info|
-    next  unless mutated_site_info.pvalue_1 <= 0.0005
-    next  unless regulatory_mutation_names.include?(mutated_site_info.normalized_snp_name)
+    motif_name = mutated_site_info.motif_name
+    pvalue_1 = mutated_site_info.pvalue_1
+    snp_name = mutated_site_info.normalized_snp_name
+    next  unless pvalue_1 <= 0.0005
+    next  unless regulatory_mutation_names.include?(snp_name)
 
     if use_different_contexts
-      contexts = context_type(mutated_site_info.normalized_snp_name, context_types)
+      contexts = context_type(snp_name, context_types)
       raise 'Unknown context'  if contexts.empty?
       contexts.each do |context|
-        new_total += fit_pvalue_to_histogram( shuffle_histograms_in_context[mutated_site_info.motif_name][context],
-                                              cancer_histograms_in_context[mutated_site_info.motif_name][context],
-                                              mutated_site_info.pvalue_1) { puts mutated_site_info.line }
+        new_total += fit_pvalue_to_histogram( shuffle_histograms_in_context[motif_name][context],
+                                              cancer_histograms_in_context[motif_name][context],
+                                              pvalue_1 ) { puts mutated_site_info.line }
       end
     else
-      new_total += fit_pvalue_to_histogram( shuffle_histograms[mutated_site_info.motif_name],
-                                            cancer_histograms[mutated_site_info.motif_name],
-                                            mutated_site_info.pvalue_1) { puts mutated_site_info.line }
+      new_total += fit_pvalue_to_histogram( shuffle_histograms[motif_name],
+                                            cancer_histograms[motif_name],
+                                            pvalue_1 ) { puts mutated_site_info.line }
     end
 
     raise StopIteration  if new_total >= total
