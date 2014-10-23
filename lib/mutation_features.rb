@@ -1,10 +1,12 @@
 # Attention! only sequences of length: 25+1+25 are allowed
 def cpg_mutation?(sequence)
-  (sequence[26] == 'C' && sequence[30] == 'G') || (sequence[26] == 'G' && sequence[24] == 'C')
+  left, before,after, right = sequence.split(/[\[\]\/]/)
+  (before == 'C' && right[0] == 'G') || (before == 'G' && left[-1] == 'C')
 end
 
 def tpc_mutation?(sequence)
-  (sequence[26] == 'C' && sequence[24] == 'T') || (sequence[26] == 'G' && sequence[30] == 'A')
+  left, before,after, right = sequence.split(/[\[\]\/]/)
+  (before == 'C' && left[-1] == 'T') || (before == 'G' && right[0] == 'A')
 end
 
 def intronic_mutation?(mutation_types)
