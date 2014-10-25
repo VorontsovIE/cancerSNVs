@@ -40,15 +40,13 @@ def print_discrepancies_different_contexts(motif_names, context_types, histogram
 end
 
 def add_pvalue_to_histogram(histogram, pvalue)
-  val = invlog(pvalue)
-  histogram.add_element(val)
-  histogram.in_range?(val) ? 1 : 0
+  histogram.add_element(pvalue)
+  histogram.in_range?(pvalue) ? 1 : 0
 end
 
 def fit_pvalue_to_histogram(histogram_target, histogram_goal, pvalue)
-  val = invlog(pvalue)
-  count_target = histogram_target.bin_count_for_value(val)
-  count_goal = histogram_goal.bin_count_for_value(val)
+  count_target = histogram_target.bin_count_for_value(pvalue)
+  count_goal = histogram_goal.bin_count_for_value(pvalue)
   # if count_target && count_target < count_goal
   if count_target < count_goal
     result = add_pvalue_to_histogram(histogram_target, pvalue)
@@ -59,50 +57,43 @@ def fit_pvalue_to_histogram(histogram_target, histogram_goal, pvalue)
   end
 end
 
-def invlog(pvalue)
-  -Math.log2(pvalue)
+def load_context_types(mutations_filename, mutations_markup_filename)
+  snps_splitted = File.readlines(mutations_filename).map{|el| el.chomp.split("\t")}
+  cpg_names = mutation_names_by_mutation_context(snps_splitted){|mut_name, sequence| cpg_mutation?(sequence) }
+  tpc_names = mutation_names_by_mutation_context(snps_splitted){|mut_name, sequence| tpc_mutation?(sequence) }
+  not_cpg_tpc_names = mutation_names_by_mutation_context(snps_splitted){|mut_name, sequence| !tpc_mutation?(sequence) && !cpg_mutation?(sequence) }
+  any_context_names = mutation_names_by_mutation_context(snps_splitted){ true }
+
+  mut_types = File.readlines(mutations_markup_filename).drop(1).map{|el| data = el.split("\t"); [data[0], data[17]] };
+  intronic_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name, mut_type| intronic_mutation?(mut_type) }
+  promoter_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name, mut_type| promoter_mutation?(mut_type) }
+  regulatory_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name, mut_type|
+    intronic_mutation?(mut_type) || promoter_mutation?(mut_type)
+  }
+
+  { tpcpg: tpc_names & cpg_names & regulatory_mutation_names,
+    cpg: cpg_names & regulatory_mutation_names,
+    tpc: tpc_names & regulatory_mutation_names,
+    not_cpg_tpc: not_cpg_tpc_names & regulatory_mutation_names#,
+    # any_context: any_context_names & regulatory_mutation_names
+  }
 end
 
 # range = from...to
-create_histogram = ->{ Histogram.new(invlog(0.0005), invlog(1e-7), 1.0) }
+create_histogram = ->{  Histogram.new(1e-7, 0.0005, 1.0){|pvalue| - Math.log2(pvalue) }  }
 
-use_different_contexts = true
+context_aware = true
 
 motif_names = File.readlines('source_data/motif_names.txt').map(&:strip)
 
-snps_splitted = File.readlines('source_data/SNPs.txt').map{|el| el.chomp.split("\t")}
-cpg_names = mutation_names_by_mutation_context(snps_splitted){|mut_name, sequence| cpg_mutation?(sequence) }
-tpc_names = mutation_names_by_mutation_context(snps_splitted){|mut_name, sequence| tpc_mutation?(sequence) }
-not_cpg_tpc_names = mutation_names_by_mutation_context(snps_splitted){|mut_name, sequence| !tpc_mutation?(sequence) && !cpg_mutation?(sequence) }
-any_context_names = mutation_names_by_mutation_context(snps_splitted){ true }
-
-mut_types = File.readlines('source_data/SUBSTITUTIONS_13Apr2012_snz_promoter_markup2.txt').drop(1).map{|el| data = el.split("\t"); [data[0], data[17]] };
-intronic_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name, mut_type| intronic_mutation?(mut_type) }
-promoter_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name, mut_type| promoter_mutation?(mut_type) }
-regulatory_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name, mut_type| intronic_mutation?(mut_type) || promoter_mutation?(mut_type) }
-
-# context_types = { cpg: cpg_names & regulatory_mutation_names,
-#                   tpc: tpc_names & regulatory_mutation_names,
-#                   not_cpg_tpc: not_cpg_tpc_names & regulatory_mutation_names#,
-#                   # any_context: any_context_names & regulatory_mutation_names
-#                 }
-
-
-context_types = { tpcpg: tpc_names & cpg_names & regulatory_mutation_names,
-                  cpg: cpg_names & regulatory_mutation_names,
-                  tpc: tpc_names & regulatory_mutation_names,
-                  not_cpg_tpc: not_cpg_tpc_names & regulatory_mutation_names#,
-                  # any_context: any_context_names & regulatory_mutation_names
-                }
-
-
+context_types = load_context_types('source_data/SNPs.txt', 'source_data/SUBSTITUTIONS_13Apr2012_snz_promoter_markup2.txt')
 
 mutated_site_infos_cancer_filename = 'source_data/subsets/cancer_SNPs_regulatory_is_site.txt'
 mutated_site_infos_shuffle_filename = 'source_data/subsets/shuffle_SNPs_regulatory_is_site.txt'
 # mutated_site_infos_cancer_filename = 'source_data/cancer_SNPs.txt'
 # mutated_site_infos_shuffle_filename = 'source_data/shuffle_SNPs.txt'
 
-if use_different_contexts
+if context_aware
   cancer_histograms_in_context = {}
   shuffle_histograms_in_context = {}
 
@@ -133,7 +124,7 @@ each_mutated_site_info(mutated_site_infos_cancer_filename) do |mutated_site_info
   next  unless pvalue_1 <= 0.0005
   next  unless regulatory_mutation_names.include?(snp_name)
 
-  if use_different_contexts
+  if context_aware
     contexts = context_type(snp_name, context_types)
     raise 'Unknown context'  if contexts.empty?
     contexts.each do |context|
@@ -159,7 +150,7 @@ loop do
     next  unless pvalue_1 <= 0.0005
     next  unless regulatory_mutation_names.include?(snp_name)
 
-    if use_different_contexts
+    if context_aware
       contexts = context_type(snp_name, context_types)
       raise 'Unknown context'  if contexts.empty?
       contexts.each do |context|
@@ -178,7 +169,7 @@ loop do
 
 
 
-  if use_different_contexts
+  if context_aware
     motif_names.each do |motif|
       context_types.each_key do |context_type|
         print_histogram_discrepancies(shuffle_histograms_in_context[motif][context_type],
