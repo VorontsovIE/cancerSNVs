@@ -19,44 +19,6 @@ def context_type(name_snp, context_types)
                 .map{|context_type, context_type_nameset| context_type }
 end
 
-def print_histogram_discrepancies(histogram_1, histogram_2, msg = nil)
-  unless histogram_1.elements_total == histogram_2.elements_total
-    $stderr.puts(msg)  if msg
-    $stderr.puts "#{histogram_1.elements_total}; #{histogram_2.elements_total}"
-    bin_1_iterator = histogram_1.each_bin
-    bin_2_iterator = histogram_2.each_bin
-    bin_1_iterator.zip(bin_2_iterator).each do |(bin_range_1, bin_1_count), (bin_range_2, bin_2_count)|
-      $stderr.puts [bin_range_1.round_to_s(3), bin_1_count, bin_2_count].join("\t")  if bin_1_count != bin_2_count
-    end
-  end
-end
-
-def print_discrepancies_different_contexts(motif_names, context_types, histograms_1, histograms_2)
-  motif_names.each do |motif|
-    context_types.each_key do |context_type|
-      print_histogram_discrepancies(histograms_1[motif][context_type], histograms_2[motif][context_type], "#{motif},#{context_type}")
-    end
-  end
-end
-
-def add_pvalue_to_histogram(histogram, pvalue)
-  histogram.add_element(pvalue)
-  histogram.in_range?(pvalue) ? 1 : 0
-end
-
-def fit_pvalue_to_histogram(histogram_target, histogram_goal, pvalue)
-  count_target = histogram_target.bin_count_for_value(pvalue)
-  count_goal = histogram_goal.bin_count_for_value(pvalue)
-  # if count_target && count_target < count_goal
-  if count_target < count_goal
-    result = add_pvalue_to_histogram(histogram_target, pvalue)
-    yield
-    result
-  else
-    0
-  end
-end
-
 def load_context_types(mutations_filename, mutations_markup_filename)
   snps_splitted = File.readlines(mutations_filename).map{|el| el.chomp.split("\t")}
   cpg_names = mutation_names_by_mutation_context(snps_splitted){|mut_name, sequence| cpg_mutation?(sequence) }
@@ -79,6 +41,132 @@ def load_context_types(mutations_filename, mutations_markup_filename)
   }
 end
 
+class HistogramFitting
+  attr_reader :goal_distribution, :current_distribution
+  def initialize(sample_distribution)
+    @goal_distribution = sample_distribution.empty_histogram
+    @current_distribution = sample_distribution.empty_histogram
+  end
+
+  def add_element(object)
+    goal_distribution.add_element(object)
+  end
+
+  def fit_element(object)
+    count_current = current_distribution.bin_count_for_value(object)
+    count_goal = goal_distribution.bin_count_for_value(object)
+    if count_current < count_goal
+      result = current_distribution.add_element(object)
+      yield
+      result # object added, either in range (then 0) or out of range (then 1)
+    else
+      0 # object not added because distribution already has necessary number of objects in an appropriate bin
+    end
+  end
+
+  def goal_total
+     @goal_distribution.elements_total_in_range
+  end
+
+  def current_total
+     @current_distribution.elements_total_in_range
+  end
+
+  def print_discrepancies(msg = nil, output_stream = $stderr)
+    unless current_distribution.elements_total == goal_distribution.elements_total
+      output_stream.puts(msg)  if msg
+      output_stream.puts "#{current_distribution.elements_total} < #{goal_distribution.elements_total}"
+      (current_distribution.each_bin).zip(goal_distribution.each_bin).each do |(bin_range_1, bin_1_count), (bin_range_2, bin_2_count)|
+        if bin_1_count != bin_2_count
+          output_stream.puts(bin_range_1.round_to_s(3) + ": " + bin_1_count.to_s + " < " + bin_2_count.to_s)
+        end
+      end
+    end
+  end
+end
+
+class MotifHistogramFitter
+  # histogram_smaple is a prototype of a histogram
+  def initialize(motif_names, sample_distribution)
+    @motif_names = motif_names
+    @fitters = {}
+    @motif_names.each do |motif_name|
+      @fitters[motif_name] = HistogramFitting.new(sample_distribution)
+    end
+  end
+
+  def add_element(motif_name, contexts, object)
+    @fitters[motif_name].add_element(object)
+  end
+  def fit_element(motif_name, contexts, object, &block)
+    @fitters[motif_name].fit_element(object, &block)
+  end
+
+  def goal_total
+    @goal_total ||= @fitters.map{|motif_name, fitter| fitter.goal_total }.inject(0, &:+)
+  end
+
+  def current_total
+    @fitters.map{|motif_name, fitter| fitter.current_total }.inject(0, &:+)
+  end
+
+  def print_discrepancies
+    @motif_names.each do |motif_name|
+      @fitters[motif_name][context_type].print_discrepancies("\n#{motif_name}", $stderr)
+    end
+  end
+end
+
+class ContextAwareMotifHistogramFitter
+  # histogram_smaple is a prototype of a histogram
+  def initialize(motif_names, context_types, sample_distribution)
+    @motif_names = motif_names
+    @context_types = context_types
+    @fitters = {}
+    @motif_names.each do |motif_name|
+      @fitters[motif_name] = {}
+      @context_types.each do |context_type|
+        @fitters[motif_name][context_type] = HistogramFitting.new(sample_distribution)
+      end
+    end
+  end
+
+  def add_element(motif_name, context_types, object)
+    context_types.each do |context_type|
+      @fitters[motif_name][context_type].add_element(object)
+    end
+  end
+  def fit_element(motif_name, context_types, object, &block)
+    context_types.each do |context_type|
+      @fitters[motif_name][context_type].fit_element(object, &block)
+    end
+  end
+
+  def goal_total
+    @goal_total ||= @fitters.map{|motif_name, motif_fitters|
+      motif_fitters.map{|context_type, fitter|
+        fitter.goal_total
+      }.inject(0, &:+)
+    }.inject(0, &:+)
+  end
+
+  def current_total
+    @fitters.map{|motif_name, motif_fitters|
+      motif_fitters.map{|context_type, fitter|
+        fitter.current_total
+      }.inject(0, &:+)
+    }.inject(0, &:+)
+  end
+
+  def print_discrepancies
+    @motif_names.each do |motif_name|
+      @context_types.each do |context_type|
+        @fitters[motif_name][context_type].print_discrepancies("\n#{motif_name},#{context_type}", $stderr)
+      end
+    end
+  end
+end
+
 # range = from...to
 create_histogram = ->{  Histogram.new(1e-7, 0.0005, 1.0){|pvalue| - Math.log2(pvalue) }  }
 
@@ -94,29 +182,18 @@ mutated_site_infos_shuffle_filename = 'source_data/subsets/shuffle_SNPs_regulato
 # mutated_site_infos_shuffle_filename = 'source_data/shuffle_SNPs.txt'
 
 if context_aware
-  cancer_histograms_in_context = {}
-  shuffle_histograms_in_context = {}
-
-  motif_names.each do |motif_name|
-    cancer_histograms_in_context[motif_name] = {}
-    shuffle_histograms_in_context[motif_name] = {}
-    context_types.each_key do |context_type|
-      cancer_histograms_in_context[motif_name][context_type] = create_histogram.call
-      shuffle_histograms_in_context[motif_name][context_type] = create_histogram.call
-    end
-  end
+  fitters = ContextAwareMotifHistogramFitter.new(motif_names, context_types.keys, create_histogram.call)
 else
-  cancer_histograms = {}
-  shuffle_histograms = {}
-
-  motif_names.each do |motif_name|
-    cancer_histograms[motif_name] = create_histogram.call
-    shuffle_histograms[motif_name] = create_histogram.call
-  end
+  fitters = MotifHistogramFitter.new(motif_names, context_types.keys, create_histogram.call)
 end
 
 
-total = 0
+
+mut_types = File.readlines('source_data/SUBSTITUTIONS_13Apr2012_snz_promoter_markup2.txt').drop(1).map{|el| data = el.split("\t"); [data[0], data[17]] };
+regulatory_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name, mut_type|
+  intronic_mutation?(mut_type) || promoter_mutation?(mut_type)
+}
+
 each_mutated_site_info(mutated_site_infos_cancer_filename) do |mutated_site_info|
   motif_name = mutated_site_info.motif_name
   pvalue_1 = mutated_site_info.pvalue_1
@@ -124,21 +201,12 @@ each_mutated_site_info(mutated_site_infos_cancer_filename) do |mutated_site_info
   next  unless pvalue_1 <= 0.0005
   next  unless regulatory_mutation_names.include?(snp_name)
 
-  if context_aware
-    contexts = context_type(snp_name, context_types)
-    raise 'Unknown context'  if contexts.empty?
-    contexts.each do |context|
-      total += add_pvalue_to_histogram(cancer_histograms_in_context[motif_name][context], pvalue_1)
-    end
-  else
-    total += add_pvalue_to_histogram(cancer_histograms[motif_name], pvalue_1)
-  end
+  contexts = context_type(snp_name, context_types)
+  fitters.add_element(motif_name, contexts, pvalue_1)
 end
 
-$stderr.puts "Loaded #{total}"
+$stderr.puts "Loaded #{fitters.goal_total}"
 
-
-new_total = 0
 num_iteration = 0
 $stderr.puts "Start shuffle reading"
 loop do
@@ -150,43 +218,13 @@ loop do
     next  unless pvalue_1 <= 0.0005
     next  unless regulatory_mutation_names.include?(snp_name)
 
-    if context_aware
-      contexts = context_type(snp_name, context_types)
-      raise 'Unknown context'  if contexts.empty?
-      contexts.each do |context|
-        new_total += fit_pvalue_to_histogram( shuffle_histograms_in_context[motif_name][context],
-                                              cancer_histograms_in_context[motif_name][context],
-                                              pvalue_1 ) { puts mutated_site_info.line }
-      end
-    else
-      new_total += fit_pvalue_to_histogram( shuffle_histograms[motif_name],
-                                            cancer_histograms[motif_name],
-                                            pvalue_1 ) { puts mutated_site_info.line }
-    end
-
-    raise StopIteration  if new_total >= total
+    contexts = context_type(snp_name, context_types)
+    fitters.fit_element(motif_name, contexts, pvalue_1) { puts mutated_site_info.line }
   end
 
+  raise StopIteration  if fitters.current_total >= fitters.goal_total
+  fitters.print_discrepancies
 
-
-  if context_aware
-    motif_names.each do |motif|
-      context_types.each_key do |context_type|
-        print_histogram_discrepancies(shuffle_histograms_in_context[motif][context_type],
-                                      cancer_histograms_in_context[motif][context_type],
-                                      "\n#{motif},#{context_type}")
-      end
-    end
-  else
-    motif_names.each do |motif|
-      print_histogram_discrepancies(shuffle_histograms[motif],
-                                    cancer_histograms[motif],
-                                    "\n#{motif}")
-    end
-  end
-
-  $stderr.puts "End of file reached #{new_total}"
+  $stderr.puts "Loaded #{fitters.current_total}"
   raise StopIteration # Now we run the only iteration
 end
-
-$stderr.puts "Finished #{new_total}"

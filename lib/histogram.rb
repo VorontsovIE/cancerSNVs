@@ -1,7 +1,7 @@
 # Use Rationals instead of floats!
 # [from; to)
 class Histogram
-  attr_reader :from, :to, :step, :elements_total, :elements_total_in_range, :less_than, :greater_than
+  attr_reader :from, :to, :step, :value_converter, :elements_total, :elements_total_in_range, :less_than, :greater_than
 
   # from and to are values from initial range
   # value_converter is used to convert both initial range boundaries and each value, which is put into a distribution
@@ -11,6 +11,8 @@ class Histogram
     else
       @value_converter = ->(val) { val }
     end
+    @original_from = from
+    @original_to = to
     @from, @to = [@value_converter.call(from), @value_converter.call(to)].sort
     @step = step
     @histogram_counts = Array.new(bins.size, 0)
@@ -20,6 +22,10 @@ class Histogram
 
     @elements_total = 0
     @elements_total_in_range = 0
+  end
+
+  def empty_histogram
+    Histogram.new(@original_from, @original_to, @step, &@value_converter)
   end
 
   def range
@@ -46,7 +52,7 @@ class Histogram
 
 
   def in_range?(value)
-    range.include?(value)
+    range.include?(@value_converter.call(value))
   end
 
   def bin_index(value)
@@ -75,11 +81,14 @@ class Histogram
     case index
     when :less
       @less_than += 1
+      0 # element not added (more precisely, added out of range)
     when :greater
       @greater_than += 1
+      0 # element not added (more precisely, added out of range)
     else
       @elements_total_in_range +=1
       @histogram_counts[index] += 1
+      1 # element added
     end
   end
 end
