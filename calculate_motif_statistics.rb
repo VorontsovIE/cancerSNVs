@@ -52,7 +52,7 @@ mutation_types.each do |mutation_type, mutation_type_nameset|
                                           disrupted_motifs_in_set(mutated_site_infos_filename, mutations_nameset) )
     $stderr.puts "#{mutation_type}, #{context_type} -- disrupted"
     output_configurator.motif_statistics( "#{mutation_type}_#{context_type}_total_",
-                                          motifs_in_set(mutated_site_infos_filename, mutations_nameset) )
+                                          was_site_motifs_in_set(mutated_site_infos_filename, mutations_nameset) )
     $stderr.puts "#{mutation_type}, #{context_type} -- total"
   end
 end
