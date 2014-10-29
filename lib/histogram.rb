@@ -38,7 +38,7 @@ class Histogram
     }
   end
 
-  def each_bin(ignore_flanks: false)
+  def each_bin(ignore_flanks: true)
     return enum_for(:each_bin, ignore_flanks: ignore_flanks)  unless block_given?
 
     yield (-Float::INFINITY...from), @less_than  unless ignore_flanks

@@ -41,6 +41,19 @@ def load_context_types(mutations_filename, mutations_markup_filename)
   }
 end
 
+def each_regulatory_site(mutation_filename, regulatory_mutation_names, context_types)
+  each_mutated_site_info(mutation_filename) do |mutated_site_info|
+    motif_name = mutated_site_info.motif_name
+    pvalue_1 = mutated_site_info.pvalue_1
+    snp_name = mutated_site_info.normalized_snp_name
+    next  unless pvalue_1 <= 0.0005
+    next  unless regulatory_mutation_names.include?(snp_name)
+
+    contexts = context_type(snp_name, context_types)
+    yield mutated_site_info, motif_name, contexts, pvalue_1
+  end
+end
+
 class HistogramFitting
   attr_reader :goal_distribution, :current_distribution
   def initialize(sample_distribution)
@@ -188,20 +201,13 @@ else
 end
 
 
-
 mut_types = File.readlines('source_data/SUBSTITUTIONS_13Apr2012_snz_promoter_markup2.txt').drop(1).map{|el| data = el.split("\t"); [data[0], data[17]] };
 regulatory_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name, mut_type|
   intronic_mutation?(mut_type) || promoter_mutation?(mut_type)
 }
 
-each_mutated_site_info(mutated_site_infos_cancer_filename) do |mutated_site_info|
-  motif_name = mutated_site_info.motif_name
-  pvalue_1 = mutated_site_info.pvalue_1
-  snp_name = mutated_site_info.normalized_snp_name
-  next  unless pvalue_1 <= 0.0005
-  next  unless regulatory_mutation_names.include?(snp_name)
 
-  contexts = context_type(snp_name, context_types)
+each_regulatory_site(mutated_site_infos_cancer_filename, regulatory_mutation_names, context_types) do |mutated_site_info, motif_name, contexts, pvalue_1|
   fitters.add_element(motif_name, contexts, pvalue_1)
 end
 
@@ -211,14 +217,8 @@ num_iteration = 0
 $stderr.puts "Start shuffle reading"
 loop do
   num_iteration += 1
-  each_mutated_site_info(mutated_site_infos_shuffle_filename) do |mutated_site_info|
-    motif_name = mutated_site_info.motif_name
-    pvalue_1 = mutated_site_info.pvalue_1
-    snp_name = mutated_site_info.normalized_snp_name
-    next  unless pvalue_1 <= 0.0005
-    next  unless regulatory_mutation_names.include?(snp_name)
 
-    contexts = context_type(snp_name, context_types)
+  each_regulatory_site(mutated_site_infos_shuffle_filename, regulatory_mutation_names, context_types) do |mutated_site_info, motif_name, contexts, pvalue_1|
     fitters.fit_element(motif_name, contexts, pvalue_1) { puts mutated_site_info.line }
   end
 
