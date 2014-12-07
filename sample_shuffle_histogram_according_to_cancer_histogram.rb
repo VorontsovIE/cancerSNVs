@@ -4,6 +4,9 @@ require 'statistical_significance'
 require 'mutation_features'
 require 'support'
 require 'histogram'
+require 'histogram_fitting'
+require 'motifwise_histogram_fitting'
+require 'context_aware_motifwise_histogram_fitting'
 
 class Range
   def round_to_s(rate)
@@ -65,10 +68,10 @@ motif_names = File.readlines('source_data/motif_names.txt').map(&:strip)
 
 context_types = load_context_types('source_data/SNPs.txt', 'source_data/SUBSTITUTIONS_13Apr2012_snz_promoter_markup2.txt')
 
-mutated_site_infos_cancer_filename = 'source_data/subsets/cancer_SNPs_regulatory_is_site.txt'
-mutated_site_infos_shuffle_filename = 'source_data/subsets/shuffle_SNPs_regulatory_is_site.txt'
-# mutated_site_infos_cancer_filename = 'source_data/cancer_SNPs.txt'
-# mutated_site_infos_shuffle_filename = 'source_data/shuffle_SNPs.txt'
+# mutated_site_infos_cancer_filename = 'source_data/subsets/cancer_SNPs_regulatory_is_site.txt'
+# mutated_site_infos_shuffle_filename = 'source_data/subsets/shuffle_SNPs_regulatory_is_site.txt'
+mutated_site_infos_cancer_filename = 'source_data/cancer_SNPs.txt'
+mutated_site_infos_shuffle_filename = 'source_data/mutated_sites_shuffled.txt'
 
 if context_aware
   fitters = ContextAwareMotifHistogramFitter.new(motif_names, context_types.keys, create_histogram.call)
