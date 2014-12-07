@@ -85,6 +85,10 @@ def created_and_in_set_checker(mutations_subset)
   combine_conditions(mutation_in_set_checker(mutations_subset), becomes_site_checker(0.0005), created_site_checker(5))
 end
 
+def improved_and_in_set_checker(mutations_subset)
+  combine_conditions(mutation_in_set_checker(mutations_subset), becomes_site_checker(0.0005), created_site_checker(1))
+end
+
 def was_site_and_in_set_checker(mutations_subset)
   combine_conditions(mutation_in_set_checker(mutations_subset), was_site_checker(0.0005))
 end
@@ -101,6 +105,10 @@ end
 
 def created_motifs_in_set(mutated_site_infos_filename, mutations_subset)
   count_each_motif_mutations(mutated_site_infos_filename, &created_and_in_set_checker(mutations_subset))
+end
+
+def improved_motifs_in_set(mutated_site_infos_filename, mutations_subset)
+  count_each_motif_mutations(mutated_site_infos_filename, &improved_and_in_set_checker(mutations_subset))
 end
 
 def was_site_motifs_in_set(mutated_site_infos_filename, mutations_subset)
