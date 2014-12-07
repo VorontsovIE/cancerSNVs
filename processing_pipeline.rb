@@ -3,7 +3,6 @@ require 'statistical_significance'
 require 'table'
 require 'table_combiner'
 
-
 def load_motif_qualities(filename)
   File.readlines(filename).drop(1).map{|line| motif, quality = line.chomp.split("\t").first(2); [motif.upcase, quality.upcase] }.to_h
 end
@@ -27,11 +26,11 @@ def load_count_table(filename)
   count_table
 end
 
-def combine_counts(mutation_type, context_type, shuffle_type_filename)
+def combine_counts(mutation_type, context_type, shuffle_type_filename, cancer_type_filename)
   files = ["results/disrupted/#{shuffle_type_filename}/#{mutation_type}_#{context_type}_disrupted_shuffle.txt",
-          "results/disrupted/cancer/#{mutation_type}_#{context_type}_disrupted_cancer.txt",
+          "results/disrupted/#{cancer_type_filename}/#{mutation_type}_#{context_type}_disrupted_cancer.txt",
           "results/disrupted/#{shuffle_type_filename}/#{mutation_type}_#{context_type}_total_shuffle.txt",
-          "results/disrupted/cancer/#{mutation_type}_#{context_type}_total_cancer.txt"]
+          "results/disrupted/#{cancer_type_filename}/#{mutation_type}_#{context_type}_total_cancer.txt"]
 
   count_tables = files.map{|filename| load_count_table(filename) }
   counts_table = TableColumnCombiner.new(count_tables).combine
@@ -48,8 +47,8 @@ def combine_counts(mutation_type, context_type, shuffle_type_filename)
 end
 
 
-def comparison_to_shuffle(shuffle_type_filename, mutation_type, context_type, motif_infos)
-  counts_table_w_pvalues = combine_counts(mutation_type, context_type, shuffle_type_filename)
+def comparison_to_shuffle(mutation_type, context_type, motif_infos, shuffle_type_filename, cancer_type_filename)
+  counts_table_w_pvalues = combine_counts(mutation_type, context_type, shuffle_type_filename, cancer_type_filename)
   File.open("results/disrupted/#{mutation_type}_#{context_type}_#{shuffle_type_filename}.csv", 'w') do |fw|
     counts_table_w_pvalues.output(fw)
   end
@@ -92,11 +91,17 @@ end
 
 motif_infos = load_motif_infos('source_data/hocomoco_genes_infos.csv')
 
-['shuffle', 'sampled_shuffle_log2', 'sampled_shuffle_log10', 'sampled_shuffle_0.5log10', 'contexted_sampled_shuffle_log10'].each do |shuffle_type_filename|
-  # [:regulatory, :intronic, :promoter].each do |mutation_type|
-  [:regulatory].each do |mutation_type|
-    [:cpg, :tpc, :not_cpg_tpc, :any_context].each do |context_type|
-      comparison_to_shuffle(shuffle_type_filename, mutation_type, context_type, motif_infos)
-    end
+# ['shuffle', 'sampled_shuffle_log2', 'sampled_shuffle_log10', 'sampled_shuffle_0.5log10', 'contexted_sampled_shuffle_log10'].each do |shuffle_type_filename|
+#   # [:regulatory, :intronic, :promoter].each do |mutation_type|
+#   [:regulatory].each do |mutation_type|
+#     [:cpg, :tpc, :not_cpg_tpc, :any_context].each do |context_type|
+#       comparison_to_shuffle(mutation_type, context_type, motif_infos, shuffle_type_filename, 'cancer')
+#     end
+#   end
+# end
+
+[:regulatory].each do |mutation_type|
+  [:cpg, :tpc, :not_cpg_tpc, :any_context].each do |context_type|
+    comparison_to_shuffle(mutation_type, context_type, motif_infos, 'shuffle_created', 'cancer_created')
   end
 end
