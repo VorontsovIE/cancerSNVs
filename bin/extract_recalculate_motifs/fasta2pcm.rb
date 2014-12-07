@@ -15,8 +15,6 @@ def pcm_from_fasta(seqs)
   pcm
 end
 
-
-
 Shellwords.split($stdin.read).each do |filename|
   dirname = File.join(File.dirname(filename),'pcm')
   Dir.mkdir(dirname)  unless Dir.exist?(dirname)
