@@ -12,5 +12,7 @@ mut_types = File.readlines('source_data/SUBSTITUTIONS_13Apr2012_snz_promoter_mar
 regulatory_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name, mut_type| intronic_mutation?(mut_type) || promoter_mutation?(mut_type) }
 
 each_mutated_site_info(mutated_site_infos_filename) do |mutated_site_info|
-  puts mutated_site_info.line  if regulatory_mutation_names.include?(mutated_site_info.normalized_snp_name) && mutated_site_info.pvalue_1 <= 0.0005 # && mutated_site_info.fold_change <= 1.0 &&
+  next  unless mutated_site_info.pvalue_1 <= 0.0005 # && mutated_site_info.fold_change <= 1.0 &&
+  next  unless regulatory_mutation_names.include?(mutated_site_info.normalized_snp_name)
+  puts mutated_site_info.line
 end
