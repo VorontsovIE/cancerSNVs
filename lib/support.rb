@@ -1,6 +1,10 @@
 require 'fileutils'
 require 'set'
 
+def complement(letter)
+  letter.tr('acgtnACGTN'.freeze, 'tgcanTGCAN'.freeze)
+end
+
 class MutatatedSiteInfo
   attr_reader :line,  :name_snp, :motif_name, :fold_change, :pvalue_1, :pvalue_2
   attr_reader :pos_1, :orientation_1, :seq_1
@@ -121,13 +125,16 @@ end
 
 ##############
 
-def each_mutated_site_info(all_mutations_filename)
+def each_mutated_site_info_in_stream(stream)
+  stream.each_line do |line|
+    next  if line.start_with?('#')
+    yield MutatatedSiteInfo.from_string(line)
+  end
+end
+def each_mutated_site_info(all_mutations_filename, &block)
   return enum_for(:each_mutated_site_info, all_mutations_filename)  unless block_given?
   File.open(all_mutations_filename) do |f|
-    f.readline #skip header
-    f.each_line do |line|
-      yield MutatatedSiteInfo.from_string(line)
-    end
+    each_mutated_site_info_in_stream(f, &block)
   end
 end
 

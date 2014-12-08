@@ -1,28 +1,11 @@
+$:.unshift File.absolute_path('lib', __dir__)
+require 'support'
+
 def seq_by_pos(pos, chr, flank_size)
   File.open ("/home/ilya/iogen/genome/hg19/chr#{chr}.plain") do |f|
     f.seek(pos - flank_size - 1)
     f.read(flank_size*2 + 1)
   end
-end
-
-def complement_letter(letter)
-  letter = letter.upcase
-  if letter == 'A' 
-    return 'T'
-  elsif letter == 'C'
-    return 'G'
-  elsif letter == 'G' 
-    return 'C'
-  elsif letter == 'T' 
-    return 'A'
-  else
-    raise "#{letter} is not a nucleotide"  
-  end
-end
-
-def complement(seq)
-  seq_arr = seq.each_char.to_a
-  seq_arr.map{|letter| complement_letter(letter)}.join
 end
 
  hi = File.readlines('/home/ilya/iogen/BioSchool-summer2014/SNP/SUBSTITUTIONS_13Apr2012_snz.txt') [1..-1];
