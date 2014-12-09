@@ -10,10 +10,10 @@ class MotifHistogramFitter
     end
   end
 
-  def add_element(motif_name, contexts, object)
+  def add_element(motif_name, object)
     @fitters[motif_name].add_element(object)
   end
-  def fit_element(motif_name, contexts, object, &block)
+  def fit_element(motif_name, object, &block)
     @fitters[motif_name].fit_element(object, &block)
   end
 
@@ -25,9 +25,10 @@ class MotifHistogramFitter
     @fitters.map{|motif_name, fitter| fitter.current_total }.inject(0, &:+)
   end
 
-  def print_discrepancies
+  def print_discrepancies(msg: nil, output_stream: $stderr)
+    output_stream.puts(msg)  if msg
     @motif_names.each do |motif_name|
-      @fitters[motif_name][context_type].print_discrepancies("\n#{motif_name}", $stderr)
+      @fitters[motif_name].print_discrepancies(msg: "\n#{motif_name}", output_stream: output_stream)
     end
   end
 end

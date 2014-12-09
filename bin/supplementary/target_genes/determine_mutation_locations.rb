@@ -4,8 +4,8 @@ require 'genome_region'
 require 'mutation_features'
 require 'support'
 
-def context_type(name_snp, context_types)
-  context_pair = context_types.detect{|context_type, context_type_nameset| context_type_nameset.include?(name_snp) }
+def context_type(variant_id, context_types)
+  context_pair = context_types.detect{|context_type, context_type_nameset| context_type_nameset.include?(variant_id) }
   context_pair && context_pair.first
 end
 
