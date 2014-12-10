@@ -1,9 +1,14 @@
 require 'fileutils'
 require 'set'
 
-def complement(letter)
-  letter.tr('acgtnACGTN'.freeze, 'tgcanTGCAN'.freeze)
+def complement(str)
+  str.tr('acgtnACGTN'.freeze, 'tgcanTGCAN'.freeze)
 end
+
+def revcomp(str)
+  complement(str.reverse)
+end
+
 
 MutatatedSiteInfo = Struct.new( :line,
                                 :variant_id, :motif_name,
@@ -120,7 +125,6 @@ end
 ##############
 
 def each_mutated_site_info_in_stream(stream, &block)
-  # return enum_for(:each_mutated_site_info_in_stream, stream)  unless block_given?
   stream.each_line.lazy.reject{|line|
     line.start_with?('#')
   }.map{|line|
