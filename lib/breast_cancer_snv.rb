@@ -70,14 +70,12 @@ BreastCancerSNV = Struct.new( :variant_id,
     strand_of_mutation_in_pyrimidine_context == :+
   end
 
-
-  def load_sequence(genome_folder, flank_length)
+  def load_sequence(genome_folder, five_prime_flank_length, three_prime_flank_length)
     File.open (File.join(genome_folder, "chr#{chr}.plain")) do |f|
-      f.seek(position - flank_length - 1)
-      f.read(2 * flank_length + 1).upcase
+      f.seek(position - five_prime_flank_length - 1)
+      f.read(five_prime_flank_length + three_prime_flank_length + 1).upcase
     end
   end
-
 
   def five_prime_flanking_sequence_plus_strand
     pyrimidine_strand? ? five_prime_flanking_sequence_in_pyrimidine_context : revcomp(three_prime_flanking_sequence_in_pyrimidine_context)
@@ -112,11 +110,11 @@ BreastCancerSNV = Struct.new( :variant_id,
     "#{five_prime_flanking_sequence_plus_strand}[#{ref_base_plus_strand}/#{mutant_base_plus_strand}]#{three_prime_flanking_sequence_plus_strand}"
   end
 
-  def snp_sequence_from_genome(genome_folder, flank_length)
-    seq = load_sequence(genome_folder, flank_length)
+  def snp_sequence_from_genome(genome_folder, five_prime_flank_length, three_prime_flank_length)
+    seq = load_sequence(genome_folder, five_prime_flank_length, three_prime_flank_length)
 
-    if seq[flank_length - five_prime_flanking_sequence_plus_strand.length, ref_sequence_plus_strand.length] == ref_sequence_plus_strand
-      "#{seq[0,flank_length]}[#{ref_base_plus_strand}/#{mutant_base_plus_strand}]#{seq[(flank_length + 1),flank_length]}"
+    if seq[five_prime_flank_length - five_prime_flanking_sequence_plus_strand.length, ref_sequence_plus_strand.length] == ref_sequence_plus_strand
+      "#{seq[0,five_prime_flank_length]}[#{ref_base_plus_strand}/#{mutant_base_plus_strand}]#{seq[(five_prime_flank_length + 1),three_prime_flank_length]}"
     else
       raise "Error! Sequence in genome doesn't match sequence SNV flanks"
     end

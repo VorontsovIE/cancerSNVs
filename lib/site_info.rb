@@ -25,6 +25,22 @@ MutatatedSiteInfo = Struct.new( :line,
   def normalized_snp_name
     variant_id.split("_")[0]
   end
+
+  def length
+    seq_1.length
+  end
+
+  def seq_1_direct_strand
+    orientation_1 == :direct ? seq_1 : revcomp(seq_1)
+  end
+
+  def seq_1_five_flank_length
+    -pos_1
+  end
+
+  def seq_1_three_flank_length
+    length - 1 + pos_1
+  end
 end
 
 def each_mutated_site_info_in_stream(stream, &block)
