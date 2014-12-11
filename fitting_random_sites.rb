@@ -5,19 +5,7 @@ require 'support'
 require 'histogram'
 require 'motifwise_histogram_fitting'
 
-def each_site(mutation_filename, &block)
-  return enum_for(:each_site, mutation_filename).lazy  unless block_given?
-  each_mutated_site_info(mutation_filename).select{|mutated_site_info|
-    mutated_site_info.pvalue_1 <= 0.0005
-  }.each(&block)
-end
-
-
 motif_names = File.readlines('source_data/motif_names.txt').map(&:strip)
-
-
-# mutated_site_infos_cancer_filename = 'source_data/subsets/cancer_SNPs_regulatory_is_site.txt'
-# mutated_site_infos_shuffle_filename = 'source_data/subsets/shuffle_SNPs_regulatory_is_site.txt'
 
 mutated_site_infos_cancer_filename  = ARGV[0] # 'source_data/cancer_SNPs_cpg.txt'
 mutated_site_infos_shuffle_filename = ARGV[1] # 'source_data/mutated_sites_shuffled_cpg.txt'
