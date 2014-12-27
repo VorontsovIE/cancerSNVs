@@ -97,7 +97,7 @@ end
 ##############
 
 def count_each_motif_mutations(all_mutations_filename, &block)
-  mutated_sites = each_mutated_site_info(all_mutations_filename).select(&block)
+  mutated_sites = MutatatedSiteInfo.each_site(all_mutations_filename).select(&block)
   mutated_motifs = mutated_sites.map{|mutated_site| mutated_site.motif_name }
   count_each_element(mutated_motifs)
 end

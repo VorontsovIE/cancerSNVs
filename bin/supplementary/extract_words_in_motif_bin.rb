@@ -26,7 +26,7 @@ raise "Specify file with sites, motif name, and bin boundaries (-log2 Pvalue) an
 from = from.to_f
 to = to.to_f
 range = from..to
-sites = each_site(sites_filename).select{|info|
+sites = MutatatedSiteInfo.each_site(sites_filename).select(&:site_before_substitution?).select{|info|
   info.motif_name == motif_name && range.include?(-Math.log2(info.pvalue_1))
 }
 
@@ -39,7 +39,7 @@ when :words
     raise 'Specify genome folder if you want to load flanks of a site'  unless genome_folder
     data = sites.map do |site|
       snv = snvs[site.variant_id]
-      seq = snv.load_sequence(genome_folder, flank_length + site.seq_1_five_flank_length, flank_length + site.seq_1_three_flank_length)
+      seq = snv.load_site_sequence(genome_folder, site, flank_length)
       site.orientation_1 == :direct ? seq : revcomp(seq)
     end
   else

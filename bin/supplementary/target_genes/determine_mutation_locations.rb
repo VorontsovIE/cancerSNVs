@@ -64,7 +64,7 @@ $stderr.puts "ensg-hgnc conversion loaded"
 
 
 disrupting_mutations = Hash.new{|hsh,k| hsh[k] = []}
-mutated_sites = each_mutated_site_info('source_data/cancer_SNPs.txt').select(&disrupted_and_in_set_checker(regulatory_mutation_names))
+mutated_sites = MutatatedSiteInfo.each_site('source_data/cancer_SNPs.txt').select(&disrupted_and_in_set_checker(regulatory_mutation_names))
 mutated_sites.each{|mutated_site_info|
   disrupting_mutations[mutated_site_info.motif_name] << mutated_site_info
 }

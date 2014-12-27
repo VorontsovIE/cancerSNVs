@@ -12,13 +12,13 @@ mutated_site_infos_shuffle_filename = ARGV[1] # 'source_data/mutated_sites_shuff
 
 fitters = MotifHistogramFitter.new(motif_names, Histogram.new(1e-7, 0.0005, 1.0){|pvalue| - Math.log2(pvalue) })
 
-each_site(mutated_site_infos_cancer_filename) do |mutated_site_info|
+MutatatedSiteInfo.each_site(mutated_site_infos_cancer_filename).select(&:site_before_substitution?).each do |mutated_site_info|
   fitters.add_element(mutated_site_info.motif_name, mutated_site_info.pvalue_1)
 end
 
 $stderr.puts "Loaded #{fitters.goal_total} original sites"
 
-each_site(mutated_site_infos_shuffle_filename) do |mutated_site_info|
+MutatatedSiteInfo.each_site(mutated_site_infos_shuffle_filename).select(&:site_before_substitution?).each do |mutated_site_info|
   fitters.fit_element(mutated_site_info.motif_name, mutated_site_info.pvalue_1) do
     puts mutated_site_info.line
   end

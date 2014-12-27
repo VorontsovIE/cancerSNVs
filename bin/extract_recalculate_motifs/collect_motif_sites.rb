@@ -16,7 +16,7 @@ regulatory_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name
 
 
 # each_mutated_site_info('source_data/cancer_SNPs.txt').each do |info|
-each_mutated_site_info('results/fitted_mutated_sites_shuffled.txt').each do |info|
+MutatatedSiteInfo.each_site('results/fitted_mutated_sites_shuffled.txt').each do |info|
   next  unless info.pvalue_1 < 0.0005
   next  unless regulatory_mutation_names.include?(info.normalized_snp_name)
 

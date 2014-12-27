@@ -41,26 +41,27 @@ MutatatedSiteInfo = Struct.new( :line,
   def seq_1_three_flank_length
     length - 1 + pos_1
   end
-end
 
-def each_mutated_site_info_in_stream(stream, &block)
-  stream.each_line.lazy.reject{|line|
-    line.start_with?('#')
-  }.map{|line|
-    MutatatedSiteInfo.from_string(line)
-  }.each(&block)
-end
-
-def each_mutated_site_info(all_mutations_filename, &block)
-  return enum_for(:each_mutated_site_info, all_mutations_filename).lazy  unless block_given?
-  File.open(all_mutations_filename) do |f|
-    each_mutated_site_info_in_stream(f, &block)
+  def site_before_substitution?(pvalue_cutoff: 0.0005)
+    pvalue_1 <= pvalue_cutoff
   end
-end
 
-def each_site(mutation_filename, pvalue_cutoff: 0.0005, &block)
-  return enum_for(:each_site, mutation_filename, pvalue_cutoff: pvalue_cutoff).lazy  unless block_given?
-  each_mutated_site_info(mutation_filename).select{|mutated_site_info|
-    mutated_site_info.pvalue_1 <= pvalue_cutoff
-  }.each(&block)
+  def site_after_substitution?(pvalue_cutoff: 0.0005)
+    pvalue_2 <= pvalue_cutoff
+  end
+
+  def self.each_site_in_stream(stream, &block)
+    stream.each_line.lazy.reject{|line|
+      line.start_with?('#')
+    }.map{|line|
+      MutatatedSiteInfo.from_string(line)
+    }.each(&block)
+  end
+
+  def self.each_site(all_mutations_filename, &block)
+    return enum_for(:each_site, all_mutations_filename).lazy  unless block_given?
+    File.open(all_mutations_filename) do |f|
+      each_site_in_stream(f, &block)
+    end
+  end
 end

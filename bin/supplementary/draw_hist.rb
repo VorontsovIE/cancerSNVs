@@ -23,7 +23,7 @@ regulatory_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name
 histogram = create_histogram.call
 
 total = 0
-each_mutated_site_info(mutated_site_infos_filename) do |mutated_site_info|
+MutatatedSiteInfo.each_site(mutated_site_infos_filename) do |mutated_site_info|
   next  unless motif == mutated_site_info.motif_name
   next  unless mutated_site_info.pvalue_1 <= 0.0005
   next  unless regulatory_mutation_names.include?(mutated_site_info.normalized_snp_name)

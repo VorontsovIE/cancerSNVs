@@ -60,7 +60,7 @@ end
 site_fold_changes_filename = ARGV[0] # 'source_data/cancer_SNPs.txt'
 
 if site_fold_changes_filename
-  each_mutated_site_info(site_fold_changes_filename, &output_filtered)
+  MutatatedSiteInfo.each_site(site_fold_changes_filename, &output_filtered)
 else
-  each_mutated_site_info_in_stream($stdin, &output_filtered)
+  MutatatedSiteInfo.each_site_in_stream($stdin, &output_filtered)
 end
