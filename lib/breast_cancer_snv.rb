@@ -1,4 +1,5 @@
 require 'set'
+require 'interval_notation'
 require_relative 'support'
 
 BreastCancerSNV = Struct.new( :variant_id,
@@ -75,6 +76,21 @@ BreastCancerSNV = Struct.new( :variant_id,
       f.seek(position - five_prime_flank_length - 1)
       f.read(five_prime_flank_length + three_prime_flank_length + 1).upcase
     end
+  end
+
+  # 1-based, fully closed, given snv position is 1-based
+  def interval_around_snv(five_prime_length, three_prime_flank_length)
+    IntervalNotation::Syntax::Long.closed_closed(position - five_prime_length, position + three_prime_flank_length)
+  end
+
+  # 1-based, fully closed, given snv position is 1-based
+  def site_interval(site, flank_length = 0)
+    interval_around_snv(flank_length + site.seq_1_five_flank_length,
+                        flank_length + site.seq_1_three_flank_length)
+  end
+
+  def load_site_sequence(genome_folder, site, flank_length = 0)
+    load_sequence(genome_folder, flank_length + site.seq_1_five_flank_length, flank_length + site.seq_1_three_flank_length)
   end
 
   def five_prime_flanking_sequence_plus_strand
