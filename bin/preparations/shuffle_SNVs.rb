@@ -1,4 +1,4 @@
-$:.unshift File.absolute_path('lib', __dir__)
+$:.unshift File.absolute_path('../../lib', __dir__)
 require 'set'
 require 'optparse'
 require 'sequence_with_snp'
