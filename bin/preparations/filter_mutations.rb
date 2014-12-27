@@ -57,7 +57,7 @@ output_filtered = ->(mutated_site_info) do
   puts mutated_site_info.line
 end
 
-site_fold_changes_filename = ARGV[0] # 'source_data/cancer_SNPs.txt'
+site_fold_changes_filename = ARGV[0] # 'source_data/sites_cancer.txt'
 
 if site_fold_changes_filename
   MutatatedSiteInfo.each_site(site_fold_changes_filename, &output_filtered)

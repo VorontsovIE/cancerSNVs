@@ -6,7 +6,7 @@ require 'support'
 require 'histogram'
 
 motif = ARGV[0]
-mutated_site_infos_filename = ARGV[1] # 'source_data/cancer_SNPs.txt'
+mutated_site_infos_filename = ARGV[1] # 'source_data/sites_cancer.txt'
 
 raise "Specify motif name and file with mutation infos "  unless motif && mutated_site_infos_filename
 # motifs = ['AP2A_f2', 'ESR1_do', 'NFKB1_f1']
@@ -32,7 +32,7 @@ end
 
 $stderr.puts "Loaded #{total}"
 
-# $stderr.puts "#{motif} -- #{shuffle_histogram[motif].elements_total}; #{histogram[motif].elements_total}"
+# $stderr.puts "#{motif} -- #{random_histogram[motif].elements_total}; #{histogram[motif].elements_total}"
 histogram.each_bin do |bin_range, bin_count|
   fraction = bin_count.to_f / histogram.elements_total_in_range
   puts "#{bin_range.begin}\t#{bin_range.end}\t#{fraction}"
