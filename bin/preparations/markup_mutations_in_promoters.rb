@@ -1,33 +1,38 @@
+$:.unshift File.absolute_path('../../lib', __dir__)
+require 'breast_cancer_snv'
 require 'interval_notation'
 
-promoter_intervals_by_chromosome = Hash.new{|h,k| h[k] = [] }
+def load_promoters_by_chromosome(filename, length_5_prime: 2000, length_3_prime: 500)
+  promoter_intervals_by_chromosome = Hash.new{|h,k| h[k] = [] }
 
-File.open('source_data/gene_tss.txt') do |f|
-  f.each_line do |line|
-    chr, strand, tss = line.chomp.split("\t").last(3)
-    tss_pos = tss.to_i
-    if strand == '1'
-      promoter_intervals_by_chromosome[chr.to_sym] << IntervalNotation::Syntax::Long.closed_closed(tss_pos - 2000, tss_pos + 500)
-    elsif strand == '-1'
-      promoter_intervals_by_chromosome[chr.to_sym] << IntervalNotation::Syntax::Long.closed_closed(tss_pos - 500, tss_pos + 2000)
+  File.open(filename) do |f|
+    f.each_line do |line|
+      chr, strand, tss = line.chomp.split("\t").last(3)
+      tss_pos = tss.to_i
+      if strand == '1'
+        promoter_intervals_by_chromosome[chr.to_sym] << IntervalNotation::Syntax::Long.closed_closed(tss_pos - length_5_prime, tss_pos + length_3_prime)
+      elsif strand == '-1'
+        promoter_intervals_by_chromosome[chr.to_sym] << IntervalNotation::Syntax::Long.closed_closed(tss_pos - length_3_prime, tss_pos + length_5_prime)
+      end
     end
   end
+
+  promoter_intervals_by_chromosome.map{|chr, intervals|
+    [chr, IntervalNotation::Operations.union(intervals)]
+  }.to_h
 end
 
-promoters_by_chromosome = promoter_intervals_by_chromosome.map{|chr, intervals|
-  [chr, IntervalNotation::Operations.union(intervals)]
-}.to_h
+gene_tss_filename = ARGV[0] # 'source_data/gene_tss.txt'
+snvs_filename = ARGV[1] #'source_data/SUBSTITUTIONS_13Apr2012_snz.txt'
 
-File.open('source_data/SUBSTITUTIONS_13Apr2012_snz.txt') do |f|
-  puts f.readline
-  f.each_line do |line|
-    infos = line.chomp.split("\t")
-    chr, pos = infos[2], infos[3].to_i
+raise 'Specify file with gene TSSes and file with SNV infos'  unless gene_tss_filename && snvs_filename
 
-    if promoters_by_chromosome[chr.to_sym].include_position?(pos)
-      mut_type = infos[17]
-      infos[17] = [mut_type.strip.empty? ? nil : mut_type, 'Promoter'].compact.join(',')
-    end
-    puts infos.join("\t")
+promoters_by_chromosome = load_promoters_by_chromosome(gene_tss_filename, length_5_prime: 2000, length_3_prime: 500)
+
+puts BreastCancerSNV::FILE_HEADER
+BreastCancerSNV.each_substitution_in_file(snvs_filename).each do |snv|
+  if promoters_by_chromosome[snv.chr.to_sym].include_position?(snv.position)
+    snv.mut_types << :promoter
   end
+  puts snv
 end

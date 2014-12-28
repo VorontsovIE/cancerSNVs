@@ -63,6 +63,26 @@ BreastCancerSNV = Struct.new( :variant_id,
     stream.each_line.lazy.map{|line| BreastCancerSNV.from_string(line) }.each(&block)
   end
 
+  def mutation_types_string
+    mut_types.map(&:to_s).map(&:capitalize).join(',')
+  end
+  private :mutation_types_string
+
+  def to_s
+    [
+      variant_id, sample_id, chr, position, genome_build,
+      ref_base_plus_strand, mutant_base_plus_strand,
+      five_prime_flanking_sequence_in_pyrimidine_context,
+      ref_base_pyrimidine_context, mutant_base_pyrimidine_context,
+      three_prime_flanking_sequence_in_pyrimidine_context,
+      strand_of_mutation_in_pyrimidine_context,
+      gene, gene_id, ccds_id, transcript_id, gene_type,
+      mutation_types_string,
+      mRNA_mut_syntax, cds_mut_syntax, aa_mut_syntax,
+      current_conf_status, validation_platform
+    ].join("\t")
+  end
+
   def promoter?; mut_types.include?(:promoter); end
   def intronic?; mut_types.include?(:intronic); end
   def regulatory?; promoter? || intronic?; end
@@ -136,3 +156,15 @@ BreastCancerSNV = Struct.new( :variant_id,
     end
   end
 end
+
+BreastCancerSNV::FILE_HEADER = [
+  "variant_id", "sample_id", "chr", "position", "genome_build",
+  "ref_base_plus_strand", "mutant_base_plus_strand",
+  "5_prime_flanking_sequence_in_pyrimidine_context",
+  "ref_base_pyrimidine_context", "mutant_base_pyrimidine_context",
+  "3_prime_flanking_sequence_in_pyrimidine_context",
+  "strand_of mutation_in_pyrimidine_context", "gene",
+  "gene_id", "ccds_id", "transcript_id", "gene_type",
+  "mut_type", "mRNA_mut_syntax", "cds_mut_syntax", "aa_mut_syntax",
+  "current_conf_status", "validation_platform"
+].join("\t")
