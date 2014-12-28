@@ -50,6 +50,14 @@ MutatatedSiteInfo = Struct.new( :line,
     pvalue_2 <= pvalue_cutoff
   end
 
+  def disrupted?(fold_change_cutoff: 5)
+    fold_change <= (1.0 / fold_change_cutoff)
+  end
+
+  def emerged?(fold_change_cutoff: 5)
+    fold_change >= fold_change_cutoff
+  end
+
   def self.each_site_in_stream(stream, &block)
     stream.each_line.lazy.reject{|line|
       line.start_with?('#')
