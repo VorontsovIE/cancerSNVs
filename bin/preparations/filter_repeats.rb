@@ -4,12 +4,14 @@ require 'breast_cancer_snv'
 
 require 'interval_notation' # gem dependency
 
-def read_repeats_by_chromosome(genome_repeat_masker_folder)
+def read_repeats_by_chromosome(genome_repeat_masker_folder, ignore_repeat_types: [])
   result = {}
   Dir.glob("#{genome_repeat_masker_folder}/*/*.fa.out") do |filename|
     chromosome_name = File.basename(filename, '.fa.out')
     $stderr.puts chromosome_name
-    repeats = RepeatMaskerInfo.each_in_file(filename).map{|info| 
+    repeats = RepeatMaskerInfo.each_in_file(filename).reject{|info|
+      ignore_repeat_types.include?(info.repeat_type)
+    }.map{|info|
       IntervalNotation::Syntax::Long.closed_closed(info.match_start, info.match_end)
     }.to_a # lazy iterator needs to be forced
     result[chromosome_name.sub(/\Achr/,'').to_sym] = IntervalNotation::Operations.union(repeats)  
@@ -26,7 +28,7 @@ tm = Time.now
 snvs = BreastCancerSNV.each_substitution_in_file(snvs_filename).map{|snv| [snv.variant_id, snv] }.to_h
 $stderr.puts("SNV infos loaded in #{Time.now - tm} sec.")
 tm = Time.now
-repeats_by_chromosome = read_repeats_by_chromosome(genome_repeat_masker_folder)
+repeats_by_chromosome = read_repeats_by_chromosome(genome_repeat_masker_folder, ignore_repeat_types: [:Simple_repeat, :Low_complexity])
 $stderr.puts("repeats loaded in #{Time.now - tm} sec.")
 
 
