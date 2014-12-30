@@ -50,7 +50,7 @@ class Table
     raise "Number of rows(#{@lines.size}) differs from header column size(#{header_column.size})"  if header_column && header_column.size != @lines.size
     @header_column = header_column ? Header.create(header_column) : EmptyHeader.new(@lines.size)
 
-    raise "Number of columns(#{num_cols}) differs from header row size(#{header_row.size})"  if header_row && header_row.size != num_cols
+    raise "Number of columns(#{num_cols}) differs from header row size(#{header_row.size})"  if header_row && num_cols && header_row.size != num_cols
     @header_row = header_row ? Header.create(header_row) :  EmptyHeader.new(num_cols)
   end
 
