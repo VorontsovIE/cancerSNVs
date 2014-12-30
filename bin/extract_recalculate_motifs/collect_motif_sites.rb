@@ -1,4 +1,4 @@
-$:.unshift File.absolute_path('lib', __dir__)
+$:.unshift File.absolute_path('../../lib', __dir__)
 require 'support'
 require 'mutation_features'
 
@@ -14,9 +14,7 @@ regulatory_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name
   intronic_mutation?(mut_type) || promoter_mutation?(mut_type)
 }
 
-
-# each_mutated_site_info('source_data/sites_cancer.txt').each do |info|
-MutatatedSiteInfo.each_site('results/fitted_sites_random.txt').each do |info|
+MutatatedSiteInfo.each_site('source_data/sites_cancer_any.txt').each do |info|
   next  unless info.pvalue_1 < 0.0005
   next  unless regulatory_mutation_names.include?(info.normalized_snp_name)
 

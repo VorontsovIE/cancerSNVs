@@ -33,7 +33,7 @@ $stderr.puts("repeats loaded in #{Time.now - tm} sec.")
 
 
 MutatatedSiteInfo.each_site(sites_filename).with_index.reject{|site, index|
-  $stderr.puts "#{index} processed" if index % 100000 == 0
+  $stderr.puts "#{index} sites processed"  if index % 100000 == 0
   snv = snvs[site.normalized_snp_name]
   
   # it can't be correctly generalized on shuffled sequences

@@ -1,4 +1,4 @@
-$:.unshift File.absolute_path('lib', __dir__)
+$:.unshift File.absolute_path('../../lib', __dir__)
 require 'set'
 require 'statistical_significance'
 require 'mutation_features'
@@ -11,7 +11,7 @@ mutated_site_infos_filename = ARGV[1] # 'source_data/sites_cancer.txt'
 raise "Specify motif name and file with mutation infos "  unless motif && mutated_site_infos_filename
 # motifs = ['AP2A_f2', 'ESR1_do', 'NFKB1_f1']
 
-create_histogram = ->{ Histogram.new(1e-7, 0.0005, 0.25){|pvalue| - Math.log2(pvalue) } }
+create_histogram = ->{ Histogram.new(1e-7, 0.0005, 1.0){|pvalue| - Math.log2(pvalue) } }
 
 motif_names = File.readlines('source_data/motif_names.txt').map(&:strip)
 
