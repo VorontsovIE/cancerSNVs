@@ -19,38 +19,25 @@ ruby bin/preparations/filter_repeats.rb source_data/sites_random.txt > source_da
 # 40 sec each
 ruby bin/preparations/filter_mutations.rb source_data/sites_cancer_wo_repeats.txt --contexts TCN --mutation-types promoter,intronic > source_data/sites_cancer_tpc.txt
 ruby bin/preparations/filter_mutations.rb source_data/sites_cancer_wo_repeats.txt --contexts NCG --mutation-types promoter,intronic > source_data/sites_cancer_cpg.txt
+ruby bin/preparations/filter_mutations.rb source_data/sites_cancer_wo_repeats.txt --mutation-types promoter,intronic > source_data/sites_cancer_any.txt
 # 15 min each
 ruby bin/preparations/filter_mutations.rb source_data/sites_random_wo_repeats.txt --contexts TCN --mutation-types promoter,intronic > source_data/sites_random_tpc.txt
 ruby bin/preparations/filter_mutations.rb source_data/sites_random_wo_repeats.txt --contexts NCG --mutation-types promoter,intronic > source_data/sites_random_cpg.txt
+ruby bin/preparations/filter_mutations.rb source_data/sites_random_wo_repeats.txt --mutation-types promoter,intronic > source_data/sites_random_any.txt
 
-
-# 2 min
-ruby fitting_random_sites.rb source_data/sites_cancer_cpg.txt source_data/sites_random_cpg.txt > source_data/sites_random_fitted_cpg.txt 2> >(tee source_data/sites_random_fitted_cpg.log >&2)
-ruby fitting_random_sites.rb source_data/sites_cancer_tpc.txt source_data/sites_random_tpc.txt > source_data/sites_random_fitted_tpc.txt 2> >(tee source_data/sites_random_fitted_tpc.log >&2)
+# 10 min
+ruby fitting_random_sites.rb source_data/sites_cancer_cpg.txt source_data/sites_random_cpg.txt --fold 2 > source_data/sites_random_fitted_cpg.txt 2> >(tee source_data/sites_random_fitted_cpg.log >&2)
+ruby fitting_random_sites.rb source_data/sites_cancer_tpc.txt source_data/sites_random_tpc.txt --fold 2 > source_data/sites_random_fitted_tpc.txt 2> >(tee source_data/sites_random_fitted_tpc.log >&2)
+ruby fitting_random_sites.rb source_data/sites_cancer_any.txt source_data/sites_random_any.txt --fold 2 > source_data/sites_random_fitted_any.txt 2> >(tee source_data/sites_random_fitted_any.log >&2)
 
 # ~1 minute
 mkdir -p results/motif_statistics
 
-ruby calculate_motif_statistics.rb source_data/sites_cancer_cpg.txt > results/motif_statistics/cancer_cpg_all.txt
-ruby calculate_motif_statistics.rb source_data/sites_cancer_cpg.txt --site-after 0.0005 --emerged 5 > results/motif_statistics/cancer_cpg_sites_emerged.txt
-ruby calculate_motif_statistics.rb source_data/sites_cancer_cpg.txt --site-before 0.0005 --disrupted 5 > results/motif_statistics/cancer_cpg_sites_disrupted.txt
-ruby calculate_motif_statistics.rb source_data/sites_cancer_cpg.txt --site-after 0.0005 > results/motif_statistics/cancer_cpg_sites_after.txt
-ruby calculate_motif_statistics.rb source_data/sites_cancer_cpg.txt --site-before 0.0005 > results/motif_statistics/cancer_cpg_sites_before.txt
+ruby generate_all_motif_statistics.rb source_data/sites_cancer_cpg.txt results/motif_statistics/cpg/cancer.txt --pvalue 0.0005 --fold-change 5
+ruby generate_all_motif_statistics.rb source_data/sites_random_cpg.txt results/motif_statistics/cpg/random.txt --pvalue 0.0005 --fold-change 5
 
-ruby calculate_motif_statistics.rb source_data/sites_cancer_tpc.txt > results/motif_statistics/cancer_tpc_all.txt
-ruby calculate_motif_statistics.rb source_data/sites_cancer_tpc.txt --site-after 0.0005 --emerged 5 > results/motif_statistics/cancer_tpc_sites_emerged.txt
-ruby calculate_motif_statistics.rb source_data/sites_cancer_tpc.txt --site-before 0.0005 --disrupted 5 > results/motif_statistics/cancer_tpc_sites_disrupted.txt
-ruby calculate_motif_statistics.rb source_data/sites_cancer_tpc.txt --site-after 0.0005 > results/motif_statistics/cancer_tpc_sites_after.txt
-ruby calculate_motif_statistics.rb source_data/sites_cancer_tpc.txt --site-before 0.0005 > results/motif_statistics/cancer_tpc_sites_before.txt
+ruby generate_all_motif_statistics.rb source_data/sites_cancer_tpc.txt results/motif_statistics/tpc/cancer.txt --pvalue 0.0005 --fold-change 5
+ruby generate_all_motif_statistics.rb source_data/sites_random_tpc.txt results/motif_statistics/tpc/random.txt --pvalue 0.0005 --fold-change 5
 
-ruby calculate_motif_statistics.rb source_data/sites_random_fitted_cpg.txt > results/motif_statistics/random_fitted_cpg_all.txt
-ruby calculate_motif_statistics.rb source_data/sites_random_fitted_cpg.txt --site-after 0.0005 --emerged 5 > results/motif_statistics/random_fitted_cpg_sites_emerged.txt
-ruby calculate_motif_statistics.rb source_data/sites_random_fitted_cpg.txt --site-before 0.0005 --disrupted 5 > results/motif_statistics/random_fitted_cpg_sites_disrupted.txt
-ruby calculate_motif_statistics.rb source_data/sites_random_fitted_cpg.txt --site-after 0.0005 > results/motif_statistics/random_fitted_cpg_sites_after.txt
-ruby calculate_motif_statistics.rb source_data/sites_random_fitted_cpg.txt --site-before 0.0005 > results/motif_statistics/random_fitted_cpg_sites_before.txt
-
-ruby calculate_motif_statistics.rb source_data/sites_random_fitted_tpc.txt > results/motif_statistics/random_fitted_tpc_all.txt
-ruby calculate_motif_statistics.rb source_data/sites_random_fitted_tpc.txt --site-after 0.0005 --emerged 5 > results/motif_statistics/random_fitted_tpc_sites_emerged.txt
-ruby calculate_motif_statistics.rb source_data/sites_random_fitted_tpc.txt --site-before 0.0005 --disrupted 5 > results/motif_statistics/random_fitted_tpc_sites_disrupted.txt
-ruby calculate_motif_statistics.rb source_data/sites_random_fitted_tpc.txt --site-after 0.0005 > results/motif_statistics/random_fitted_tpc_sites_after.txt
-ruby calculate_motif_statistics.rb source_data/sites_random_fitted_tpc.txt --site-before 0.0005 > results/motif_statistics/random_fitted_tpc_sites_before.txt
+ruby generate_all_motif_statistics.rb source_data/sites_cancer_any.txt results/motif_statistics/any/cancer.txt --pvalue 0.0005 --fold-change 5
+ruby generate_all_motif_statistics.rb source_data/sites_random_any.txt results/motif_statistics/any/random.txt --pvalue 0.0005 --fold-change 5
