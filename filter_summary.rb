@@ -3,6 +3,7 @@ def to_float(str)
 end
 
 lines = ARGF.readlines
+
 puts lines.shift
 
 lines.map{|line|

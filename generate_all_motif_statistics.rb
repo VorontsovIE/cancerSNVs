@@ -23,6 +23,8 @@ end.parse!(ARGV)
 sites_filename = ARGV[0] # source_data/sites_cancer_cpg.txt
 output_prefix = ARGV[1] # results/motif_statistics/cpg/cancer.txt
 
+raise 'Specify sites file and prefix of output files (see --help)'  unless sites_filename && output_prefix
+
 output_dir = File.dirname(output_prefix)
 FileUtils.mkdir_p(output_dir)
 

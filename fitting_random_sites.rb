@@ -21,6 +21,8 @@ motif_names = File.readlines('source_data/motif_names.txt').map(&:strip)
 mutated_site_infos_cancer_filename = ARGV[0] # 'source_data/sites_cancer_cpg.txt'
 mutated_site_infos_random_filename = ARGV[1] # 'source_data/sites_random_cpg.txt'
 
+raise 'Specify cancer and random site files'  unless mutated_site_infos_cancer_filename && mutated_site_infos_random_filename
+
 histograms_for_motifs = motif_names.map{|motif|
   [motif, Histogram.new(1e-7, 1, 1.0){|pvalue| - Math.log2(pvalue)}]
 }.to_h
