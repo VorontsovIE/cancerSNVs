@@ -30,7 +30,7 @@ interval_object_pairs_by_chromosome_non_reduced.each do |chr, intervals|
 end
 
 
-snps_splitted = File.readlines('source_data/SNPs.txt').map{|el| el.chomp.split("\t")}
+snps_splitted = File.readlines('./source_data/SNV_sequences.txt').map{|el| el.chomp.split("\t")}
 
 cpg_names = mutation_names_by_mutation_context(snps_splitted){|mut_name, sequence| cpg_mutation?(sequence) }
 tpc_names = mutation_names_by_mutation_context(snps_splitted){|mut_name, sequence| tpc_mutation?(sequence) }

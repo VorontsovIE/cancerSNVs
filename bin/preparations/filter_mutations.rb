@@ -46,7 +46,7 @@ if show_possible_mutation_types_and_exit
   exit
 end
 
-snp_sequences_filename = 'source_data/SNPs.txt'
+snp_sequences_filename = './source_data/SNV_sequences.txt'
 
 matching_type_mut_names = matching_type_mutation_names(mutations_markup_filename, requested_mutation_types)
 matching_context_mut_names = matching_context_mutation_names(snp_sequences_filename, requested_mutation_contexts)
