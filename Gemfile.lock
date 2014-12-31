@@ -1,0 +1,16 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    hoe (3.13.0)
+      rake (>= 0.8, < 11.0)
+    interval_notation (0.1.1)
+    rake (10.4.2)
+    rubystats (0.2.3)
+      hoe (>= 1.7.0)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  interval_notation (~> 0.1.1)
+  rubystats
