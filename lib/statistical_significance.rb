@@ -51,6 +51,16 @@ class HolmsPvalueCorrector
     end
   end
 
+  def correct_hash(pvalues_hash)
+    names = []
+    pvalues = []
+    pvalues_hash.each{|name, pvalue|
+      names << name
+      pvalues << pvalue
+    }
+    names.zip(correct(pvalues)).to_h
+  end
+
   def run_correction_script(from_file, to_file)
     with_temp_file('correction_script.r') do |correction_script_file|
       correction_script_file.puts('dataT <- read.table("' + from_file + '")')
