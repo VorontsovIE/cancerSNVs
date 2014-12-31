@@ -4,10 +4,10 @@
 # TODO: change order of actions to perform random filter and regulatory&context filtering on SNV stage, not sites stage
 
 # 15 sec
-ruby bin/preparations/markup_mutations_in_promoters.rb ./source_data/gene_tss.txt ./source_data/SUBSTITUTIONS_13Apr2012_snz.txt > ./source_data/SUBSTITUTIONS_13Apr2012_snz_promoter_markup2.txt
+ruby bin/preparations/markup_mutations_in_promoters.rb ./source_data/gene_tss.txt /home/ilya/iogen/cages/hg19/freeze1/hg19.cage_peak_tpm_ann.osc.txt  ./source_data/SUBSTITUTIONS_13Apr2012_snz.txt > ./source_data/SUBSTITUTIONS_13Apr2012_snz_promoter_markup3.txt
 
 # 1 min
-ruby bin/preparations/extract_snv_sequences.rb ./source_data/SUBSTITUTIONS_13Apr2012_snz_promoter_markup2.txt /home/ilya/iogen/genome/hg19/ --flank-length 25 > ./source_data/SNPs.txt
+ruby bin/preparations/extract_snv_sequences.rb ./source_data/SUBSTITUTIONS_13Apr2012_snz_promoter_markup3.txt /home/ilya/iogen/genome/hg19/ --flank-length 25 > ./source_data/SNPs.txt
 
 
 # 5 min

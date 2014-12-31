@@ -1,6 +1,7 @@
 $:.unshift File.absolute_path('../../lib', __dir__)
 require 'breast_cancer_snv'
 require 'interval_notation'
+require 'cage_peak'
 
 def load_promoters_by_chromosome(filename, length_5_prime: 2000, length_3_prime: 500)
   promoter_intervals_by_chromosome = Hash.new{|h,k| h[k] = [] }
@@ -22,17 +23,34 @@ def load_promoters_by_chromosome(filename, length_5_prime: 2000, length_3_prime:
   }.to_h
 end
 
+def load_cage_peaks_by_chromosome(filename, length_5_prime: 2000, length_3_prime: 500)
+  CagePeak.each_in_file(filename)
+          .group_by(&:chromosome)
+          .map{|chromosome, peaks|
+            expanded_peak_regions = peaks.map{|peak| peak.region_expanded(length_5_prime: 2000, length_3_prime: 500) }
+            [chromosome, IntervalNotation::Operations.union(expanded_peak_regions)]
+          }.to_h
+end
+
 gene_tss_filename = ARGV[0] # 'source_data/gene_tss.txt'
-snvs_filename = ARGV[1] #'source_data/SUBSTITUTIONS_13Apr2012_snz.txt'
+cage_peaks_filename = ARGV[1] # '/home/ilya/iogen/cages/hg19/freeze1/hg19.cage_peak_tpm_ann.osc.txt'
+snvs_filename = ARGV[2] # 'source_data/SUBSTITUTIONS_13Apr2012_snz.txt'
 
 raise 'Specify file with gene TSSes and file with SNV infos'  unless gene_tss_filename && snvs_filename
 
 promoters_by_chromosome = load_promoters_by_chromosome(gene_tss_filename, length_5_prime: 2000, length_3_prime: 500)
+cage_peaks_by_chromosome = load_cage_peaks_by_chromosome(cage_peaks_filename, length_5_prime: 2000, length_3_prime: 500)
+# TODO: We should cut coding exons part from expanded cage peaks!!!
 
 puts BreastCancerSNV::FILE_HEADER
 BreastCancerSNV.each_substitution_in_file(snvs_filename).each do |snv|
-  if promoters_by_chromosome[snv.chr.to_sym].include_position?(snv.position)
+  chromosome = snv.chr.to_sym
+  if promoters_by_chromosome[chromosome].include_position?(snv.position)
     snv.mut_types << :promoter
+  end
+
+  if cage_peaks_by_chromosome["chr#{chromosome}".to_sym].include_position?(snv.position)
+    snv.mut_types << :cage_peak
   end
   puts snv
 end

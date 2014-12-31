@@ -85,7 +85,11 @@ BreastCancerSNV = Struct.new( :variant_id,
 
   def promoter?; mut_types.include?(:promoter); end
   def intronic?; mut_types.include?(:intronic); end
-  def regulatory?; promoter? || intronic?; end
+  def cage_peak?; mut_types.include?(:cage_peak); end
+
+  def regulatory?
+    intronic? || cage_peak? # promoter? || intronic? ## promoter is treated less precise than cage peak
+  end
 
   def pyrimidine_strand?
     strand_of_mutation_in_pyrimidine_context == :+
