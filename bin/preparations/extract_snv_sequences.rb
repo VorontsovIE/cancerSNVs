@@ -10,7 +10,7 @@ OptionParser.new do |opts|
   opts.on('--flank-length LENGTH') {|value| flank_length = value.to_i }
 end.parse!(ARGV)
 
-substitutions_filename = ARGV[0] # 'source_data/SUBSTITUTIONS_13Apr2012_snz_promoter_markup2.txt'
+substitutions_filename = ARGV[0] # './source_data/SNV_infos.txt'
 genome_folder = ARGV[1] # '/home/ilya/iogen/genome/hg19/'
 raise 'Specify a file with substitutions infos and a genome folder'  unless substitutions_filename && genome_folder
 

@@ -13,9 +13,9 @@ raise "Specify motif name and file with mutation infos "  unless motif && mutate
 
 create_histogram = ->{ Histogram.new(1e-7, 0.0005, 1.0){|pvalue| - Math.log2(pvalue) } }
 
-motif_names = File.readlines('source_data/motif_names.txt').map(&:strip)
+motif_names = File.readlines('./source_data/motif_names.txt').map(&:strip)
 
-mut_types = File.readlines('source_data/SUBSTITUTIONS_13Apr2012_snz_promoter_markup2.txt').drop(1).map{|el| data = el.split("\t"); [data[0], data[17]] };
+mut_types = File.readlines('./source_data/SNV_infos.txt').drop(1).map{|el| data = el.split("\t"); [data[0], data[17]] };
 intronic_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name, mut_type| intronic_mutation?(mut_type) }
 promoter_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name, mut_type| promoter_mutation?(mut_type) }
 regulatory_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name, mut_type| intronic_mutation?(mut_type) || promoter_mutation?(mut_type) }

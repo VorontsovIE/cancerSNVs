@@ -30,7 +30,7 @@ sites = MutatatedSiteInfo.each_site(sites_filename).select(&:site_before_substit
   info.motif_name == motif_name && range.include?(-Math.log2(info.pvalue_1))
 }
 
-snvs = BreastCancerSNV.each_substitution_in_file('source_data/SUBSTITUTIONS_13Apr2012_snz_promoter_markup2.txt').map{|snv| [snv.variant_id, snv] }.to_h
+snvs = BreastCancerSNV.each_substitution_in_file('./source_data/SNV_infos.txt').map{|snv| [snv.variant_id, snv] }.to_h
 
 
 case mode

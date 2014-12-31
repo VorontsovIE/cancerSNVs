@@ -50,7 +50,7 @@ BreastCancerSNV = Struct.new( :variant_id,
   end
 
 
-  # each_substitution_in_file('source_data/SUBSTITUTIONS_13Apr2012_snz_promoter_markup2.txt')
+  # each_substitution_in_file('./source_data/SNV_infos.txt')
   def self.each_substitution_in_file(substitutions_filename, &block)
     return enum_for(:each_substitution_in_file, substitutions_filename).lazy  unless block_given?
     File.open(substitutions_filename) do |f|

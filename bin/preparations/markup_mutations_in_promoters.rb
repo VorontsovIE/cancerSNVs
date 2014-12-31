@@ -32,9 +32,9 @@ def load_cage_peaks_by_chromosome(filename, length_5_prime: 2000, length_3_prime
           }.to_h
 end
 
-gene_tss_filename = ARGV[0] # 'source_data/gene_tss.txt'
+gene_tss_filename = ARGV[0] # './source_data/gene_tss.txt'
 cage_peaks_filename = ARGV[1] # '/home/ilya/iogen/cages/hg19/freeze1/hg19.cage_peak_tpm_ann.osc.txt'
-snvs_filename = ARGV[2] # 'source_data/SUBSTITUTIONS_13Apr2012_snz.txt'
+snvs_filename = ARGV[2] # './source_data/SNV_infos_original.txt'
 
 raise 'Specify file with gene TSSes and file with SNV infos'  unless gene_tss_filename && snvs_filename
 

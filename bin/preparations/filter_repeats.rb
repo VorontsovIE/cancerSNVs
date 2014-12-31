@@ -19,7 +19,7 @@ def read_repeats_by_chromosome(genome_repeat_masker_folder, ignore_repeat_types:
   result
 end
 
-snvs_filename = 'source_data/SUBSTITUTIONS_13Apr2012_snz_promoter_markup2.txt'
+snvs_filename = './source_data/SNV_infos.txt'
 genome_repeat_masker_folder = '/home/ilya/iogen/genome/hg19_repeatMasker'
 sites_filename = ARGV.first # 'source_data/sites_cancer.txt'
 raise 'Specify file with sites'  unless sites_filename

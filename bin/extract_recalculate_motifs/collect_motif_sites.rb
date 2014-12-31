@@ -9,12 +9,12 @@ Dir.glob(File.join(fasta_output_folder, '*')).select{|fn| File.file?(fn) }.each{
 
 motifs = Hash.new{|h,k| h[k] = [] }
 
-mut_types = File.readlines('source_data/SUBSTITUTIONS_13Apr2012_snz_promoter_markup2.txt').drop(1).map{|el| data = el.split("\t"); [data[0], data[17]] };
+mut_types = File.readlines('./source_data/SNV_infos.txt').drop(1).map{|el| data = el.split("\t"); [data[0], data[17]] };
 regulatory_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name, mut_type|
   intronic_mutation?(mut_type) || promoter_mutation?(mut_type)
 }
 
-MutatatedSiteInfo.each_site('source_data/sites_cancer_any.txt').each do |info|
+MutatatedSiteInfo.each_site('./source_data/sites_cancer_any.txt').each do |info|
   next  unless info.pvalue_1 < 0.0005
   next  unless regulatory_mutation_names.include?(info.normalized_snp_name)
 

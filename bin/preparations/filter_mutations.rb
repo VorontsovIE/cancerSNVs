@@ -40,7 +40,7 @@ end
 
 requested_mutation_types = requested_mutation_types.map(&:downcase)
 
-mutations_markup_filename = 'source_data/SUBSTITUTIONS_13Apr2012_snz_promoter_markup2.txt'
+mutations_markup_filename = './source_data/SNV_infos.txt'
 if show_possible_mutation_types_and_exit
   puts possible_mutation_types(mutations_markup_filename)
   exit

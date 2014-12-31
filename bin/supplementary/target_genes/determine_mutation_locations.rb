@@ -38,7 +38,7 @@ not_cpg_tpc_names = mutation_names_by_mutation_context(snps_splitted){|mut_name,
 any_context_names = mutation_names_by_mutation_context(snps_splitted){ true }
 ########
 
-mut_infos = File.readlines('source_data/SUBSTITUTIONS_13Apr2012_snz_promoter_markup2.txt').drop(1).map{|el|
+mut_infos = File.readlines('./source_data/SNV_infos.txt').drop(1).map{|el|
   data = el.chomp.split("\t")
   [data[0], [data[2], data[3], data[17]]] # mut_name, chr, pos, mut_type
 }.to_h

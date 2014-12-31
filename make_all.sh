@@ -1,13 +1,12 @@
-# TODO: rename SUBSTITUTIONS_13Apr2012_snz_promoter_markup2.txt to smth more plausible (SNV_infos.txt);
-# TODO: add download links (wget tasks)
+# TODO: add download links (wget tasks): SNV_infos_original.txt from paper; genome hg19; repeat masker track; ensembl gene markup; fantom peaks;
 # TODO: cleanup source_data folder; make folders for intermediates
-# TODO: change order of actions to perform random filter and regulatory&context filtering on SNV stage, not sites stage
+# TODO: change order of actions to perform random filter and regulatory&context filtering on SNV stage, not sites stage (?)
 
 # 15 sec
-ruby bin/preparations/markup_mutations_in_promoters.rb ./source_data/gene_tss.txt /home/ilya/iogen/cages/hg19/freeze1/hg19.cage_peak_tpm_ann.osc.txt  ./source_data/SUBSTITUTIONS_13Apr2012_snz.txt > ./source_data/SUBSTITUTIONS_13Apr2012_snz_promoter_markup3.txt
+ruby bin/preparations/markup_mutations_in_promoters.rb ./source_data/gene_tss.txt /home/ilya/iogen/cages/hg19/freeze1/hg19.cage_peak_tpm_ann.osc.txt  ./source_data/SNV_infos_original.txt > ./source_data/SNV_infos.txt
 
 # 1 min
-ruby bin/preparations/extract_snv_sequences.rb ./source_data/SUBSTITUTIONS_13Apr2012_snz_promoter_markup3.txt /home/ilya/iogen/genome/hg19/ --flank-length 25 > ./source_data/SNV_sequences.txt
+ruby bin/preparations/extract_snv_sequences.rb ./source_data/SNV_infos.txt /home/ilya/iogen/genome/hg19/ --flank-length 25 > ./source_data/SNV_sequences.txt
 
 
 # 5 min
