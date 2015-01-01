@@ -13,7 +13,7 @@ end.parse!(ARGV)
 
 motifs = ARGV
 
-mutations = File.readlines('source_data/MutatedGenes.csv').map do |line|
+mutations = File.readlines('./source_data/MutatedGenes.csv').map do |line|
   line.chomp.split("\t")
 end
 

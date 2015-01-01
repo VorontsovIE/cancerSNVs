@@ -6,7 +6,7 @@ require 'support'
 require 'histogram'
 
 motif = ARGV[0]
-mutated_site_infos_filename = ARGV[1] # 'source_data/sites_cancer.txt'
+mutated_site_infos_filename = ARGV[1] # './source_data/sites_cancer.txt'
 
 raise "Specify motif name and file with mutation infos "  unless motif && mutated_site_infos_filename
 # motifs = ['AP2A_f2', 'ESR1_do', 'NFKB1_f1']

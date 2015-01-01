@@ -14,7 +14,7 @@ regulatory_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name
   intronic_mutation?(mut_type) || promoter_mutation?(mut_type)
 }
 
-MutatatedSiteInfo.each_site('./source_data/sites_cancer_any.txt').each do |info|
+MutatatedSiteInfo.each_site('./results/intermediate/site_subsets/sites_cancer_any.txt').each do |info|
   next  unless info.pvalue_1 < 0.0005
   next  unless regulatory_mutation_names.include?(info.normalized_snp_name)
 

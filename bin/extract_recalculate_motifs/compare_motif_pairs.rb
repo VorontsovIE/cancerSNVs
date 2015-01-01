@@ -1,6 +1,6 @@
-motifs = File.readlines('source_data/motif_names.txt').map(&:chomp)
-dir_1 = 'results/motif_sites/pcm'
-dir_2 = 'results/motif_sites_fitted/pcm'
+motifs = File.readlines('./source_data/motif_names.txt').map(&:chomp)
+dir_1 = './results/motif_sites/pcm'
+dir_2 = './results/motif_sites_fitted/pcm'
 
 motifs.each do |motif|
   mot_1 = File.join(dir_1, motif + '.pcm')
