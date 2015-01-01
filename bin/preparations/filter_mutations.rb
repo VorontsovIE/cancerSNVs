@@ -12,8 +12,8 @@ requested_mutation_contexts = nil
 show_possible_mutation_types_and_exit = false
 OptionParser.new do |opts|
   opts.banner = "Usage:\n" +
-                "   #{opts.program_name} <site fold-changes file> [options]\n" + 
-                "   <site fold-changes> | #{opts.program_name} [options]"
+                "   #{opts.program_name} <SNV infos> <SNV sequences> <site fold-changes file> [options]\n" +
+                "   <site fold-changes> | #{opts.program_name} <SNV infos> <SNV sequences> [options]"
 
   opts.separator 'Options:'
   opts.on('--mutation-types POSS_TYPES', "Specify possible mutation types", "(e.g. `Intronic,Promoter`)") {|value|
@@ -40,13 +40,13 @@ end
 
 requested_mutation_types = requested_mutation_types.map(&:downcase)
 
-mutations_markup_filename = './source_data/SNV_infos.txt'
+mutations_markup_filename = ARGV[0] # './source_data/SNV_infos.txt'
+snp_sequences_filename = ARGV[1] # './results/intermediate/SNV_sequences.txt'
+
 if show_possible_mutation_types_and_exit
   puts possible_mutation_types(mutations_markup_filename)
   exit
 end
-
-snp_sequences_filename = './source_data/SNV_sequences.txt'
 
 matching_type_mut_names = matching_type_mutation_names(mutations_markup_filename, requested_mutation_types)
 matching_context_mut_names = matching_context_mutation_names(snp_sequences_filename, requested_mutation_contexts)
@@ -57,9 +57,8 @@ output_filtered = ->(mutated_site_info) do
   puts mutated_site_info.line
 end
 
-site_fold_changes_filename = ARGV[0] # 'source_data/sites_cancer.txt'
-
-if site_fold_changes_filename
+if $stdin.tty?
+  site_fold_changes_filename = ARGV[2] # './source_data/sites_cancer.txt'
   MutatatedSiteInfo.each_site(site_fold_changes_filename, &output_filtered)
 else
   MutatatedSiteInfo.each_site_in_stream($stdin, &output_filtered)

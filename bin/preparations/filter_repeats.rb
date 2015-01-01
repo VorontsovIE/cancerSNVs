@@ -19,18 +19,13 @@ def read_repeats_by_chromosome(genome_repeat_masker_folder, ignore_repeat_types:
   result
 end
 
-snvs_filename = './source_data/SNV_infos.txt'
-genome_repeat_masker_folder = '/home/ilya/iogen/genome/hg19_repeatMasker'
-sites_filename = ARGV.first # 'source_data/sites_cancer.txt'
-raise 'Specify file with sites'  unless sites_filename
+sites_filename = ARGV[0] # './source_data/sites_cancer.txt'
+snvs_filename = ARGV[1] # './source_data/SNV_infos.txt'
+genome_repeat_masker_folder = ARGV[2] # '/home/ilya/iogen/genome/hg19_repeatMasker'
+raise 'Specify file with sites, SNV infos and folder with repeat masker infos'  unless sites_filename && snvs_filename && genome_repeat_masker_folder
 
-tm = Time.now
 snvs = BreastCancerSNV.each_substitution_in_file(snvs_filename).map{|snv| [snv.variant_id, snv] }.to_h
-$stderr.puts("SNV infos loaded in #{Time.now - tm} sec.")
-tm = Time.now
 repeats_by_chromosome = read_repeats_by_chromosome(genome_repeat_masker_folder, ignore_repeat_types: [:Simple_repeat, :Low_complexity])
-$stderr.puts("repeats loaded in #{Time.now - tm} sec.")
-
 
 MutatatedSiteInfo.each_site(sites_filename).with_index.reject{|site, index|
   $stderr.puts "#{index} sites processed"  if index % 100000 == 0

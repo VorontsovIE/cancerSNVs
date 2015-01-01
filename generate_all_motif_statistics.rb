@@ -5,7 +5,7 @@ pvalue = 0.0005
 fold_change_cutoff = 5
 
 OptionParser.new do |opts|
-  opts.banner = "Usage: #{opts.program_name} <file with sites> <output_prefix> [options]\n" +
+  opts.banner = "Usage: #{opts.program_name} <file with sites> <output_prefix> <motif names> [options]\n" +
                 "Generate motif statistics for all sites and for disrupted/emerged sites.\n" +
                 "`output_prefix` will be expanded into real filenames.\n" +
                 "`output_prefix` should look like ./results/motif_statistics/cpg/cancer.txt\n" +
@@ -20,8 +20,9 @@ OptionParser.new do |opts|
   }
 end.parse!(ARGV)
 
-sites_filename = ARGV[0] # source_data/sites_cancer_cpg.txt
-output_prefix = ARGV[1] # results/motif_statistics/cpg/cancer.txt
+sites_filename = ARGV[0] # ./results/intermediate/site_subsets/cancer_cpg.txt
+output_prefix = ARGV[1] # ./results/motif_statistics/cpg/cancer.txt
+motifs_filename = ARGV[2] # './source_data/motif_names.txt'
 
 raise 'Specify sites file and prefix of output files (see --help)'  unless sites_filename && output_prefix
 
@@ -31,7 +32,7 @@ FileUtils.mkdir_p(output_dir)
 extname = File.extname(output_prefix)
 filename_prefix = File.basename(output_prefix, extname)
 
-script_run = "ruby calculate_motif_statistics.rb #{sites_filename}"
+script_run = "ruby calculate_motif_statistics.rb #{sites_filename} #{motifs_filename}"
 
 system("#{script_run} > " + File.join(output_dir, "#{filename_prefix}_all#{extname}"))
 system("#{script_run} --site-before #{pvalue} > " + File.join(output_dir, "#{filename_prefix}_sites_before#{extname}"))

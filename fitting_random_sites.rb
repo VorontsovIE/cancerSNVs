@@ -16,16 +16,14 @@ OptionParser.new do |opts|
   }
 end.parse!(ARGV)
 
-motif_names = File.readlines('source_data/motif_names.txt').map(&:strip)
-
-mutated_site_infos_cancer_filename = ARGV[0] # 'source_data/sites_cancer_cpg.txt'
-mutated_site_infos_random_filename = ARGV[1] # 'source_data/sites_random_cpg.txt'
+mutated_site_infos_cancer_filename = ARGV[0] # './results/intermediate/site_subsets/cancer_cpg.txt'
+mutated_site_infos_random_filename = ARGV[1] # './results/intermediate/site_subsets/random_cpg.txt'
 
 raise 'Specify cancer and random site files'  unless mutated_site_infos_cancer_filename && mutated_site_infos_random_filename
 
-histograms_for_motifs = motif_names.map{|motif|
-  [motif, Histogram.new(1e-7, 1, 1.0){|pvalue| - Math.log2(pvalue)}]
-}.to_h
+histograms_for_motifs = Hash.new{|hsh, motif_name|
+  hsh[motif_name] = Histogram.new(1e-7, 1, 1.0){|pvalue| - Math.log2(pvalue)}
+}
 
 MutatatedSiteInfo.each_site(mutated_site_infos_cancer_filename).each do |site|
   histograms_for_motifs[site.motif_name].add_element(site.pvalue_1)
@@ -37,7 +35,7 @@ fitters_for_motifs = histograms_for_motifs.map{|motif, histogram|
   [motif, HistogramFitting.new(goal_histogram)]
 }.to_h
 
-fitters = MotifHistogramFitter.new(fitters_for_motifs)
+fitters = MotifHistogramFitter.new(fitters_for_motifs, raise_on_missing: false)
 
 $stderr.puts "Loaded #{fitters.goal_total} original sites"
 

@@ -20,12 +20,13 @@ def load_motif_infos(filename)
 end
 
 
-motif_names = File.readlines('source_data/motif_names.txt').map(&:strip)
-motif_collection_infos = load_motif_infos('source_data/hocomoco_genes_infos.csv')
-
-
 cancer_statistics_files_prefix = ARGV[0] # './results/motif_statistics/cpg/cancer.txt'
 random_statistics_files_prefix = ARGV[1] # './results/motif_statistics/cpg/random.txt'
+motif_names_filename = ARGV[2] # './source_data/motif_names.txt'
+hocomoco_motifs_filename = ARGV[3] # './source_data/hocomoco_genes_infos.csv'
+
+motif_names = File.readlines(motif_names_filename).map(&:strip)
+motif_collection_infos = load_motif_infos(hocomoco_motifs_filename)
 
 raise 'Specify filename-prefices for cancer and random'  unless cancer_statistics_files_prefix && random_statistics_files_prefix
 

@@ -18,7 +18,7 @@ OptionParser.new do |opts|
 end.parse!(ARGV)
 
 
-snvs_filename = ARGV[0]      # './source_data/SNV_sequences.txt'
+snvs_filename = ARGV[0]      # './results/intermediate/SNV_sequences.txt'
 suffix_from = ARGV[1].to_i  # 1
 suffix_to = ARGV[2].to_i    # 10
 

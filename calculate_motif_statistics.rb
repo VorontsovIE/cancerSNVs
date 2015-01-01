@@ -13,7 +13,7 @@ site_after_substitution = false # by default don't consider whether site is afte
 pvalue_after_cutoff = 0.0005
 
 OptionParser.new do |opts|
-  opts.banner = "Usage: #{opts.program_name} <sites infos> [options]\n" +
+  opts.banner = "Usage: #{opts.program_name} <sites infos> <motif names> [options]\n" +
                 "Calculate motif statistics for a list of site infos affected by SNVs.\n" +
                 "By default it considers all sites in a list."
 
@@ -42,7 +42,8 @@ OptionParser.new do |opts|
   }
 end.parse!(ARGV)
 
-mutated_site_infos_filename = ARGV[0] # source_data/sites_cancer_cpg.txt
+mutated_site_infos_filename = ARGV[0] # ./results/intermediate/site_subsets/sites_cancer_cpg.txt
+motifs_filename = ARGV[1] # './source_data/motif_names.txt'
 
 raise 'Specify input file with mutation infos'  unless mutated_site_infos_filename
 
@@ -75,7 +76,7 @@ mutated_sites = MutatatedSiteInfo.each_site(mutated_site_infos_filename)
                                 .select(&fold_change_checker)
                                 .map(&:motif_name)
 
-motif_names = File.readlines('source_data/motif_names.txt').map(&:strip)
+motif_names = File.readlines(motifs_filename).map(&:strip)
 
 number_of_motifs = count_each_element(mutated_sites)
 motif_names.each do |motif_name|

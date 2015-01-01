@@ -2,12 +2,17 @@ require_relative 'histogram_fitting'
 
 class MotifHistogramFitter
   # Constructor accepts a hash, where keys are motif names, values ar HistogramFitters
-  def initialize(fitters)
+  def initialize(fitters, raise_on_missing: true)
     @fitters = fitters
+    @raise_on_missing = raise_on_missing
   end
 
   def fit_element(motif_name, object, &block)
-    @fitters[motif_name].fit_element(object, &block)
+    if @fitters[motif_name]
+      @fitters[motif_name].fit_element(object, &block)
+    elsif @raise_on_missing # otherwise do nothing
+      raise 'An attept to fit an element(motif) which never was in original distribution'
+    end
   end
 
   def goal_total
