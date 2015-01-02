@@ -66,7 +66,6 @@ BreastCancerSNV = Struct.new( :variant_id,
   def mutation_types_string
     mut_types.map(&:to_s).map(&:capitalize).join(',')
   end
-  private :mutation_types_string
 
   def to_s
     [
