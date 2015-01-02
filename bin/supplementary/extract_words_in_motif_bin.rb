@@ -1,5 +1,4 @@
 $:.unshift File.absolute_path('../../lib', __dir__)
-require 'support'
 require 'optparse'
 require 'breast_cancer_snv'
 require 'site_info'
@@ -43,7 +42,7 @@ when :words
     data = sites.map do |site|
       snv = snvs[site.variant_id]
       seq = snv.load_site_sequence(genome_folder, site, flank_length)
-      site.orientation_1 == :direct ? seq : revcomp(seq)
+      site.orientation_1 == :direct ? seq : Sequence.revcomp(seq)
     end
   else
     data = sites.map(&:seq_1)

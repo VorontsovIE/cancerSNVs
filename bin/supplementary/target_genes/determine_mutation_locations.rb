@@ -1,10 +1,8 @@
 $:.unshift File.absolute_path('../../../lib', __dir__)
-$:.unshift '/home/ilya/iogen/projects/cage_analysis/lib/intervals/' # File.absolute_path('lib', __dir__)
+$:.unshift '/home/ilya/iogen/projects/cage_analysis/lib/intervals/'
 require 'genome_region'
 require 'mutation_context'
-require 'mutation_features'
 require 'import_information'
-require 'support'
 require 'breast_cancer_snv'
 
 snv_infos_filename = './source_data/SNV_infos.txt'

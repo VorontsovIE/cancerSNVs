@@ -1,6 +1,5 @@
 require 'set'
 require 'interval_notation'
-require_relative 'support'
 
 BreastCancerSNV = Struct.new( :variant_id,
                               :sample_id, :chr, :position, :genome_build,
@@ -117,11 +116,11 @@ BreastCancerSNV = Struct.new( :variant_id,
   end
 
   def five_prime_flanking_sequence_plus_strand
-    pyrimidine_strand? ? five_prime_flanking_sequence_in_pyrimidine_context : revcomp(three_prime_flanking_sequence_in_pyrimidine_context)
+    pyrimidine_strand? ? five_prime_flanking_sequence_in_pyrimidine_context : Sequence.revcomp(three_prime_flanking_sequence_in_pyrimidine_context)
   end
 
   def three_prime_flanking_sequence_plus_strand
-    pyrimidine_strand? ? three_prime_flanking_sequence_in_pyrimidine_context : revcomp(five_prime_flanking_sequence_in_pyrimidine_context)
+    pyrimidine_strand? ? three_prime_flanking_sequence_in_pyrimidine_context : Sequence.revcomp(five_prime_flanking_sequence_in_pyrimidine_context)
   end
 
 

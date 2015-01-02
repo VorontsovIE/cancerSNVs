@@ -1,8 +1,6 @@
 $:.unshift File.absolute_path('../../lib', __dir__)
 require 'set'
-# require 'mutation_features'
 require 'sequence_with_snp'
-require 'support'
 require 'optparse'
 require 'mutation_context'
 require 'import_information'

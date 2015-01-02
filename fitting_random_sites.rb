@@ -1,7 +1,6 @@
 # Sampling random sites to make distribution of random site pvalues to be the same as an actual pvalue distribution
 
 $:.unshift File.absolute_path('lib', __dir__)
-require 'support'
 require 'histogram'
 require 'motifwise_histogram_fitting'
 require 'optparse'

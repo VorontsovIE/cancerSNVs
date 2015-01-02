@@ -1,6 +1,4 @@
 $:.unshift File.absolute_path('../../lib', __dir__)
-require 'support'
-require 'mutation_features'
 require 'optparse'
 require 'fileutils'
 

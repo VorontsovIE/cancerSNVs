@@ -17,7 +17,7 @@ class MutationContext
   end
 
   def revcomp
-    MutationContext.new(complement(after), complement(center), complement(before))
+    MutationContext.new(Sequence.complement(after), Sequence.complement(center), Sequence.complement(before))
   end
 
   private def define_matcher!

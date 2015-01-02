@@ -1,7 +1,19 @@
 $:.unshift File.absolute_path('lib', __dir__)
 require 'site_info'
-require 'support'
 require 'optparse'
+require 'set'
+
+def count_each_element(values)
+  result = {}
+  values.each do |value|
+    if result.has_key?(value)
+        result[value] += 1
+    else
+        result[value] = 1
+    end
+  end
+  result
+end
 
 mode = :all # by default consider not only disrupted/created sites, but all sites
 fold_change_cutoff = 5

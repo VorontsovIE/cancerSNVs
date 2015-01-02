@@ -15,8 +15,9 @@ class Sequence
   end
 
   def self.complement(sequence)
-    sequence.tr('acgtACGT', 'tgcaTGCA')
+    sequence.tr('acgtnACGTN'.freeze, 'tgcanTGCAN'.freeze)
   end
+
   def self.revcomp(sequence)
     complement(sequence).reverse
   end

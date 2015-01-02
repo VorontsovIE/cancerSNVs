@@ -31,7 +31,7 @@ MutatatedSiteInfo = Struct.new( :line,
   end
 
   def seq_1_direct_strand
-    orientation_1 == :direct ? seq_1 : revcomp(seq_1)
+    orientation_1 == :direct ? seq_1 : Sequence.revcomp(seq_1)
   end
 
   def seq_1_five_flank_length
