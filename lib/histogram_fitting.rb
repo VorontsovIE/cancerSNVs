@@ -55,13 +55,6 @@ class HistogramFitting
     output_stream.puts
   end
 
-  def range_formatting(range, rate: 3)
-    from = range.begin.round(rate)
-    to = range.end.round(rate)
-    range.exclude_end? ? "[#{from}; #{to})" : "[#{from}; #{to}]"
-  end
-  private :range_formatting
-
   def percentage(count, total)
     100.0 * count / total
   end

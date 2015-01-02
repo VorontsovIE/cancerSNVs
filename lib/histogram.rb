@@ -37,6 +37,17 @@ class Histogram
     @elements_total_in_range = elements_total_in_range
   end
 
+  def bin_counts_info(ignore_flanks: true)
+    count_total = ignore_flanks ? elements_total_in_range : elements_total
+    result = ""
+    result << "Total: #{elements_total} in range (#{elements_total_in_range})\n"
+    each_bin(ignore_flanks: ignore_flanks) do |bin_range, bin_count|
+      percentage = (100 * bin_count.to_f / count_total).round(3)
+      result << "#{range_formatting(bin_range)}\t#{bin_count}\t#{percentage}%\n"
+    end
+    result
+  end
+
   def elements_total
     @less_than + @greater_than + @elements_total_in_range
   end
@@ -132,4 +143,10 @@ class Histogram
       1 # element added
     end
   end
+end
+
+def range_formatting(range, rate: 3)
+  from = range.begin.round(rate)
+  to = range.end.round(rate)
+  range.exclude_end? ? "[#{from}; #{to})" : "[#{from}; #{to}]"
 end

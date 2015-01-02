@@ -1,39 +1,25 @@
 $:.unshift File.absolute_path('../../lib', __dir__)
 require 'set'
-require 'statistical_significance'
-require 'mutation_features'
-require 'support'
 require 'histogram'
+require 'breast_cancer_snv'
+require 'site_info'
 
-motif = ARGV[0]
+motif = ARGV[0] # AHR_si
 mutated_site_infos_filename = ARGV[1] # './source_data/sites_cancer.txt'
+snv_infos_filename = ARGV[2] #'./source_data/SNV_infos.txt'
 
-raise "Specify motif name and file with mutation infos "  unless motif && mutated_site_infos_filename
-# motifs = ['AP2A_f2', 'ESR1_do', 'NFKB1_f1']
+raise "Specify motif name, file with sites infos and file with SNV infos"  unless motif && mutated_site_infos_filename && snv_infos_filename
 
-create_histogram = ->{ Histogram.new(1e-7, 0.0005, 1.0){|pvalue| - Math.log2(pvalue) } }
+regulatory_mutation_names = BreastCancerSNV.each_substitution_in_file(snv_infos_filename).select(&:regulatory?).map(&:variant_id).to_set
 
-motif_names = File.readlines('./source_data/motif_names.txt').map(&:strip)
+histogram = Histogram.new(1e-7, 0.0005, 1.0){|pvalue| - Math.log2(pvalue) }
 
-mut_types = File.readlines('./source_data/SNV_infos.txt').drop(1).map{|el| data = el.split("\t"); [data[0], data[17]] };
-intronic_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name, mut_type| intronic_mutation?(mut_type) }
-promoter_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name, mut_type| promoter_mutation?(mut_type) }
-regulatory_mutation_names = mutation_names_by_mutation_type(mut_types){|mut_name, mut_type| intronic_mutation?(mut_type) || promoter_mutation?(mut_type) }
+MutatatedSiteInfo.each_site(mutated_site_infos_filename).select{|site_info|
+  site_info.motif_name == motif &&
+  site_info.site_before_substitution?(pvalue_cutoff: 0.0005) &&
+  regulatory_mutation_names.include?(site_info.normalized_snp_name)
+}.each{|site_info|
+  histogram.add_element( site_info.pvalue_1 )
+}
 
-histogram = create_histogram.call
-
-total = 0
-MutatatedSiteInfo.each_site(mutated_site_infos_filename) do |mutated_site_info|
-  next  unless motif == mutated_site_info.motif_name
-  next  unless mutated_site_info.pvalue_1 <= 0.0005
-  next  unless regulatory_mutation_names.include?(mutated_site_info.normalized_snp_name)
-  histogram.add_element( mutated_site_info.pvalue_1 )
-end
-
-$stderr.puts "Loaded #{total}"
-
-# $stderr.puts "#{motif} -- #{random_histogram[motif].elements_total}; #{histogram[motif].elements_total}"
-histogram.each_bin do |bin_range, bin_count|
-  fraction = bin_count.to_f / histogram.elements_total_in_range
-  puts "#{bin_range.begin}\t#{bin_range.end}\t#{fraction}"
-end
+puts histogram.bin_counts_info(ignore_flanks: false)
