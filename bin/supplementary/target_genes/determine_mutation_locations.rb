@@ -1,9 +1,9 @@
+require 'interval_notation'
 $:.unshift File.absolute_path('../../../lib', __dir__)
-$:.unshift '/home/ilya/iogen/projects/cage_analysis/lib/intervals/'
-require 'genome_region'
 require 'mutation_context'
 require 'import_information'
 require 'breast_cancer_snv'
+require 'site_info'
 
 snv_infos_filename = './source_data/SNV_infos.txt'
 snv_sequences_filename = './results/intermediate/SNV_sequences.txt'
@@ -19,9 +19,9 @@ File.open(gene_tss_filename) do |f|
     gene_start = gene_start.to_i
     gene_end = gene_end.to_i
     if strand == '1'
-      interval = GenomeRegion.new(chr, :+, gene_start - 2000, [gene_end, gene_start + 500].max)
+      interval = IntervalNotation::Syntax::Long.closed_open(gene_start - 2000, [gene_end, gene_start + 500].max)
     elsif strand == '-1'
-      interval = GenomeRegion.new(chr, :-, [gene_start, gene_end - 500].min, gene_end + 2000)
+      interval = IntervalNotation::Syntax::Long.closed_open([gene_start, gene_end - 500].min, gene_end + 2000)
     end
     interval_object_pairs_by_chromosome_non_reduced[chr.to_s] << [interval, ensg]  if interval
   end
@@ -83,7 +83,7 @@ motif_for_analysis.each do |motif|
     context = snvs_by_context.select{|context_name, snv_names| snv_names.include?(mut_name) }.keys.join(',')
     pos = pos.to_i
     interval_object_pairs_by_chromosome[chr.to_s].select do |interval, ensg|
-      interval.chromosome.to_s == chr.to_s && interval.include_position?(pos)
+      interval.include_position?(pos)
     end.each do |interval, ensg|
       ensgs << ensg
       puts [motif, mut_name, chr, pos, mut_type, context, ensg, ensg_to_hgnc[ensg],
