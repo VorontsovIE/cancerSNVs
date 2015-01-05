@@ -84,7 +84,8 @@ BreastCancerSNV = Struct.new( :variant_id,
   def promoter?; mut_types.include?(:promoter); end
   def intronic?; mut_types.include?(:intronic); end
   def cage_peak?; mut_types.include?(:cage_peak); end
-
+  def in_repeat?; mut_types.include?(:repeat); end # checks whether an SNV vicinity lies on repeats
+  def exon_coding?; mut_types.include?(:exon_coding); end
   def regulatory?
     intronic? || cage_peak? # promoter? || intronic? ## promoter is treated less precise than cage peak
   end
@@ -156,6 +157,11 @@ BreastCancerSNV = Struct.new( :variant_id,
     else
       raise "Error! Sequence in genome doesn't match sequence SNV flanks"
     end
+  end
+
+  # 1-bp context on plus strand
+  def context_before_snv_plus_strand
+    @context_before_snv_plus_strand ||= "#{five_prime_flanking_sequence_plus_strand[-1]}#{ref_base_plus_strand}#{three_prime_flanking_sequence_plus_strand[0]}"
   end
 end
 

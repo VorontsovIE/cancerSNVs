@@ -3,6 +3,8 @@ require 'set'
 require 'sequence_with_snp'
 require 'optparse'
 require 'mutation_context'
+require 'site_info'
+require 'breast_cancer_snv'
 require 'import_information'
 
 requested_mutation_types = nil
@@ -10,12 +12,12 @@ requested_mutation_contexts = nil
 show_possible_mutation_types_and_exit = false
 OptionParser.new do |opts|
   opts.banner = "Usage:\n" +
-                "   #{opts.program_name} <SNV infos> <SNV sequences> <site fold-changes file> [options]\n" +
-                "   <site fold-changes> | #{opts.program_name} <SNV infos> <SNV sequences> [options]"
+                "   #{opts.program_name} <SNV infos> <site fold-changes file> [options]\n" +
+                "   <site fold-changes> | #{opts.program_name} <SNV infos> [options]"
 
   opts.separator 'Options:'
   opts.on('--mutation-types POSS_TYPES', "Specify possible mutation types", "(e.g. `Intronic,Promoter`)") {|value|
-    requested_mutation_types = value.split(',')
+    requested_mutation_types = value.split(',').map(&:downcase).map(&:to_sym).to_set
   }
 
   opts.on('--contexts POSS_CONTEXTS',  "Specify possible mutation contexts (e.g. `TCN,NCG`)",
@@ -36,28 +38,30 @@ else
   requested_mutation_contexts = [MutationContext.new('N','N','N')]
 end
 
-requested_mutation_types = requested_mutation_types.map(&:downcase)
-
-mutations_markup_filename = ARGV[0] # './source_data/SNV_infos.txt'
-snp_sequences_filename = ARGV[1] # './results/intermediate/SNV_sequences.txt'
+raise 'Specify SNV infos file'  unless mutations_markup_filename = ARGV[0] # './source_data/SNV_infos.txt'
 
 if show_possible_mutation_types_and_exit
-  puts possible_mutation_types(mutations_markup_filename)
+  puts BreastCancerSNV.each_substitution_in_file(mutations_markup_filename).flat_map(&:mut_types).inject(Set.new, &:merge).to_a
   exit
 end
 
-matching_type_mut_names = matching_type_mutation_names(mutations_markup_filename, requested_mutation_types)
-matching_context_mut_names = matching_context_mutation_names(snp_sequences_filename, requested_mutation_contexts)
-requested_mutation_names = matching_type_mut_names & matching_context_mut_names
-
-output_filtered = ->(mutated_site_info) do
-  next  unless requested_mutation_names.include?(mutated_site_info.normalized_snp_name)
-  puts mutated_site_info.line
-end
+snvs = BreastCancerSNV.each_substitution_in_file(mutations_markup_filename).map{|snv| [snv.variant_id, snv] }.to_h
 
 if $stdin.tty?
   site_fold_changes_filename = ARGV[2] # './source_data/sites_cancer.txt'
-  MutatatedSiteInfo.each_site(site_fold_changes_filename, &output_filtered)
+  site_iterator = MutatatedSiteInfo.each_site(site_fold_changes_filename)
 else
-  MutatatedSiteInfo.each_site_in_stream($stdin, &output_filtered)
+  site_iterator = MutatatedSiteInfo.each_site_in_stream($stdin)
 end
+
+site_iterator.map{|site, snv|
+  [site, snvs[site.normalized_snp_name]]
+}.select{|site, snv|
+  (snv.cage_peak? && !snv.exon_coding?) || (snv.intronic? && !snv.in_repeat?)
+}.select{|site, snv|
+  requested_mutation_contexts.any?{|requested_context| requested_context.match?(snv.context_before_snv_plus_strand) }
+}.select{|site, snv|
+  !requested_mutation_types || requested_mutation_types.intersect?(snv.mut_types)
+}.each{|site, snv|
+  puts site.line
+}
