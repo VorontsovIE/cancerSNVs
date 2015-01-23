@@ -2,6 +2,7 @@
 
 $:.unshift File.absolute_path('lib', __dir__)
 require 'histogram'
+require 'site_info'
 require 'motifwise_histogram_fitting'
 require 'optparse'
 
