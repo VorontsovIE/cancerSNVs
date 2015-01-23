@@ -1,5 +1,7 @@
 require 'set'
 require 'interval_notation'
+require_relative 'sequence'
+require_relative 'sequence_with_snp'
 
 BreastCancerSNV = Struct.new( :variant_id,
                               :sample_id, :chr, :position, :genome_build,
@@ -30,7 +32,7 @@ BreastCancerSNV = Struct.new( :variant_id,
     gene, gene_id, ccds_id, transcript_id,
     gene_type, mut_types,
     mRNA_mut_syntax, cds_mut_syntax, aa_mut_syntax,
-    current_conf_status, validation_platform = str.chomp.split("\t")
+    current_conf_status, validation_platform = str.chomp.split("\t", 23)
 
     BreastCancerSNV.new(variant_id,
                         sample_id.to_sym, chr.to_sym, position.to_i, genome_build.to_sym,
@@ -45,7 +47,7 @@ BreastCancerSNV = Struct.new( :variant_id,
                         gene, gene_id, ccds_id, transcript_id,
                         gene_type.to_sym, mut_types.split(',').map(&:downcase).map(&:to_sym).to_set,
                         mRNA_mut_syntax, cds_mut_syntax, aa_mut_syntax,
-                        current_conf_status.to_sym, (validation_platform || :'').to_sym )
+                        current_conf_status.to_sym, validation_platform.to_sym )
   end
 
 
@@ -149,14 +151,19 @@ BreastCancerSNV = Struct.new( :variant_id,
     "#{five_prime_flanking_sequence_plus_strand}[#{ref_base_plus_strand}/#{mutant_base_plus_strand}]#{three_prime_flanking_sequence_plus_strand}"
   end
 
-  def snp_sequence_from_genome(genome_folder, five_prime_flank_length, three_prime_flank_length)
+  def snp_sequence_from_genome(genome_folder, five_prime_flank_length, three_prime_flank_length, name: variant_id)
     seq = load_sequence(genome_folder, five_prime_flank_length, three_prime_flank_length)
 
-    if seq[five_prime_flank_length - five_prime_flanking_sequence_plus_strand.length, ref_sequence_plus_strand.length] == ref_sequence_plus_strand
-      "#{seq[0,five_prime_flank_length]}[#{ref_base_plus_strand}/#{mutant_base_plus_strand}]#{seq[(five_prime_flank_length + 1),three_prime_flank_length]}"
-    else
-      raise "Error! Sequence in genome doesn't match sequence SNV flanks"
-    end
+    seq_5 = seq[0, five_prime_flank_length]
+    seq_3 = seq[(five_prime_flank_length + 1), three_prime_flank_length]
+    allele_variants = [ref_base_plus_strand, mutant_base_plus_strand]
+    seq_w_snv = SequenceWithSNP.new(seq_5, allele_variants, seq_3, name: name)
+
+    # check SNV consistency to genome sequence
+    subsequence = seq_w_snv.subsequence(before: five_prime_flanking_sequence_plus_strand.length, after: three_prime_flanking_sequence_plus_strand.length)
+    raise "Error! Sequence in genome doesn't match sequence SNV flanks"  unless subsequence.sequence_variant(0) == ref_sequence_plus_strand
+
+    seq_w_snv
   end
 
   # 1-bp context on plus strand
