@@ -14,6 +14,18 @@ class Sequence
     Sequence.new(Sequence.revcomp(sequence), name: name)
   end
 
+  def ==(other)
+    other.is_a?(Sequence) && @sequence == other.sequence
+  end
+
+  def eql?(other)
+    other.class.equal?(Sequence) && @sequence.eql?(other.sequence)
+  end
+
+  def hash
+    @sequence.hash
+  end
+
   def self.complement(sequence)
     sequence.tr('acgtnACGTN'.freeze, 'tgcanTGCAN'.freeze)
   end
