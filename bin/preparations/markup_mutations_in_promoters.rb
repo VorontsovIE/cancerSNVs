@@ -32,7 +32,7 @@ def load_cage_peaks_by_chromosome(filename, length_5_prime: 2000, length_3_prime
   CagePeak.each_in_file(filename)
           .group_by(&:chromosome)
           .map{|chromosome, peaks|
-            expanded_peak_regions = peaks.map{|peak| peak.region_expanded(length_5_prime: 2000, length_3_prime: 500) }
+            expanded_peak_regions = peaks.map{|peak| peak.region_expanded(length_5_prime: length_5_prime, length_3_prime: length_3_prime) }
             [chromosome, IntervalNotation::Operations.union(expanded_peak_regions)]
           }.to_h
 end
@@ -62,6 +62,21 @@ def read_coding_exons_by_chromosome(filename)
             }.to_h
 end
 
+def read_introns_by_chromosome(filename)
+  EnsemblExon.each_in_file(filename)
+            .group_by(&:chromosome)
+            .map{|chromosome, exons|
+              transcript_introns = exons.group_by(&:ensembl_transcript_id).map{|ensembl_transcript_id, exons|
+                gene_exons = IntervalNotation::Operations.union(exons.map(&:exon_region))
+                gene_exons.covering_interval - gene_exons.complement # introns
+              }
+
+              # coding_regions = exons.map{|exon| exon.coding_part_region }.compact
+              chromosome_name = chromosome.to_s.start_with?('chr') ? chromosome : "chr#{chromosome}"
+              [chromosome_name.to_sym, IntervalNotation::Operations.union(transcript_introns)]
+            }.to_h
+end
+
 raise 'Specify gene TSS file' unless gene_tss_filename = ARGV[0] # './source_data/gene_tss.txt'
 raise 'Specify cage peaks' unless cage_peaks_filename = ARGV[1] # '/home/ilya/iogen/cages/hg19/freeze1/hg19.cage_peak_tpm_ann.osc.txt'
 raise 'Specify SNV infos' unless snvs_filename = ARGV[2] # './source_data/SNV_infos_original.txt'
@@ -71,6 +86,7 @@ raise 'Specify ensembl exons markup' unless exons_filename = ARGV[4] # '/home/il
 promoters_by_chromosome = load_promoters_by_chromosome(gene_tss_filename, length_5_prime: 2000, length_3_prime: 500)
 cage_peaks_by_chromosome = load_cage_peaks_by_chromosome(cage_peaks_filename, length_5_prime: 2000, length_3_prime: 500)
 coding_exons_by_chromosome = read_coding_exons_by_chromosome(exons_filename)
+introns_by_chromosome = read_introns_by_chromosome(exons_filename)
 repeats_by_chromosome = read_repeats_by_chromosome(genome_repeat_masker_folder, ignore_repeat_types: [:Simple_repeat, :Low_complexity], expand_length: 25)
 
 puts BreastCancerSNV::FILE_HEADER
@@ -78,6 +94,10 @@ BreastCancerSNV.each_substitution_in_file(snvs_filename).each do |snv|
   chromosome = "chr#{snv.chr}".to_sym
   if promoters_by_chromosome[chromosome].include_position?(snv.position)
     snv.mut_types << :promoter
+  end
+
+  if introns_by_chromosome[chromosome].include_position?(snv.position)
+    snv.mut_types << :intronic
   end
 
   if cage_peaks_by_chromosome[chromosome].include_position?(snv.position)
