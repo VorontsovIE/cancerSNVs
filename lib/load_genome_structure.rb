@@ -1,24 +1,25 @@
+require 'interval_notation'
+require_relative 'cage_peak'
+require_relative 'repeat_masker_info'
+require_relative 'ensembl_exon'
+
+# /home/ilya/iogen/genome/hg19_exons(ensembl,GRCh37.p13).txt
 def load_promoters_by_chromosome(filename, length_5_prime: 2000, length_3_prime: 500)
-  promoter_intervals_by_chromosome = Hash.new{|h,k| h[k] = [] }
+  EnsemblExon.each_in_file(filename)
+            .group_by(&:chromosome)
+            .map{|chromosome, exons|
+              promoter_regions = exons.select(&:transcript_start).map{|exon|
+                tss_pos = exon.transcript_start
+                if exon.strand == :+
+                  IntervalNotation::Syntax::Long.closed_closed(tss_pos - length_5_prime, tss_pos + length_3_prime)
+                else
+                  IntervalNotation::Syntax::Long.closed_closed(tss_pos - length_3_prime, tss_pos + length_5_prime)
+                end
+              }
 
-  File.open(filename) do |f|
-    f.each_line do |line|
-      chromosome, strand, tss = line.chomp.split("\t").last(3)
-
-      chromosome_name = chromosome.to_s.start_with?('CHR') ? chromosome : "chr#{chromosome}"
-
-      tss_pos = tss.to_i
-      if strand == '1'
-        promoter_intervals_by_chromosome[chromosome_name.to_sym] << IntervalNotation::Syntax::Long.closed_closed(tss_pos - length_5_prime, tss_pos + length_3_prime)
-      elsif strand == '-1'
-        promoter_intervals_by_chromosome[chromosome_name.to_sym] << IntervalNotation::Syntax::Long.closed_closed(tss_pos - length_3_prime, tss_pos + length_5_prime)
-      end
-    end
-  end
-
-  promoter_intervals_by_chromosome.map{|chromosome, intervals|
-    [chromosome, IntervalNotation::Operations.union(intervals)]
-  }.to_h
+              chromosome_name = chromosome.to_s.start_with?('chr') ? chromosome : "chr#{chromosome}"
+              [chromosome_name.to_sym, IntervalNotation::Operations.union(promoter_regions)]
+            }.to_h
 end
 
 def load_cage_peaks_by_chromosome(filename, length_5_prime: 2000, length_3_prime: 500)
@@ -45,6 +46,7 @@ def read_repeats_by_chromosome(genome_repeat_masker_folder, ignore_repeat_types:
   result
 end
 
+# /home/ilya/iogen/genome/hg19_exons(ensembl,GRCh37.p13).txt
 def read_coding_exons_by_chromosome(filename)
   EnsemblExon.each_in_file(filename)
             .group_by(&:chromosome)
@@ -55,6 +57,7 @@ def read_coding_exons_by_chromosome(filename)
             }.to_h
 end
 
+# /home/ilya/iogen/genome/hg19_exons(ensembl,GRCh37.p13).txt
 def read_introns_by_chromosome(filename)
   EnsemblExon.each_in_file(filename)
             .group_by(&:chromosome)
@@ -64,7 +67,6 @@ def read_introns_by_chromosome(filename)
                 gene_exons.covering_interval - gene_exons.complement # introns
               }
 
-              # coding_regions = exons.map{|exon| exon.coding_part_region }.compact
               chromosome_name = chromosome.to_s.start_with?('chr') ? chromosome : "chr#{chromosome}"
               [chromosome_name.to_sym, IntervalNotation::Operations.union(transcript_introns)]
             }.to_h
