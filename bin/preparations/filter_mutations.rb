@@ -48,7 +48,7 @@ end
 snvs = BreastCancerSNV.each_substitution_in_file(mutations_markup_filename).map{|snv| [snv.variant_id, snv] }.to_h
 
 if $stdin.tty?
-  site_fold_changes_filename = ARGV[2] # './source_data/sites_cancer.txt'
+  raise 'Specify site infos'  unless site_fold_changes_filename = ARGV[1] # './source_data/sites_cancer.txt'
   site_iterator = MutatatedSiteInfo.each_site(site_fold_changes_filename)
 else
   site_iterator = MutatatedSiteInfo.each_site_in_stream($stdin)
@@ -57,7 +57,7 @@ end
 site_iterator.map{|site, snv|
   [site, snvs[site.normalized_snp_name]]
 }.select{|site, snv|
-  (snv.cage_peak? && !snv.exon_coding?) || (snv.intronic? && !snv.in_repeat?)
+  snv.intronic? || snv.promoter?
 }.select{|site, snv|
   requested_mutation_contexts.any?{|requested_context| requested_context.match?(snv.context_before_snv_plus_strand) }
 }.select{|site, snv|
