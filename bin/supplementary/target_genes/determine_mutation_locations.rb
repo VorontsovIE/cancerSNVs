@@ -10,7 +10,7 @@ snv_sequences_filename = './results/intermediate/SNV_sequences.txt'
 sites_filename = './source_data/sites_cancer.txt'
 motif_names_filename = './source_data/motif_names.txt'
 ensg_hgnc_conversion_filename = './source_data/mart_export_ensg_hgnc.txt'
-gene_tss_filename = './source_data/gene_tss.txt'
+gene_tss_filename = './source_data/deprecated/gene_tss_hg19.txt'
 
 interval_object_pairs_by_chromosome_non_reduced = Hash.new { |hash, key| hash[key] = [] }
 File.open(gene_tss_filename) do |f|
