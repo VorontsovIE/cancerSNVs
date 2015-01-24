@@ -64,7 +64,7 @@ def read_introns_by_chromosome(filename)
             .map{|chromosome, exons|
               transcript_introns = exons.group_by(&:ensembl_transcript_id).map{|ensembl_transcript_id, exons|
                 gene_exons = IntervalNotation::Operations.union(exons.map(&:exon_region))
-                gene_exons.covering_interval - gene_exons.complement # introns
+                gene_exons.covering_interval - gene_exons
               }
 
               chromosome_name = chromosome.to_s.start_with?('chr') ? chromosome : "chr#{chromosome}"
