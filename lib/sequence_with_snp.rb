@@ -65,7 +65,9 @@ class SequenceWithSNP
   private :shuffle_string
 
   def shuffle_flanks(name: nil)
-    SequenceWithSNP.new(shuffle_string(left), allele_variants, shuffle_string(right), name: name)
+    shuffled_left = shuffle_string(left[0..-2]) + left[-1] # preserve 1-bp context
+    shuffled_right = right[0] + shuffle_string(right[1..-1])
+    SequenceWithSNP.new(shuffled_left, allele_variants, shuffled_right, name: name)
   end
 
   def to_s
