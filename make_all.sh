@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # # TODO: add download links (wget tasks): SNV_infos_original.txt from paper; genome hg19; repeat masker track; ensembl gene markup; fantom peaks;
 # # TODO: cleanup source_data folder; make folders for intermediates
 # # TODO: change order of actions to perform random filter and regulatory&context filtering on SNV stage, not sites stage (?)
@@ -60,52 +62,25 @@
 
 
 rm -r results/intermediate/site_subsets
+
 mkdir -p results/intermediate/site_subsets
-mkdir -p results/intermediate/site_subsets/fitted
-mkdir -p results/intermediate/site_subsets/fitted/log
-
-# 1 min
 
 
-### 40 sec
-ruby bin/preparations/filter_mutations.rb ./source_data/SNV_infos_regulatory.txt ./source_data/sites_cancer.txt > ./results/intermediate/site_subsets/cancer_any.txt
-### 20 min
-# ruby bin/preparations/filter_mutations.rb ./source_data/SNV_infos_regulatory.txt ./source_data/sites_random.txt > ./results/intermediate/site_subsets/random_any.txt
-ruby bin/preparations/filter_mutations.rb ./source_data/SNV_infos_genome.txt ./source_data/sites_background_genome.txt > ./results/intermediate/site_subsets/random_any.txt
+SNV_INFOS = ./source_data/SNV_infos_regulatory.txt
+SITES_CANCER = ./results/intermediate/site_subsets/cancer_any.txt
+SITES_RANDOM = ./results/intermediate/site_subsets/random_any.txt
 
-# 40 sec each
-ruby bin/preparations/filter_mutations.rb ./source_data/SNV_infos_regulatory.txt ./results/intermediate/site_subsets/cancer_any.txt --contexts TCN --mutation-types promoter,intronic > ./results/intermediate/site_subsets/cancer_tpc.txt
-ruby bin/preparations/filter_mutations.rb ./source_data/SNV_infos_regulatory.txt ./results/intermediate/site_subsets/cancer_any.txt --contexts NCG --mutation-types promoter,intronic > ./results/intermediate/site_subsets/cancer_cpg.txt
+# ##  Filtering was already done at SNV-infos stage
+# ruby bin/preparations/filter_mutations.rb $SNV_INFOS ./source_data/sites_cancer.txt > $SITES_CANCER
+# ruby bin/preparations/filter_mutations.rb $SNV_INFOS ./source_data/sites_random.txt > $SITES_RANDOM
 
-# 15 min each
-# ruby bin/preparations/filter_mutations.rb ./source_data/SNV_infos_regulatory.txt ./results/intermediate/site_subsets/random_any.txt --contexts TCN --mutation-types promoter,intronic > ./results/intermediate/site_subsets/random_tpc.txt
-# ruby bin/preparations/filter_mutations.rb ./source_data/SNV_infos_regulatory.txt ./results/intermediate/site_subsets/random_any.txt --contexts NCG --mutation-types promoter,intronic > ./results/intermediate/site_subsets/random_cpg.txt
-ruby bin/preparations/filter_mutations.rb ./source_data/SNV_infos_genome.txt ./results/intermediate/site_subsets/random_any.txt --contexts TCN --mutation-types promoter,intronic > ./results/intermediate/site_subsets/random_tpc.txt
-ruby bin/preparations/filter_mutations.rb ./source_data/SNV_infos_genome.txt ./results/intermediate/site_subsets/random_any.txt --contexts NCG --mutation-types promoter,intronic > ./results/intermediate/site_subsets/random_cpg.txt
 
-# 10 min
-ruby fitting_random_sites.rb ./results/intermediate/site_subsets/cancer_cpg.txt ./results/intermediate/site_subsets/random_cpg.txt --fold 1 > ./results/intermediate/site_subsets/fitted/random_cpg.txt 2> ./results/intermediate/site_subsets/fitted/log/random_cpg.log
-ruby fitting_random_sites.rb ./results/intermediate/site_subsets/cancer_tpc.txt ./results/intermediate/site_subsets/random_tpc.txt --fold 1 > ./results/intermediate/site_subsets/fitted/random_tpc.txt 2> ./results/intermediate/site_subsets/fitted/log/random_tpc.log
-ruby fitting_random_sites.rb ./results/intermediate/site_subsets/cancer_any.txt ./results/intermediate/site_subsets/random_any.txt --fold 1 > ./results/intermediate/site_subsets/fitted/random_any.txt 2> ./results/intermediate/site_subsets/fitted/log/random_any.log
+ruby bin/preparations/filter_mutations.rb $SNV_INFOS  $SITES_CANCER  --contexts TCN  --mutation-types promoter,intronic  >  ./results/intermediate/site_subsets/cancer_tpc.txt
+ruby bin/preparations/filter_mutations.rb $SNV_INFOS  $SITES_CANCER  --contexts NCG  --mutation-types promoter,intronic  >  ./results/intermediate/site_subsets/cancer_cpg.txt
 
-# ~1 minute
-mkdir -p ./results/motif_statistics
+ruby bin/preparations/filter_mutations.rb $SNV_INFOS  $SITES_RANDOM  --contexts TCN  --mutation-types promoter,intronic  >  ./results/intermediate/site_subsets/random_tpc.txt
+ruby bin/preparations/filter_mutations.rb $SNV_INFOS  $SITES_RANDOM  --contexts NCG  --mutation-types promoter,intronic  >  ./results/intermediate/site_subsets/random_cpg.txt
 
-ruby generate_all_motif_statistics.rb ./results/intermediate/site_subsets/cancer_cpg.txt ./results/motif_statistics/cpg/cancer.txt ./source_data/motif_names.txt --pvalue 0.0005 --fold-change 5
-ruby generate_all_motif_statistics.rb ./results/intermediate/site_subsets/fitted/random_cpg.txt ./results/motif_statistics/cpg/random.txt ./source_data/motif_names.txt --pvalue 0.0005 --fold-change 5
-
-ruby generate_all_motif_statistics.rb ./results/intermediate/site_subsets/cancer_tpc.txt ./results/motif_statistics/tpc/cancer.txt ./source_data/motif_names.txt --pvalue 0.0005 --fold-change 5
-ruby generate_all_motif_statistics.rb ./results/intermediate/site_subsets/fitted/random_tpc.txt ./results/motif_statistics/tpc/random.txt ./source_data/motif_names.txt --pvalue 0.0005 --fold-change 5
-
-ruby generate_all_motif_statistics.rb ./results/intermediate/site_subsets/cancer_any.txt ./results/motif_statistics/any/cancer.txt ./source_data/motif_names.txt --pvalue 0.0005 --fold-change 5
-ruby generate_all_motif_statistics.rb ./results/intermediate/site_subsets/fitted/random_any.txt ./results/motif_statistics/any/random.txt ./source_data/motif_names.txt --pvalue 0.0005 --fold-change 5
-
-ruby summary.rb ./results/motif_statistics/cpg/cancer.txt ./results/motif_statistics/cpg/random.txt ./source_data/motif_names.txt ./source_data/hocomoco_genes_infos.csv > ./results/motif_statistics/cpg.csv
-ruby summary.rb ./results/motif_statistics/tpc/cancer.txt ./results/motif_statistics/tpc/random.txt ./source_data/motif_names.txt ./source_data/hocomoco_genes_infos.csv > ./results/motif_statistics/tpc.csv
-ruby summary.rb ./results/motif_statistics/any/cancer.txt ./results/motif_statistics/any/random.txt ./source_data/motif_names.txt ./source_data/hocomoco_genes_infos.csv > ./results/motif_statistics/any.csv
-
-ruby filter_summary.rb ./results/motif_statistics/cpg.csv > ./results/motif_statistics/cpg_filtered.csv
-ruby filter_summary.rb ./results/motif_statistics/tpc.csv > ./results/motif_statistics/tpc_filtered.csv
-ruby filter_summary.rb ./results/motif_statistics/any.csv > ./results/motif_statistics/any_filtered.csv
-
- cp -r results/intermediate/site_subsets/fitted/log results/motif_statistics/
+./make_all_for_context.sh  any  ./results/intermediate/site_subsets/cancer_any.txt  ./results/intermediate/site_subsets/random_any.txt
+./make_all_for_context.sh  cpg  ./results/intermediate/site_subsets/cancer_cpg.txt  ./results/intermediate/site_subsets/random_cpg.txt
+./make_all_for_context.sh  tpc  ./results/intermediate/site_subsets/cancer_tpc.txt  ./results/intermediate/site_subsets/random_tpc.txt
