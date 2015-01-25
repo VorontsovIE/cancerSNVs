@@ -2,8 +2,8 @@ $:.unshift File.absolute_path('../../lib', __dir__)
 require 'breast_cancer_snv'
 require 'load_genome_structure'
 
-raise 'Specify cage peaks' unless cage_peaks_filename = ARGV[0] # '/home/ilya/iogen/cages/hg19/freeze1/hg19.cage_peak_tpm_ann.osc.txt'
-raise 'Specify SNV infos' unless snvs_filename = ARGV[1] # './source_data/SNV_infos_original.txt'
+raise 'Specify SNV infos' unless snvs_filename = ARGV[0] # './source_data/SNV_infos_original.txt'
+raise 'Specify cage peaks' unless cage_peaks_filename = ARGV[1] # '/home/ilya/iogen/cages/hg19/freeze1/hg19.cage_peak_tpm_ann.osc.txt'
 raise 'Specify repeat masker folder' unless genome_repeat_masker_folder = ARGV[2] # '/home/ilya/iogen/genome/hg19_repeatMasker'
 raise 'Specify ensembl exons markup' unless exons_filename = ARGV[3] # '/home/ilya/iogen/genome/hg19_exons(ensembl,GRCh37.p13).txt'
 

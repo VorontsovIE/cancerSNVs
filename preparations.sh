@@ -11,56 +11,44 @@ CAGE_PEAKS = /home/ilya/iogen/cages/hg19/freeze1/hg19.cage_peak_tpm_ann.osc.txt
 REPEAT_MASKER_FOLDER = /home/ilya/iogen/genome/hg19_repeatMasker
 ENSEMBL_EXONS = /home/ilya/iogen/genome/hg19_exons\(ensembl\,GRCh37.p13\).txt
 
+SNV_INFOS = ./source_data/SNV_infos_regulatory.txt
+SNV_SEQUENCES = ./results/intermediate/SNV_sequences.txt
+
+mkdir -p results/intermediate
+
 # Markup SNVs, filter regulatory only and extract sequences
-# mkdir -p results/intermediate
-# ruby bin/preparations/snv_markup.rb $CAGE_PEAKS ./source_data/SNV_infos_original.txt $REPEAT_MASKER_FOLDER $ENSEMBL_EXONS > ./source_data/SNV_infos_full.txt
-# ruby bin/preparations/filter_snv_infos.rb source_data/SNV_infos_full.txt  $GENOME_FOLDER  >  source_data/SNV_infos_regulatory.txt
-# ruby bin/preparations/extract_snv_sequences.rb ./source_data/SNV_infos_regulatory.txt  $GENOME_FOLDER --flank-length 25 > ./results/intermediate/SNV_sequences.txt
+ruby bin/preparations/snv_markup.rb  ./source_data/SNV_infos_original.txt  $CAGE_PEAKS  $REPEAT_MASKER_FOLDER  $ENSEMBL_EXONS  >  ./source_data/SNV_infos_marked_up.txt
+ruby bin/preparations/filter_snv_infos.rb  ./source_data/SNV_infos_marked_up.txt  $GENOME_FOLDER  >  $SNV_INFOS
+ruby bin/preparations/extract_snv_sequences.rb  $SNV_INFOS  $GENOME_FOLDER --flank-length 25  >  $SNV_SEQUENCES
 
 
-# # Generate random sequences from genome
-# ruby bin/preparations/generate_random_genome_sequences.rb source_data/SNV_infos_regulatory.txt  $ENSEMBL_EXONS  --fold 10  --random-seed 13  >  ./results/intermediate/genome_seqs_seed_13.txt
-# ruby bin/preparations/generate_random_genome_sequences.rb source_data/SNV_infos_regulatory.txt  $ENSEMBL_EXONS  --fold 10  --random-seed 15  >  ./results/intermediate/genome_seqs_seed_15.txt
-# ruby bin/preparations/generate_random_genome_sequences.rb source_data/SNV_infos_regulatory.txt  $ENSEMBL_EXONS  --fold 10  --random-seed 17  >  ./results/intermediate/genome_seqs_seed_17.txt
-#
-# ruby bin/preparations/create_snv_infos_by_genome_sequences.rb ./results/intermediate/genome_seqs_seed_13.txt > ./results/intermediate/SNV_infos_genome_seqs_seed_13_non_marked_up.txt
-# ruby bin/preparations/create_snv_infos_by_genome_sequences.rb ./results/intermediate/genome_seqs_seed_15.txt > ./results/intermediate/SNV_infos_genome_seqs_seed_15_non_marked_up.txt
-# ruby bin/preparations/create_snv_infos_by_genome_sequences.rb ./results/intermediate/genome_seqs_seed_17.txt > ./results/intermediate/SNV_infos_genome_seqs_seed_17_non_marked_up.txt
-#
-# ruby bin/preparations/snv_markup.rb /home/ilya/iogen/cages/hg19/freeze1/hg19.cage_peak_tpm_ann.osc.txt ./results/intermediate/SNV_infos_genome_seqs_seed_13_non_marked_up.txt $REPEAT_MASKER_FOLDER "/home/ilya/iogen/genome/hg19_exons(ensembl,GRCh37.p13).txt" > ./results/intermediate/SNV_infos_genome_seqs_seed_13.txt
-# ruby bin/preparations/snv_markup.rb /home/ilya/iogen/cages/hg19/freeze1/hg19.cage_peak_tpm_ann.osc.txt ./results/intermediate/SNV_infos_genome_seqs_seed_15_non_marked_up.txt $REPEAT_MASKER_FOLDER "/home/ilya/iogen/genome/hg19_exons(ensembl,GRCh37.p13).txt" > ./results/intermediate/SNV_infos_genome_seqs_seed_15.txt
-# ruby bin/preparations/snv_markup.rb /home/ilya/iogen/cages/hg19/freeze1/hg19.cage_peak_tpm_ann.osc.txt ./results/intermediate/SNV_infos_genome_seqs_seed_17_non_marked_up.txt $REPEAT_MASKER_FOLDER "/home/ilya/iogen/genome/hg19_exons(ensembl,GRCh37.p13).txt" > ./results/intermediate/SNV_infos_genome_seqs_seed_17.txt
+CHUNK_FOLDER = ./results/intermediate/chunks
+mkdir -p  $CHUNK_FOLDER
 
-# # Generate random sequences by shuffling contexts
-# ruby ./bin/preparations/shuffle_SNVs.rb ./results/intermediate/SNV_sequences.txt --random-seed 135 --fold 10 > ./results/intermediate/sequences_shuffled_seed_135.txt
-# ruby ./bin/preparations/shuffle_SNVs.rb ./results/intermediate/SNV_sequences.txt --random-seed 137 --fold 10 > ./results/intermediate/sequences_shuffled_seed_137.txt
-# ruby ./bin/preparations/shuffle_SNVs.rb ./results/intermediate/SNV_sequences.txt --random-seed 139 --fold 10 > ./results/intermediate/sequences_shuffled_seed_139.txt
+# java -cp ape.jar ru.autosome.perfectosape.SNPScan  ./hocomoco/  $CHUNK_FOLDER/SNV_sequences.txt  --fold-change-cutoff 1  --precalc ./thresholds/  >  $CHUNK_FOLDER/sites/SNV_sequences.txt
 
-# mkdir -p ./results/intermediate/chunks/
-# split --additional-suffix .txt --suffix-length 1 --number l/4  ./results/intermediate/sequences_shuffled_seed_135.txt ./results/intermediate/chunks/sequences_shuffled_seed_135_chunk_
-# split --additional-suffix .txt --suffix-length 1 --number l/4  ./results/intermediate/sequences_shuffled_seed_137.txt ./results/intermediate/chunks/sequences_shuffled_seed_137_chunk_
-# split --additional-suffix .txt --suffix-length 1 --number l/4  ./results/intermediate/sequences_shuffled_seed_139.txt ./results/intermediate/chunks/sequences_shuffled_seed_139_chunk_
-# split --additional-suffix .txt --suffix-length 1 --number l/4  ./results/intermediate/genome_seqs_seed_13.txt ./results/intermediate/chunks/genome_seqs_seed_13_chunk_
-# split --additional-suffix .txt --suffix-length 1 --number l/4  ./results/intermediate/genome_seqs_seed_15.txt ./results/intermediate/chunks/genome_seqs_seed_15_chunk_
-# split --additional-suffix .txt --suffix-length 1 --number l/4  ./results/intermediate/genome_seqs_seed_17.txt ./results/intermediate/chunks/genome_seqs_seed_17_chunk_
+# Generate random sequences from genome
+for SEED in 13 15 17
+do
+  ruby bin/preparations/generate_random_genome_sequences.rb  $SNV_INFOS  $ENSEMBL_EXONS  --fold 10  --random-seed $SEED  >  ./results/intermediate/genome_seqs_seed_${SEED}.txt
+  ruby bin/preparations/create_snv_infos_by_genome_sequences.rb ./results/intermediate/genome_seqs_seed_${SEED}.txt > ./results/intermediate/SNV_infos_genome_seqs_seed_${SEED}_non_marked_up.txt
+  ruby bin/preparations/snv_markup.rb ./results/intermediate/SNV_infos_genome_seqs_seed_${SEED}_non_marked_up.txt  $CAGE_PEAKS  $REPEAT_MASKER_FOLDER  $ENSEMBL_EXONS  >  ./results/intermediate/SNV_infos_genome_seqs_seed_${SEED}.txt
 
+  split  --additional-suffix .txt  --suffix-length 1  --number l/4  ./results/intermediate/genome_seqs_seed_#{SEED}.txt  $CHUNK_FOLDER/genome_seqs_seed_#{SEED}_chunk_
+  # for SUFFIX in a b c d
+  # do
+  #   java -cp ape.jar ru.autosome.perfectosape.SNPScan  ./hocomoco/  $CHUNK_FOLDER/genome_seqs_seed_#{SEED}_chunk_#{SUFFIX}.txt  --fold-change-cutoff 1  --precalc ./thresholds/  >  $CHUNK_FOLDER/sites/genome_seqs_seed_#{SEED}_chunk_#{SUFFIX}.txt
+  # done
+done
 
-# mkdir -p ./chunks/sites/
-# java -cp ape.jar ru.autosome.perfectosape.SNPScan ./hocomoco/ ./chunks/sequences_shuffled_seed_135_chunk_a.txt --fold-change-cutoff 1 --precalc ./thresholds/> ./chunks/sites/sequences_shuffled_seed_135_chunk_a.txt
-# java -cp ape.jar ru.autosome.perfectosape.SNPScan ./hocomoco/ ./chunks/sequences_shuffled_seed_137_chunk_a.txt --fold-change-cutoff 1 --precalc ./thresholds/> ./chunks/sites/sequences_shuffled_seed_137_chunk_a.txt
-# java -cp ape.jar ru.autosome.perfectosape.SNPScan ./hocomoco/ ./chunks/sequences_shuffled_seed_139_chunk_a.txt --fold-change-cutoff 1 --precalc ./thresholds/> ./chunks/sites/sequences_shuffled_seed_139_chunk_a.txt
+# Generate random sequences by shuffling contexts
+for SEED in 135 137 139
+do
+  ruby ./bin/preparations/shuffle_SNVs.rb  $SNV_SEQUENCES  --random-seed $SEED  --fold 10  >  ./results/intermediate/sequences_shuffled_seed_${SEED}.txt
 
-# java -cp ape.jar ru.autosome.perfectosape.SNPScan ./hocomoco/ ./chunks/sequences_shuffled_seed_135_chunk_b.txt --fold-change-cutoff 1 --precalc ./thresholds/> ./chunks/sites/sequences_shuffled_seed_135_chunk_b.txt
-# java -cp ape.jar ru.autosome.perfectosape.SNPScan ./hocomoco/ ./chunks/sequences_shuffled_seed_137_chunk_b.txt --fold-change-cutoff 1 --precalc ./thresholds/> ./chunks/sites/sequences_shuffled_seed_137_chunk_b.txt
-# java -cp ape.jar ru.autosome.perfectosape.SNPScan ./hocomoco/ ./chunks/sequences_shuffled_seed_139_chunk_b.txt --fold-change-cutoff 1 --precalc ./thresholds/> ./chunks/sites/sequences_shuffled_seed_139_chunk_b.txt
-
-# java -cp ape.jar ru.autosome.perfectosape.SNPScan ./hocomoco/ ./chunks/sequences_shuffled_seed_135_chunk_c.txt --fold-change-cutoff 1 --precalc ./thresholds/> ./chunks/sites/sequences_shuffled_seed_135_chunk_c.txt
-# java -cp ape.jar ru.autosome.perfectosape.SNPScan ./hocomoco/ ./chunks/sequences_shuffled_seed_137_chunk_c.txt --fold-change-cutoff 1 --precalc ./thresholds/> ./chunks/sites/sequences_shuffled_seed_137_chunk_c.txt
-# java -cp ape.jar ru.autosome.perfectosape.SNPScan ./hocomoco/ ./chunks/sequences_shuffled_seed_139_chunk_c.txt --fold-change-cutoff 1 --precalc ./thresholds/> ./chunks/sites/sequences_shuffled_seed_139_chunk_c.txt
-
-# java -cp ape.jar ru.autosome.perfectosape.SNPScan ./hocomoco/ ./chunks/sequences_shuffled_seed_135_chunk_d.txt --fold-change-cutoff 1 --precalc ./thresholds/> ./chunks/sites/sequences_shuffled_seed_135_chunk_d.txt
-# java -cp ape.jar ru.autosome.perfectosape.SNPScan ./hocomoco/ ./chunks/sequences_shuffled_seed_137_chunk_d.txt --fold-change-cutoff 1 --precalc ./thresholds/> ./chunks/sites/sequences_shuffled_seed_137_chunk_d.txt
-# java -cp ape.jar ru.autosome.perfectosape.SNPScan ./hocomoco/ ./chunks/sequences_shuffled_seed_139_chunk_d.txt --fold-change-cutoff 1 --precalc ./thresholds/> ./chunks/sites/sequences_shuffled_seed_139_chunk_d.txt
-
-# java -cp ape.jar ru.autosome.perfectosape.SNPScan ./hocomoco/ ./chunks/SNV_sequences.txt --fold-change-cutoff 1 --precalc ./thresholds/> ./chunks/sites/SNV_sequences.txt
-
+  split  --additional-suffix .txt  --suffix-length 1  --number l/4  ./results/intermediate/sequences_shuffled_seed_#{SEED}.txt  $CHUNK_FOLDER/sequences_shuffled_seed_#{SEED}_chunk_
+  # for SUFFIX in a b c d
+  # do
+  #   java -cp ape.jar ru.autosome.perfectosape.SNPScan  ./hocomoco/  $CHUNK_FOLDER/sequences_shuffled_seed_#{SEED}_chunk_#{SUFFIX}.txt  --fold-change-cutoff 1  --precalc ./thresholds/  >  $CHUNK_FOLDER/sites/sequences_shuffled_seed_#{SEED}_chunk_#{SUFFIX}.txt
+  # done
+done
