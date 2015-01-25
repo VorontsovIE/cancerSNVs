@@ -71,8 +71,8 @@ SITES_CANCER = ./results/intermediate/site_subsets/cancer_any.txt
 SITES_RANDOM = ./results/intermediate/site_subsets/random_any.txt
 
 # ##  Filtering was already done at SNV-infos stage
-# ruby bin/preparations/filter_mutations.rb $SNV_INFOS ./source_data/sites_cancer.txt > $SITES_CANCER
-# ruby bin/preparations/filter_mutations.rb $SNV_INFOS ./source_data/sites_random.txt > $SITES_RANDOM
+# ruby bin/preparations/filter_mutations.rb $SNV_INFOS ./source_data/sites_cancer.txt  --mutation-types promoter,intronic  >  $SITES_CANCER
+# ruby bin/preparations/filter_mutations.rb $SNV_INFOS ./source_data/sites_random.txt  --mutation-types promoter,intronic  >  $SITES_RANDOM
 
 
 ruby bin/preparations/filter_mutations.rb $SNV_INFOS  $SITES_CANCER  --contexts TCN  --mutation-types promoter,intronic  >  ./results/intermediate/site_subsets/cancer_tpc.txt

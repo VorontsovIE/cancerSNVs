@@ -57,8 +57,6 @@ end
 site_iterator.map{|site, snv|
   [site, snvs[site.normalized_snp_name]]
 }.select{|site, snv|
-  snv.intronic? || snv.promoter?
-}.select{|site, snv|
   requested_mutation_contexts.any?{|requested_context| requested_context.match?(snv.context_before_snv_plus_strand) }
 }.select{|site, snv|
   !requested_mutation_types || requested_mutation_types.intersect?(snv.mut_types)
