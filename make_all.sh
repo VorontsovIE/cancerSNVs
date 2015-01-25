@@ -7,7 +7,7 @@
 
 # Markup SNVs, filter regulatory only and extract sequences
 # mkdir -p results/intermediate
-# ruby bin/preparations/markup_mutations_in_promoters.rb /home/ilya/iogen/cages/hg19/freeze1/hg19.cage_peak_tpm_ann.osc.txt ./source_data/SNV_infos_original.txt /home/ilya/iogen/genome/hg19_repeatMasker "/home/ilya/iogen/genome/hg19_exons(ensembl,GRCh37.p13).txt" > ./source_data/SNV_infos_full.txt
+# ruby bin/preparations/snv_markup.rb /home/ilya/iogen/cages/hg19/freeze1/hg19.cage_peak_tpm_ann.osc.txt ./source_data/SNV_infos_original.txt /home/ilya/iogen/genome/hg19_repeatMasker "/home/ilya/iogen/genome/hg19_exons(ensembl,GRCh37.p13).txt" > ./source_data/SNV_infos_full.txt
 # ruby bin/preparations/filter_snv_infos.rb source_data/SNV_infos_full.txt ~/iogen/genome/hg19/ > source_data/SNV_infos_regulatory.txt
 # ruby bin/preparations/extract_snv_sequences.rb ./source_data/SNV_infos_regulatory.txt /home/ilya/iogen/genome/hg19/ --flank-length 25 > ./results/intermediate/SNV_sequences.txt
 
@@ -21,9 +21,9 @@
 # ruby bin/preparations/create_snv_infos_by_genome_sequences.rb ./results/intermediate/genome_seqs_seed_15.txt > ./results/intermediate/SNV_infos_genome_seqs_seed_15_non_marked_up.txt
 # ruby bin/preparations/create_snv_infos_by_genome_sequences.rb ./results/intermediate/genome_seqs_seed_17.txt > ./results/intermediate/SNV_infos_genome_seqs_seed_17_non_marked_up.txt
 #
-# ruby bin/preparations/markup_mutations_in_promoters.rb /home/ilya/iogen/cages/hg19/freeze1/hg19.cage_peak_tpm_ann.osc.txt ./results/intermediate/SNV_infos_genome_seqs_seed_13_non_marked_up.txt /home/ilya/iogen/genome/hg19_repeatMasker "/home/ilya/iogen/genome/hg19_exons(ensembl,GRCh37.p13).txt" > ./results/intermediate/SNV_infos_genome_seqs_seed_13.txt
-# ruby bin/preparations/markup_mutations_in_promoters.rb /home/ilya/iogen/cages/hg19/freeze1/hg19.cage_peak_tpm_ann.osc.txt ./results/intermediate/SNV_infos_genome_seqs_seed_15_non_marked_up.txt /home/ilya/iogen/genome/hg19_repeatMasker "/home/ilya/iogen/genome/hg19_exons(ensembl,GRCh37.p13).txt" > ./results/intermediate/SNV_infos_genome_seqs_seed_15.txt
-# ruby bin/preparations/markup_mutations_in_promoters.rb /home/ilya/iogen/cages/hg19/freeze1/hg19.cage_peak_tpm_ann.osc.txt ./results/intermediate/SNV_infos_genome_seqs_seed_17_non_marked_up.txt /home/ilya/iogen/genome/hg19_repeatMasker "/home/ilya/iogen/genome/hg19_exons(ensembl,GRCh37.p13).txt" > ./results/intermediate/SNV_infos_genome_seqs_seed_17.txt
+# ruby bin/preparations/snv_markup.rb /home/ilya/iogen/cages/hg19/freeze1/hg19.cage_peak_tpm_ann.osc.txt ./results/intermediate/SNV_infos_genome_seqs_seed_13_non_marked_up.txt /home/ilya/iogen/genome/hg19_repeatMasker "/home/ilya/iogen/genome/hg19_exons(ensembl,GRCh37.p13).txt" > ./results/intermediate/SNV_infos_genome_seqs_seed_13.txt
+# ruby bin/preparations/snv_markup.rb /home/ilya/iogen/cages/hg19/freeze1/hg19.cage_peak_tpm_ann.osc.txt ./results/intermediate/SNV_infos_genome_seqs_seed_15_non_marked_up.txt /home/ilya/iogen/genome/hg19_repeatMasker "/home/ilya/iogen/genome/hg19_exons(ensembl,GRCh37.p13).txt" > ./results/intermediate/SNV_infos_genome_seqs_seed_15.txt
+# ruby bin/preparations/snv_markup.rb /home/ilya/iogen/cages/hg19/freeze1/hg19.cage_peak_tpm_ann.osc.txt ./results/intermediate/SNV_infos_genome_seqs_seed_17_non_marked_up.txt /home/ilya/iogen/genome/hg19_repeatMasker "/home/ilya/iogen/genome/hg19_exons(ensembl,GRCh37.p13).txt" > ./results/intermediate/SNV_infos_genome_seqs_seed_17.txt
 
 # # Generate random sequences by shuffling contexts
 # ruby ./bin/preparations/shuffle_SNVs.rb ./results/intermediate/SNV_sequences.txt --random-seed 135 --fold 10 > ./results/intermediate/sequences_shuffled_seed_135.txt
