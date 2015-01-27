@@ -1,6 +1,23 @@
+require 'optparse'
+
 def to_float(str)
   str && str.to_f
 end
+
+motif_qualities = [:A, :B, :C]
+significance_cutoff = 0.05
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: #{opts.program_name} <file to filter> [options]"
+  opts.separator('Options:')
+  opts.on('--motif-qualities QUALITIES', 'Take motif of given qualities (comma-separated). Default is A,B,C') {|value|
+    motif_qualities = value.upcase.split(',').map(&:to_sym)
+  }
+
+  opts.on('--significance CUTOFF', 'Significance cutoff. Default is 0.05') {|value|
+    significance_cutoff = value.to_f
+  }
+end.parse!(ARGV)
 
 lines = ARGF.readlines
 
@@ -32,11 +49,12 @@ lines.map{|line|
     gene: gene,
   }
 }.select{|infos|
-  infos[:disruption_significance] && infos[:disruption_significance] < 0.05 || 
-  infos[:emergence_significance] && infos[:emergence_significance] < 0.05
-}.reject{|infos| 
- # infos[:quality] == :D
-  false
+  infos[:cancer_to_random_disruption_ratio] && infos[:cancer_to_random_disruption_ratio] > 1
+}.select{|infos|
+  infos[:disruption_significance] && infos[:disruption_significance] < significance_cutoff # ||
+  # infos[:emergence_significance] && infos[:emergence_significance] < significance_cutoff
+}.select{|infos|
+  motif_qualities.include?(infos[:quality])
 }.sort_by{|infos| infos[:cancer_to_random_disruption_ratio] }.reverse.each{|infos|
   puts infos[:line]
 }
