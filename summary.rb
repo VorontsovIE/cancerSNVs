@@ -1,5 +1,6 @@
 $:.unshift File.absolute_path('lib', __dir__)
 require 'statistical_significance'
+require 'optparse'
 
 def read_motif_counts(filename)
   motif_counts = File.readlines(filename).map{|line|
@@ -19,6 +20,15 @@ def load_motif_infos(filename)
   results
 end
 
+pvalue_correction_method = 'fdr'
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: #{opts.program_name} <cancer statistics file prefix> <random stats file prefix> <motif names> <hocomoco gene infos> [options]"
+  opts.separator('Options:')
+  opts.on('--correction METHOD', 'P-value correction method (holm/fdr/hochberg/hommel/bonferroni/BH/BY/none -- it\'s processed by R). Default is fdr.') {|value|
+    pvalue_correction_method = value
+  }
+end.parse!(ARGV)
 
 cancer_statistics_files_prefix = ARGV[0] # './results/motif_statistics/cpg/cancer.txt'
 random_statistics_files_prefix = ARGV[1] # './results/motif_statistics/cpg/random.txt'
@@ -79,7 +89,7 @@ motif_infos = {
 motif_infos.default_proc = ->(hsh,k) { hsh[k] = {} }
 
 significance_calculator = PvalueCalculator.new(class_counts: :class_and_total)
-significance_corrector = HolmsPvalueCorrector.new
+significance_corrector = PvalueCorrector.new(pvalue_correction_method)
 
 
 motif_names.each {|motif|
