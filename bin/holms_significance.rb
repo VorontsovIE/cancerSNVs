@@ -5,7 +5,7 @@ require 'table_combiner'
 require 'optparse'
 
 pvalue_calculator = PvalueCalculator.new(class_counts: :class_and_total)
-pvalue_corrector = HolmsPvalueCorrector.new
+pvalue_corrector = PvalueCorrector.new('holm')
 
 with_header_row = false
 with_header_column = false

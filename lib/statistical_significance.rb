@@ -32,7 +32,12 @@ class PvalueCalculator
   end
 end
 
-class HolmsPvalueCorrector
+class PvalueCorrector
+  attr_reader :correction_method
+  def initialize(correction_method)
+    @correction_method = correction_method
+  end
+
   def correct(pvalues)
     with_temp_file('uncorrected_pvalues.txt') do |uncorrected_pvalues_file|
       pvalues.each do |pvalue|
@@ -43,7 +48,7 @@ class HolmsPvalueCorrector
       with_temp_file('corrected_pvalues.txt') do |corrected_pvalues_file|
         corrected_pvalues_file.close
 
-        run_correction_script(uncorrected_pvalues_file.path, corrected_pvalues_file.path)
+        run_correction_script(uncorrected_pvalues_file.path, corrected_pvalues_file.path, correction_method: correction_method)
 
         corrected_pvalues_file.open
         corrected_pvalues_file.readlines.map(&:strip).map(&:to_f)
@@ -61,11 +66,11 @@ class HolmsPvalueCorrector
     names.zip(correct(pvalues)).to_h
   end
 
-  def run_correction_script(from_file, to_file)
+  def run_correction_script(from_file, to_file, correction_method: 'holm')
     with_temp_file('correction_script.r') do |correction_script_file|
       correction_script_file.puts('dataT <- read.table("' + from_file + '")')
       correction_script_file.puts('values <- data.frame(dataT)')
-      correction_script_file.puts('newValues <- p.adjust(values$V1, "holm")')
+      correction_script_file.puts('newValues <- p.adjust(values$V1, method="' + correction_method + '")')
       correction_script_file.puts('write.table(newValues, "'+ to_file + '", FALSE, FALSE, "\t", "\n", "NA", ".", FALSE, FALSE)')
       correction_script_file.close
 
