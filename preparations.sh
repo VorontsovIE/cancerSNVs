@@ -43,9 +43,20 @@ do
   ruby bin/preparations/snv_markup.rb $INTERMEDIATE_FOLDER/background_genome_SNV_${SEED}_non_marked_up.txt  $CAGE_PEAKS  $REPEAT_MASKER_FOLDER  $ENSEMBL_EXONS  >  $INTERMEDIATE_FOLDER/background_genome_SNV_${SEED}.txt
 
   split  --additional-suffix .txt  --suffix-length 1  --number l/4  $RANDOM_SEQUENCES  $CHUNK_PREFIX
+
   # for SUFFIX in a b c d
   # do
   #   java -cp ape.jar ru.autosome.perfectosape.SNPScan  $MOTIF_COLLECTION  ${CHUNK_PREFIX}${SUFFIX}.txt  --fold-change-cutoff 1  --precalc $MOTIF_COLLECTION_THRESHOLDS  >  $CHUNK_FOLDER/sites/background_genome_sites_${SEED}_chunk_#{SUFFIX}.txt
+  # done
+
+  # rm $INTERMEDIATE_FOLDER/random_genome_sites_${SEED}.txt
+  # for SUFFIX in a b c d
+  # do
+  #   cat $CHUNK_FOLDER/sites/background_genome_sites_${SEED}_chunk_#{SUFFIX}.txt >> $INTERMEDIATE_FOLDER/random_genome_sites_${SEED}.txt
+  # done
+  # for SUFFIX in a b c d
+  # do
+  #   rm $CHUNK_FOLDER/sites/background_genome_sites_${SEED}_chunk_#{SUFFIX}.txt
   # done
 done
 
@@ -61,5 +72,14 @@ do
   # for SUFFIX in a b c d
   # do
   #   java -cp ape.jar ru.autosome.perfectosape.SNPScan  $MOTIF_COLLECTION  ${CHUNK_PREFIX}${SUFFIX}.txt  --fold-change-cutoff 1  --precalc $MOTIF_COLLECTION_THRESHOLDS  >  $CHUNK_FOLDER/sites/sites_shuffled_${SEED}_chunk_#{SUFFIX}.txt
+  # done
+  # rm $INTERMEDIATE_FOLDER/random_shuffled_sites_${SEED}.txt
+  # for SUFFIX in a b c d
+  # do
+  #   cat $CHUNK_FOLDER/sites/sites_shuffled_${SEED}_chunk_#{SUFFIX}.txt >> $INTERMEDIATE_FOLDER/random_shuffled_sites_${SEED}.txt
+  # done
+  # for SUFFIX in a b c d
+  # do
+  #   rm $CHUNK_FOLDER/sites/sites_shuffled_${SEED}_chunk_#{SUFFIX}.txt
   # done
 done
