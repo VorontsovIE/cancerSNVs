@@ -40,7 +40,7 @@ fitters = MotifHistogramFitter.new(fitters_for_motifs, raise_on_missing: false)
 $stderr.puts "Loaded #{fitters.goal_total} original sites"
 
 MutatatedSiteInfo.each_site(mutated_site_infos_random_filename).each_with_index do |site, index|
-  $stderr.puts "#{index} sites processed"  if index % 100000 == 0
+  # $stderr.puts "#{index} sites processed"  if index % 100000 == 0
   fitters.fit_element(site.motif_name, site.pvalue_1) do
     puts site.line
   end
