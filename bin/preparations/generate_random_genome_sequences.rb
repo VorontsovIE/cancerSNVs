@@ -42,6 +42,7 @@ end.parse!(ARGV)
 raise 'Specify SNV infos'  unless site_infos_filename = ARGV[0] # 'source_data/SNV_infos.txt'
 raise 'Specify ensembl exons markup'  unless exons_filename = ARGV[1] # '/home/ilya/iogen/genome/hg19_exons(ensembl,GRCh37.p13).txt'
 
+raise 'Specify genome folder'  unless genome_folder = ARGV[2] # '/home/ilya/iogen/genome/hg19'
 
 promoters_by_chromosome = load_promoters_by_chromosome(exons_filename, length_5_prime: 2000, length_3_prime: 500)
 introns_by_chromosome = read_introns_by_chromosome(exons_filename)
@@ -49,7 +50,7 @@ introns_by_chromosome = read_introns_by_chromosome(exons_filename)
 encoder = SequenceEncoder.default_encoder
 
 # genomic_content = nil
-# Dir.glob('/home/ilya/iogen/genome/hg19/*.plain').sort.each do |chromosome_filename|
+# Dir.glob(File.join(genome_folder, '*.plain')).sort.each do |chromosome_filename|
 #   $stderr.puts chromosome_filename
 #   sequence_code = encoder.encode_sequence(File.read(chromosome_filename))
 #   genomic_content = calculate_context_content(sequence_code, context_length: 3, alphabet_length: encoder.alphabet_length, initial_content: genomic_content)
@@ -98,14 +99,14 @@ snv_context_content_mut.each_key do |context|
   end
 end
 
-$stderr.puts necessary_seqs_mut
+# $stderr.puts necessary_seqs_mut
 
 # $stderr.puts necessary_seqs
 
 sequence_hashes = Set.new
 
 miss = 0
-Dir.glob('/home/ilya/iogen/genome/hg19/*.plain').sort.select{|chromosome_filename|
+Dir.glob(File.join(genome_folder, '*.plain')).sort.select{|chromosome_filename|
   chr_name = File.basename(chromosome_filename, File.extname(chromosome_filename)).to_sym
   promoters_by_chromosome.has_key?(chr_name) || introns_by_chromosome.has_key?(chr_name)  
 }.each do |chromosome_filename|
@@ -145,7 +146,11 @@ end
 $stderr.puts "\n================================\n"
 $stderr.puts "Missed (skipped due to overfill): #{miss}"
 $stderr.puts "\n--------------------------------\n"
-$stderr.puts necessary_seqs_mut
-$stderr.puts "\n--------------------------------\n"
 $stderr.puts necessary_seqs_mut.select{|k,hsh| hsh.any?{|k2,v| v > 0} }
 $stderr.puts "\n================================\n"
+if necessary_seqs_mut.select{|k,hsh| hsh.any?{|k2,v| v > 0} }.empty?
+  $stderr.puts "OK"
+else
+  $stderr.puts "Not enough sequences"
+  exit 1
+end
