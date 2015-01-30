@@ -11,9 +11,10 @@ OptionParser.new do |opts|
   end
 end.parse!(ARGV)
 
+mutated_genes_file = ARGV.shift # './unnecessary/MutatedGenes.csv'
 motifs = ARGV
 
-mutations = File.readlines('./source_data/MutatedGenes.csv').map do |line|
+mutations = File.readlines(mutated_genes_file).map do |line|
   line.chomp.split("\t")
 end
 
