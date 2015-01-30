@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# SEQ_FOLDER, SNV_FOLDER and CHUNK_FOLDER should be specified in environment variables
+# RESULTS_FOLDER, SEQ_FOLDER, SNV_FOLDER and CHUNK_FOLDER should be specified in environment variables
 
 cd "$(dirname "$0")"
 
@@ -24,12 +24,12 @@ ln -f  /home/ilya/iogen/hocomoco-thresholds  ./source_data/motif_thresholds
 mkdir -p  $SEQ_FOLDER  $SNV_FOLDER  $CHUNK_FOLDER
 
 # Markup SNVs and filter regulatory only, non-duplicated SNVs
-ruby bin/preparations/snv_markup.rb  ./source_data/SNV_infos_original.txt  ./source_data/exons.txt  >  ./source_data/SNV_infos_marked_up.txt
-ruby bin/preparations/filter_snv_infos.rb  ./source_data/SNV_infos_marked_up.txt  ./source_data/genome  >  ./source_data/SNV_infos_regulatory.txt
+ruby bin/preparations/snv_markup.rb  ./source_data/SNV_infos_original.txt  ./source_data/exons.txt  >  ${RESULTS_FOLDER}/SNV_infos_marked_up.txt
+ruby bin/preparations/filter_snv_infos.rb  ${RESULTS_FOLDER}/SNV_infos_marked_up.txt  ./source_data/genome  >  ${RESULTS_FOLDER}/SNV_infos_regulatory.txt
 
 
 #  Later we work only with regulatory non-duplicated SNVs
-ln  ./source_data/SNV_infos_regulatory.txt  ${SNV_FOLDER}/SNV_infos_cancer.txt
+ln  ${RESULTS_FOLDER}/SNV_infos_regulatory.txt  ${SNV_FOLDER}/SNV_infos_cancer.txt
 
 ##################################
 

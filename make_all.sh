@@ -1,12 +1,13 @@
 #!/bin/bash
 cd "$(dirname "$0")"
 
-export SEQ_FOLDER=./results/sequences
-export SNV_FOLDER=./results/SNVs
-export CHUNK_FOLDER=./results/sequence_chunks
-export SITES_FOLDER=./results/sites
-export FITTING_FOLDER=./results/fitted_sites
-export MOTIF_STATISTICS_FOLDER=./results/motif_statistics
+export RESULTS_FOLDER=./results
+export SEQ_FOLDER=${RESULTS_FOLDER}/sequences
+export SNV_FOLDER=${RESULTS_FOLDER}/SNVs
+export CHUNK_FOLDER=${RESULTS_FOLDER}/sequence_chunks
+export SITES_FOLDER=${RESULTS_FOLDER}/sites
+export FITTING_FOLDER=${RESULTS_FOLDER}/fitted_sites
+export MOTIF_STATISTICS_FOLDER=${RESULTS_FOLDER}/motif_statistics
 
 # Prepare marked up SNVs and sequences.
 # Generate random sequences.
