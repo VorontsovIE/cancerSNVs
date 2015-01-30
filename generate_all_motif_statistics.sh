@@ -1,4 +1,5 @@
 #!/bin/bash
+cd "$(dirname "$0")"
 
 MOTIF_NAMES=./source_data/motif_names.txt
 SITES_FILE=$1

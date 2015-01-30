@@ -1,4 +1,5 @@
 #!/bin/bash
+cd "$(dirname "$0")"
 
 MOTIF_STATISTICS_FOLDER=$1
 
@@ -7,10 +8,10 @@ MOTIF_INFOS=./source_data/hocomoco_genes_infos.csv
 
 mkdir -p $MOTIF_STATISTICS_FOLDER/filtered
 
-
 for CONTEXT in any cpg tpc; do
+  mkdir -p  ${MOTIF_STATISTICS_FOLDER}/full/${CONTEXT}  ${MOTIF_STATISTICS_FOLDER}/filtered/${CONTEXT}
+  
   for RANDOM_VARIANT  in  random_shuffle_135  random_shuffle_137  random_shuffle_139  random_genome_13  random_genome_15  random_genome_17; do
-
     ruby summary.rb   ${MOTIF_STATISTICS_FOLDER}/slices/${CONTEXT}/cancer  \
                       ${MOTIF_STATISTICS_FOLDER}/slices/${CONTEXT}/${RANDOM_VARIANT}  \
                       $MOTIF_NAMES  $MOTIF_INFOS --correction fdr  \
@@ -23,6 +24,8 @@ for CONTEXT in any cpg tpc; do
 done
 
 for CONTEXT in any cpg tpc; do
+  mkdir -p  ${MOTIF_STATISTICS_FOLDER}/common_motifs/${CONTEXT}
+  
   SHUFFLE_FILTERED_RESULTS_FILES=""
   for RANDOM_VARIANT  in  random_shuffle_135  random_shuffle_137  random_shuffle_139; do
     SHUFFLE_FILTERED_RESULTS_FILES="${SHUFFLE_FILTERED_RESULTS_FILES}  ${MOTIF_STATISTICS_FOLDER}/filtered/${CONTEXT}/${RANDOM_VARIANT}.csv"

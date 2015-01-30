@@ -23,30 +23,20 @@ end
 pvalue_correction_method = 'fdr'
 
 OptionParser.new do |opts|
-  opts.banner = "Usage: #{opts.program_name} <cancer statistics file prefix> <random stats file prefix> <motif names> <hocomoco gene infos> [options]"
+  opts.banner = "Usage: #{opts.program_name} <cancer statistics folder> <random stats folder> <motif names> <hocomoco gene infos> [options]"
   opts.separator('Options:')
   opts.on('--correction METHOD', 'P-value correction method (holm/fdr/hochberg/hommel/bonferroni/BH/BY/none -- it\'s processed by R). Default is fdr.') {|value|
     pvalue_correction_method = value
   }
 end.parse!(ARGV)
 
-cancer_statistics_files_prefix = ARGV[0] # './results/motif_statistics/cpg/cancer.txt'
-random_statistics_files_prefix = ARGV[1] # './results/motif_statistics/cpg/random.txt'
-motif_names_filename = ARGV[2] # './source_data/motif_names.txt'
-hocomoco_motifs_filename = ARGV[3] # './source_data/hocomoco_genes_infos.csv'
+raise 'Specify folder for cancer statistics'  unless cancer_dirname = ARGV[0] # './results/motif_statistics/cpg/cancer'
+raise 'Specify folder for random statistics'  unless random_dirname = ARGV[1] # './results/motif_statistics/cpg/random'
+raise 'Specify file with motif names'  unless motif_names_filename = ARGV[2] # './source_data/motif_names.txt'
+raise 'Specify file with motif collection infos'  unless hocomoco_motifs_filename = ARGV[3] # './source_data/hocomoco_genes_infos.csv'
 
 motif_names = File.readlines(motif_names_filename).map(&:strip)
 motif_collection_infos = load_motif_infos(hocomoco_motifs_filename)
-
-raise 'Specify filename-prefices for cancer and random'  unless cancer_statistics_files_prefix && random_statistics_files_prefix
-
-cancer_dirname = File.dirname(cancer_statistics_files_prefix)
-cancer_extname = File.extname(cancer_statistics_files_prefix)
-cancer_filename_prefix = File.basename(cancer_statistics_files_prefix, cancer_extname)
-
-random_dirname = File.dirname(random_statistics_files_prefix)
-random_extname = File.extname(random_statistics_files_prefix)
-random_filename_prefix = File.basename(random_statistics_files_prefix, random_extname)
 
 column_names =  {
   motif: 'Motif',
@@ -74,14 +64,15 @@ column_names =  {
 }
 
 motif_infos = {
-  random_disrupted: File.join(random_dirname, "#{random_filename_prefix}_sites_disrupted#{random_extname}"),
-  random_emerged: File.join(random_dirname, "#{random_filename_prefix}_sites_emerged#{random_extname}"),
-  random_total_before_substitution: File.join(random_dirname, "#{random_filename_prefix}_sites_before#{random_extname}"),
-  random_total_after_substitution: File.join(random_dirname, "#{random_filename_prefix}_sites_after#{random_extname}"),
-  cancer_disrupted: File.join(cancer_dirname, "#{cancer_filename_prefix}_sites_disrupted#{cancer_extname}"),
-  cancer_emerged: File.join(cancer_dirname, "#{cancer_filename_prefix}_sites_emerged#{cancer_extname}"),
-  cancer_total_before_substitution: File.join(cancer_dirname, "#{cancer_filename_prefix}_sites_before#{cancer_extname}"),
-  cancer_total_after_substitution: File.join(cancer_dirname, "#{cancer_filename_prefix}_sites_after#{cancer_extname}"),
+  random_disrupted: File.join(random_dirname, "sites_disrupted.txt"),
+  random_emerged: File.join(random_dirname, "sites_emerged.txt"),
+  random_total_before_substitution: File.join(random_dirname, "sites_before.txt"),
+  random_total_after_substitution: File.join(random_dirname, "sites_after.txt"),
+
+  cancer_disrupted: File.join(cancer_dirname, "sites_disrupted.txt"),
+  cancer_emerged: File.join(cancer_dirname, "sites_emerged.txt"),
+  cancer_total_before_substitution: File.join(cancer_dirname, "sites_before.txt"),
+  cancer_total_after_substitution: File.join(cancer_dirname, "sites_after.txt"),
 }.map {|column_name, filename|
   [column_name, read_motif_counts(filename)]
 }.to_h
