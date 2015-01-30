@@ -29,7 +29,7 @@ ruby bin/preparations/filter_snv_infos.rb  ${RESULTS_FOLDER}/SNV_infos_marked_up
 
 
 #  Later we work only with regulatory non-duplicated SNVs
-ln  ${RESULTS_FOLDER}/SNV_infos_regulatory.txt  ${SNV_FOLDER}/SNV_infos_cancer.txt
+ln -f  ${RESULTS_FOLDER}/SNV_infos_regulatory.txt  ${SNV_FOLDER}/SNV_infos_cancer.txt
 
 ##################################
 

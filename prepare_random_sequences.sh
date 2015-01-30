@@ -21,5 +21,5 @@ for SEED in 135 137 139; do
   # generate random sequences
   ruby ./bin/preparations/shuffle_SNVs.rb  ${SEQ_FOLDER}/sequences_cancer.txt  --random-seed $SEED  --fold 10  >  ${SEQ_FOLDER}/sequences_random_shuffle_${SEED}.txt
   # generate SNV infos
-  ln  ${SNV_FOLDER}/SNV_infos_cancer.txt  ${SNV_FOLDER}/SNV_infos_random_shuffle_${SEED}.txt
+  ln -f  ${SNV_FOLDER}/SNV_infos_cancer.txt  ${SNV_FOLDER}/SNV_infos_random_shuffle_${SEED}.txt
 done
