@@ -86,7 +86,7 @@ BreastCancerSNV = Struct.new( :variant_id,
   def promoter?; mut_types.include?(:promoter); end
   def intronic?; mut_types.include?(:intronic); end
   def cage_peak?; mut_types.include?(:cage_peak); end
-  def in_repeat?; mut_types.include?(:repeat); end # checks whether an SNV vicinity lies on repeats
+  def in_repeat?; mut_types.include?(:repeat); end # checks whether an SNV vicinity lies on repeats; Note one need to markup SNV first (it's not performing by snv_markup now)
   def exon_coding?; mut_types.include?(:exon_coding); end
   def regulatory?
     intronic? || cage_peak? # promoter? || intronic? ## promoter is treated less precise than cage peak
