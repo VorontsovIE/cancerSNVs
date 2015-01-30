@@ -1,9 +1,8 @@
 #!/bin/bash
-cd "$(dirname "$0")"
 
-SEQ_FOLDER=$1
-CHUNK_FOLDER=$2
-NUMBER_OF_CORES=$3
+# NUMBER_OF_CORES, SEQ_FOLDER and CHUNK_FOLDER should be specified in environment variables
+
+cd "$(dirname "$0")"
 
 mkdir -p  $CHUNK_FOLDER
 

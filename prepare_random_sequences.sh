@@ -1,8 +1,8 @@
 #!/bin/bash
-cd "$(dirname "$0")"
 
-SEQ_FOLDER=$1
-SNV_FOLDER=$2
+# SEQ_FOLDER and SNV_FOLDER should be specified in environment variables
+
+cd "$(dirname "$0")"
 
 # Generate random sequences from genome
 for SEED in 13 15 17; do

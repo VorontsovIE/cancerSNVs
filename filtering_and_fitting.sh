@@ -1,17 +1,11 @@
 #!/bin/bash
-cd "$(dirname "$0")"
 
-SEQ_FOLDER=./results/sequences
-SNV_FOLDER=./results/SNVs
-CHUNK_FOLDER=./results/sequence_chunks
+# SNV_FOLDER, CHUNK_FOLDER, SITES_FOLDER, FITTING_FOLDER and MOTIF_STATISTICS_FOLDER should be specified in environment variables
+
+cd "$(dirname "$0")"
 
 FITTING_FOLD=1
 FOLD_CHANGE=5
-
-SITES_FOLDER=./results/sites
-FITTING_FOLDER=./results/fitted_sites
-MOTIF_STATISTICS_FOLDER=./results/motif_statistics
-
 
 
 for CONTEXT in any cpg tpc

@@ -1,10 +1,8 @@
 #!/bin/bash
+
+# MOTIF_STATISTICS_FOLDER should be specified in environment variables
+
 cd "$(dirname "$0")"
-
-MOTIF_STATISTICS_FOLDER=$1
-
-MOTIF_NAMES=./source_data/motif_names.txt
-MOTIF_INFOS=./source_data/hocomoco_genes_infos.csv
 
 mkdir -p $MOTIF_STATISTICS_FOLDER/filtered
 
@@ -14,7 +12,8 @@ for CONTEXT in any cpg tpc; do
   for RANDOM_VARIANT  in  random_shuffle_135  random_shuffle_137  random_shuffle_139  random_genome_13  random_genome_15  random_genome_17; do
     ruby summary.rb   ${MOTIF_STATISTICS_FOLDER}/slices/${CONTEXT}/cancer  \
                       ${MOTIF_STATISTICS_FOLDER}/slices/${CONTEXT}/${RANDOM_VARIANT}  \
-                      $MOTIF_NAMES  $MOTIF_INFOS --correction fdr  \
+                      ./source_data/motif_names.txt  ./source_data/hocomoco_genes_infos.csv  \
+                      --correction fdr  \
                       >  ${MOTIF_STATISTICS_FOLDER}/full/${CONTEXT}/${RANDOM_VARIANT}.csv
 
     for SUBJECTED_OR_PROTECTED  in  subjected  protected; do
