@@ -25,8 +25,12 @@ export MOTIF_STATISTICS_FOLDER=${RESULTS_FOLDER}/motif_statistics
 # For example it is worth to allow JVM to take up to 1-2Gb RAM (note, each worker will consume that much)
 ${CHUNK_FOLDER}/run_perfectosape_multithread.sh
 
-# Separate sites by contexts. Perform random sites fitting. Extract motif statistics slices.
-./filtering_and_fitting.sh
+# Separate sites by contexts.
+./sites_filtering.sh
+# Perform random sites fitting.
+./sites_fitting.sh
 
+# Extract motif statistics slices.
+./collect_motif_statistics_slices.sh
 # Aggregate motif statistics slices and find motifs of interest
 ./aggregate_motifs_statistics.sh
