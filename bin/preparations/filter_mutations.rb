@@ -9,7 +9,9 @@ require 'import_information'
 
 requested_mutation_types = nil
 requested_mutation_contexts = nil
+requested_cancer_samples = nil
 show_possible_mutation_types_and_exit = false
+show_possible_cancer_samples_and_exit = false
 OptionParser.new do |opts|
   opts.banner = "Usage:\n" +
                 "   #{opts.program_name} <SNV infos> <site fold-changes file> [options]\n" +
@@ -26,8 +28,18 @@ OptionParser.new do |opts|
     requested_mutation_contexts = value.upcase.split(',').map{|context| MutationContext.from_string(context) }
   }
 
-  opts.on('--possible-mutation-types', 'Show possible mutation types and exit') {
+  opts.on('--cancer-samples POSSIBLE_SAMPLES', 'Specify cancer samples to retain.',
+                                                'Format is comma separated. Be careful not to include spaces)',
+                                                '(e.g. PD4194a,PD4198a') {|value|
+    requested_cancer_samples = value.split(',').map(&:to_sym).to_set
+  }
+
+  opts.on('--show-possible-mutation-types', 'Show possible mutation types and exit') {
     show_possible_mutation_types_and_exit = true
+  }
+
+  opts.on('--show-possible-cancer-samples', 'Show possible cancer samples and exit') {
+    show_possible_cancer_samples_and_exit = true
   }
 
 end.parse!(ARGV)
@@ -45,6 +57,12 @@ if show_possible_mutation_types_and_exit
   exit
 end
 
+if show_possible_cancer_samples_and_exit
+  puts BreastCancerSNV.each_substitution_in_file(mutations_markup_filename).flat_map(&:sample_id).inject(Set.new, &:<<).to_a
+  exit
+end
+
+
 snvs = BreastCancerSNV.each_substitution_in_file(mutations_markup_filename).map{|snv| [snv.variant_id, snv] }.to_h
 
 if $stdin.tty?
@@ -58,6 +76,8 @@ site_iterator.map{|site, snv|
   [site, snvs[site.normalized_snp_name]]
 }.select{|site, snv|
   requested_mutation_contexts.any?{|requested_context| requested_context.match?(snv.context_before_snv_plus_strand) }
+}.select{|site, snv|
+  !requested_cancer_samples || requested_cancer_samples.include?(snv.sample_id)
 }.select{|site, snv|
   !requested_mutation_types || requested_mutation_types.intersect?(snv.mut_types)
 }.each{|site, snv|
