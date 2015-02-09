@@ -4,6 +4,8 @@
 
 cd "$(dirname "$0")"
 
+MIN_FITTING_RATE=0.99
+
 mkdir -p $MOTIF_STATISTICS_FOLDER/filtered
 
 for CONTEXT in any cpg tpc; do
@@ -22,6 +24,8 @@ for CONTEXT in any cpg tpc; do
         ruby filter_summary.rb  ${MOTIF_STATISTICS_FOLDER}/full/${CONTEXT}/${RANDOM_VARIANT}.csv  \
                                 --motif-qualities A,B,C,D  --significance 0.05  \
                                 --${DISRUPTION_OR_EMERGENCE}  --${SUBJECTED_OR_PROTECTED}  \
+                                --fitting-log ${MOTIF_STATISTICS_FOLDER}/fitting_log/${CONTEXT}/${RANDOM_VARIANT}.log  \
+                                --min-fitting-rate $MIN_FITTING_RATE  \
                                 >  ${MOTIF_STATISTICS_FOLDER}/filtered/${SUBJECTED_OR_PROTECTED}/${DISRUPTION_OR_EMERGENCE}/${CONTEXT}/${RANDOM_VARIANT}.csv
       done
     done
