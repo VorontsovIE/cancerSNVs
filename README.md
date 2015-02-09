@@ -1,7 +1,8 @@
 ## Workflow
 Workflow is following:
-* Get cancer SNVs
-* Remove and recreate location type markup: promoter and intronic regions
+* Get cancer SNVs.
+* Remove location type markup from original Nik-Zainal source data (it is not full and correct, it doesn't have promoter markup and doesn't include all introns). Recreate location type markup: markup promoter and intronic regions according to information in Ensembl exons table.
+* Remove duplicated SNVs, leave only one of each group of equal SNVs. (Also, we aren't sure that all SNVs are correctly annotated in source data: we have several hundreds of SNVs which have exactly the same 25bp flanks and the same mutation as some other SNVs)
 * Filter SNVs to obtain regulatory SNVs only (located either in promoter or in intronic regions). This SNV collection is used for the rest of computations. We don't use non-regulatory SNVs anymore.
 * Generate sequences with substitutions for site extraction:
     * Extract sequences around cancer SNVs (regulatory, you remember) from genome.
@@ -25,12 +26,14 @@ Workflow is carried out by `make_all.sh` script in a folder root. Before running
 * bunch of GNU tools (bash, echo, cat, split, etc...) included in any Linux distributive
 * ruby (version 2.1 or greater)
 * java (version 1.6 or higher)
+* R with stats package
 * PerfectosAPE [http://opera.autosome.ru/perfectosape/description] package. Download *.jar file here[http://opera.autosome.ru/downloads/ape.jar] and put it into a root folder.
 * ruby gem bundler
 * Some other ruby gems (run `bundle install` to install them)
 
 ### Source files:
 * ./source_data/SNV_infos_original.txt -- Breast cancer SNVs from Mutational processes molding the genomes of 21 breast cancers. Cell, 149(5):979–993. Nik-Zainal, et al. (2012).
+ftp://ftp.sanger.ac.uk/pub/cancer/Nik-ZainalEtAl/SUBSTITUTIONS_13Apr2012_snz.txt
 These data use hg19 assembly, so one need to download other data (such as genome itself or exon markup) related to hg19.
 File is already included in a repository.
 * Human genome hg19 assembly from UCSC[http://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/chromFa.tar.gz]. Chromosome sequences in plain text format. One should preprocess files so that sequences had no headers and line-breaks (in order to obtain sequences using file seek). Files should be named like `genome_folder/chr1.plain`

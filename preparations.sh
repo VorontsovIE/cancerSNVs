@@ -4,6 +4,9 @@
 
 cd "$(dirname "$0")"
 
+# Cancer somatic mutation SNVs from "Mutational Processes Molding the Genomes of 21 Breast Cancers. Nik-Zainal et.al."
+# wget ftp://ftp.sanger.ac.uk/pub/cancer/Nik-ZainalEtAl/SUBSTITUTIONS_13Apr2012_snz.txt -O ./source_data/SNV_infos_original.txt
+
 # PerfectosAPE package
 # wget http://opera.autosome.ru/downloads/ape.jar -O ape.jar
 

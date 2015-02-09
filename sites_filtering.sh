@@ -12,7 +12,7 @@ for VARIANT  in  cancer  random_genome_13  random_genome_15  random_genome_17  r
   ln -f  ${CHUNK_FOLDER}/sites_${VARIANT}.txt  ${SITES_FOLDER}/any/sites_${VARIANT}.txt
 done
 
-# generate subsets of sites in TpC/CpG mutration contexts
+# generate subsets of sites in TpC/CpG mutation contexts
 for RANDOM_VARIANT  in  cancer  random_genome_13  random_genome_15  random_genome_17  random_shuffle_135  random_shuffle_137  random_shuffle_139; do
 
   ruby bin/preparations/filter_mutations.rb   ${SNV_FOLDER}/SNV_infos_${RANDOM_VARIANT}.txt  \
