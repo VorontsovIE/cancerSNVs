@@ -1,0 +1,88 @@
+def to_float(str)
+  str && str.to_f
+end
+
+RateComparisonInfo = Struct.new(
+                  :motif, :official_gene_name, :quality,
+                  :cancer_to_random_disruption_ratio, :disruption_significance,
+                  :cancer_to_random_emergence_ratio, :emergence_significance,
+                  :random_disrupted, :random_emerged, :random_total_before_substitution, :random_total_after_substitution,
+                  :cancer_disrupted, :cancer_emerged, :cancer_total_before_substitution, :cancer_total_after_substitution,
+                  :cancer_disruption_rate, :cancer_emergence_rate, :random_disruption_rate, :random_emergence_rate,
+                  :disruption_significance_uncorrected, :emergence_significance_uncorrected,
+                  :gene) do
+
+  def self.from_string(line)
+      motif, official_gene_name, quality,
+          cancer_to_random_disruption_ratio, disruption_significance,
+          cancer_to_random_emergence_ratio, emergence_significance,
+          random_disrupted, random_emerged, random_total_before_substitution, random_total_after_substitution,
+          cancer_disrupted, cancer_emerged, cancer_total_before_substitution, cancer_total_after_substitution,
+          cancer_disruption_rate, cancer_emergence_rate, random_disruption_rate, random_emergence_rate,
+          disruption_significance_uncorrected, emergence_significance_uncorrected,
+          gene = line.chomp.split("\t")
+      RateComparisonInfo.new(
+          motif, official_gene_name, quality.upcase.to_sym,
+          to_float(cancer_to_random_disruption_ratio), to_float(disruption_significance),
+          to_float(cancer_to_random_emergence_ratio), to_float(emergence_significance),
+          random_disrupted.to_i, random_emerged.to_i, random_total_before_substitution.to_i, random_total_after_substitution.to_i,
+          cancer_disrupted.to_i, cancer_emerged.to_i, cancer_total_before_substitution.to_i, cancer_total_after_substitution.to_i,
+          cancer_disruption_rate.to_f, cancer_emergence_rate.to_f, random_disruption_rate.to_f, random_emergence_rate.to_f,
+          to_float(disruption_significance_uncorrected), to_float(emergence_significance_uncorrected),
+          gene)
+  end
+
+  def self.each_in_file(filename, &block)
+    return enum_for(:each_in_file, filename)  unless block_given?
+    File.open(filename) do |f|
+      f.readline # skip header
+      each_in_stream(f, &block)
+    end
+  end
+
+  def self.each_in_stream(stream, &block)
+    stream.each_line.map{|line| RateComparisonInfo.from_string(line) }.each(&block)
+  end
+
+  def self.table_header
+    RateComparisonInfo::COLUMN_ORDER.map{|column_id| RateComparisonInfo::COLUMN_NAMES[column_id] }.join("\t")
+  end
+
+  def to_s
+    RateComparisonInfo::COLUMN_ORDER.map{|column_id| self[column_id] }.join("\t")
+  end
+end
+
+RateComparisonInfo::COLUMN_NAMES = {
+  motif: 'Motif',
+  quality: 'Motif quality',
+  gene: 'TF gene',
+  official_gene_name: 'TF gene (official name)',
+  random_disrupted: 'Random disrupted',
+  random_emerged: 'Random emerged',
+  random_total_before_substitution: 'Random total sites before subtitution',
+  random_total_after_substitution: 'Random total sites after subtitution',
+  cancer_disrupted: 'Cancer disrupted',
+  cancer_emerged: 'Cancer emerged',
+  cancer_total_before_substitution: 'Cancer total sites before subtitution',
+  cancer_total_after_substitution: 'Cancer total sites after subtitution',
+  cancer_disruption_rate: 'Cancer disruption rate',
+  cancer_emergence_rate: 'Cancer emergence rate',
+  random_disruption_rate: 'Random disruption rate',
+  random_emergence_rate: 'Random emergence rate',
+  cancer_to_random_disruption_ratio: 'Cancer to random disruption rate ratio',
+  cancer_to_random_emergence_ratio: 'Cancer to random emergence rate ratio',
+  disruption_significance_uncorrected: 'Significance of difference in disruption rate (not corrected)',
+  emergence_significance_uncorrected: 'Significance of difference in emergence rate (not corrected)',
+  disruption_significance: 'Significance of difference in disruption rate (corrected on multiple comparison)',
+  emergence_significance: 'Significance of difference in emergence rate (corrected on multiple comparison)',
+}
+
+RateComparisonInfo::COLUMN_ORDER = [:motif, :official_gene_name, :quality,
+                  :cancer_to_random_disruption_ratio, :disruption_significance,
+                  :cancer_to_random_emergence_ratio, :emergence_significance,
+                  :random_disrupted, :random_emerged, :random_total_before_substitution, :random_total_after_substitution,
+                  :cancer_disrupted, :cancer_emerged, :cancer_total_before_substitution, :cancer_total_after_substitution,
+                  :cancer_disruption_rate, :cancer_emergence_rate, :random_disruption_rate, :random_emergence_rate,
+                  :disruption_significance_uncorrected, :emergence_significance_uncorrected,
+                  :gene]

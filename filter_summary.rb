@@ -1,9 +1,7 @@
+$:.unshift File.absolute_path('lib', __dir__)
 require 'set'
 require 'optparse'
-
-def to_float(str)
-  str && str.to_f
-end
+require 'rate_comparison_infos'
 
 def load_motif_underfitting_rates(fitting_log_filename)
   File.readlines(fitting_log_filename).drop(3).slice_after("\n").map{|lines|
@@ -70,36 +68,13 @@ else
   minimal_fitting_rate ||= 0.95
 end
 
-lines = ARGF.readlines
-
-puts lines.shift
-
-motif_infos = lines.map{|line|
-  motif, official_gene_name, quality,
-          cancer_to_random_disruption_ratio, disruption_significance,
-          cancer_to_random_emergence_ratio, emergence_significance,
-          random_disrupted, random_emerged, random_total_before_substitution, random_total_after_substitution,
-          cancer_disrupted, cancer_emerged, cancer_total_before_substitution, cancer_total_after_substitution,
-          cancer_disruption_rate, cancer_emergence_rate, random_disruption_rate, random_emergence_rate,
-          disruption_significance_uncorrected, emergence_significance_uncorrected,
-          gene = line.chomp.split("\t")
-
-  {
-    line: line, motif: motif,
-    official_gene_name: official_gene_name, quality: quality.upcase.to_sym,
-    cancer_to_random_disruption_ratio: to_float(cancer_to_random_disruption_ratio), disruption_significance: to_float(disruption_significance),
-    cancer_to_random_emergence_ratio: to_float(cancer_to_random_emergence_ratio), emergence_significance: to_float(emergence_significance),
-    random_disrupted: random_disrupted.to_i, random_emerged: random_emerged.to_i,
-    random_total_before_substitution: random_total_before_substitution.to_i, random_total_after_substitution: random_total_after_substitution.to_i,
-    cancer_disrupted: cancer_disrupted.to_i, cancer_emerged: cancer_emerged.to_i,
-    cancer_total_before_substitution: cancer_total_before_substitution.to_i, cancer_total_after_substitution: cancer_total_after_substitution.to_i,
-    cancer_disruption_rate: cancer_disruption_rate.to_f, cancer_emergence_rate: cancer_emergence_rate.to_f,
-    random_disruption_rate: random_disruption_rate.to_f, random_emergence_rate: random_emergence_rate.to_f,
-    disruption_significance_uncorrected: to_float(disruption_significance_uncorrected),
-    emergence_significance_uncorrected: to_float(emergence_significance_uncorrected),
-    gene: gene,
-  }
-}
+if $stdin.tty?
+  raise 'Specify filename'  unless filename = ARGV[0]
+  motif_infos = RateComparisonInfo.each_in_file(filename).to_a
+else
+  $stdin.readline  # skip header
+  motif_infos = RateComparisonInfo.each_in_stream($stdin).to_a
+end
 
 if disruption_or_emergence == :disruption
   characteristic = :cancer_to_random_disruption_ratio
@@ -138,6 +113,7 @@ filtered_motif_infos.sort_by!{|infos|
 
 filtered_motif_infos.reverse!  if subjected_or_protected == :subjected
 
+puts RateComparisonInfo::COLUMN_ORDER.map{|col| RateComparisonInfo::COLUMN_NAMES[col] }.join("\t")
 filtered_motif_infos.each{|infos|
-  puts infos[:line]
+  puts infos
 }

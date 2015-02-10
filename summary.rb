@@ -1,5 +1,6 @@
 $:.unshift File.absolute_path('lib', __dir__)
 require 'statistical_significance'
+require 'rate_comparison_infos'
 require 'optparse'
 
 def read_motif_counts(filename)
@@ -38,30 +39,7 @@ raise 'Specify file with motif collection infos'  unless hocomoco_motifs_filenam
 motif_names = File.readlines(motif_names_filename).map(&:strip)
 motif_collection_infos = load_motif_infos(hocomoco_motifs_filename)
 
-column_names =  {
-  motif: 'Motif',
-  quality: 'Motif quality',
-  gene: 'TF gene',
-  official_gene_name: 'TF gene (official name)',
-  random_disrupted: 'Random disrupted',
-  random_emerged: 'Random emerged',
-  random_total_before_substitution: 'Random total sites before subtitution',
-  random_total_after_substitution: 'Random total sites after subtitution',
-  cancer_disrupted: 'Cancer disrupted',
-  cancer_emerged: 'Cancer emerged',
-  cancer_total_before_substitution: 'Cancer total sites before subtitution',
-  cancer_total_after_substitution: 'Cancer total sites after subtitution',
-  cancer_disruption_rate: 'Cancer disruption rate',
-  cancer_emergence_rate: 'Cancer emergence rate',
-  random_disruption_rate: 'Random disruption rate',
-  random_emergence_rate: 'Random emergence rate',
-  cancer_to_random_disruption_ratio: 'Cancer to random disruption rate ratio',
-  cancer_to_random_emergence_ratio: 'Cancer to random emergence rate ratio',
-  disruption_significance_uncorrected: 'Significance of difference in disruption rate (not corrected)',
-  emergence_significance_uncorrected: 'Significance of difference in emergence rate (not corrected)',
-  disruption_significance: 'Significance of difference in disruption rate (corrected on multiple comparison)',
-  emergence_significance: 'Significance of difference in emergence rate (corrected on multiple comparison)',
-}
+column_names =  RateComparisonInfo::COLUMN_NAMES
 
 motif_infos = {
   random_disrupted: File.join(random_dirname, "sites_disrupted.txt"),
@@ -103,16 +81,9 @@ motif_infos[:emergence_significance] = significance_corrector.correct_hash(motif
 
 motif_infos.merge!(motif_collection_infos)
 
-output_columns = [:motif, :official_gene_name, :quality,
-                  :cancer_to_random_disruption_ratio, :disruption_significance,
-                  :cancer_to_random_emergence_ratio, :emergence_significance,
-                  :random_disrupted, :random_emerged, :random_total_before_substitution, :random_total_after_substitution,
-                  :cancer_disrupted, :cancer_emerged, :cancer_total_before_substitution, :cancer_total_after_substitution,
-                  :cancer_disruption_rate, :cancer_emergence_rate, :random_disruption_rate, :random_emergence_rate,
-                  :disruption_significance_uncorrected, :emergence_significance_uncorrected,
-                  :gene]
+output_columns = RateComparisonInfo::COLUMN_ORDER
 
-puts output_columns.map{|column_id| column_names[column_id] }.join("\t")
+puts RateComparisonInfo.table_header
 motif_names.map{|motif_name|
   puts output_columns.map{|column_id| motif_infos[column_id][motif_name]}.join("\t")
 }
