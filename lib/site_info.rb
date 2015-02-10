@@ -58,6 +58,15 @@ MutatatedSiteInfo = Struct.new( :line,
     fold_change >= fold_change_cutoff
   end
 
+  # glues corresponding motif site positions on direct and reverse strands
+  def snv_position_in_site_1_pwm
+    if orientation_1 == :direct
+      - pos_1
+    else
+      pos_1 + length - 1
+    end
+  end
+
   def self.each_site_in_stream(stream, &block)
     stream.each_line.lazy.reject{|line|
       line.start_with?('#')
