@@ -10,39 +10,49 @@ EnsemblExon = Struct.new( :ensembl_gene_id, :ensembl_transcript_id, :exon_chr_st
                     :five_prime_utr_start, :five_prime_utr_end, :three_prime_utr_start, :three_prime_utr_end,
                     :cds_length, :transcript_count, :description, :gene_biotype ) do
 
-  def exon_region
-    if exon_chr_start != exon_chr_end
-      IntervalNotation::Syntax::Long.closed_closed(exon_chr_start, exon_chr_end)
+  # closed boundaries; 1-based notation
+  def region_by_boundaries(left, right)
+    if left && right
+      if left != right
+        IntervalNotation::Syntax::Long.closed_closed(left, right)
+      else
+        IntervalNotation::Syntax::Long.point(left)
+      end
     else
-      IntervalNotation::Syntax::Long.point(exon_chr_start)
+      if !left && !right
+        IntervalNotation::Syntax::Long::Empty
+      else
+        raise 'Wrong parsing assumptions. My bug!'
+      end
     end
   end
+  protected :region_by_boundaries
 
-  def transcript_region
-    if transcript_start != transcript_end
-      IntervalNotation::Syntax::Long.closed_closed(transcript_start, transcript_end)
-    else
-      IntervalNotation::Syntax::Long.point(transcript_start)
-    end
-  end
-
+  # gene region, neither exon region, nor even transcript region (several exons of several transcripts have the same gene_region)!
   def gene_region
-    if gene_start != gene_end
-      IntervalNotation::Syntax::Long.closed_closed(gene_start, gene_end)
-    else
-      IntervalNotation::Syntax::Long.point(gene_start, gene_end)
-    end
+    region_by_boundaries(gene_start, gene_end)
+  end
+
+  # not exon region, whole transcript region (several exons -- at leastones corresponding to the same transcript -- have the same transcript_region)!
+  def transcript_region
+    region_by_boundaries(transcript_start, transcript_end)
+  end
+
+  def exon_region
+    region_by_boundaries(exon_chr_start, exon_chr_end)
   end
 
   def coding_part_region
-    return nil  unless genomic_coding_start && genomic_coding_end
-    if genomic_coding_start != genomic_coding_end
-      IntervalNotation::Syntax::Long.closed_closed(genomic_coding_start, genomic_coding_end)
-    else
-      IntervalNotation::Syntax::Long.point(genomic_coding_start)
-    end
+    region_by_boundaries(genomic_coding_start, genomic_coding_end)
   end
 
+  def utr_5
+    region_by_boundaries(five_prime_utr_start, five_prime_utr_end)
+  end
+
+  def utr_3
+    region_by_boundaries(three_prime_utr_start, three_prime_utr_end)
+  end
 
   def to_s
     [ensembl_gene_id, ensembl_transcript_id, exon_chr_start,

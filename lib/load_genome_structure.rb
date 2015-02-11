@@ -51,9 +51,8 @@ def read_coding_exons_by_chromosome(filename)
   EnsemblExon.each_in_file(filename)
             .group_by(&:chromosome)
             .map{|chromosome, exons|
-              coding_regions = exons.map{|exon| exon.coding_part_region }.compact
               chromosome_name = chromosome.to_s.start_with?('chr') ? chromosome : "chr#{chromosome}"
-              [chromosome_name.to_sym, IntervalNotation::Operations.union(coding_regions)]
+              [chromosome_name.to_sym, IntervalNotation::Operations.union(exons.map(&:coding_part_region))]
             }.to_h
 end
 
