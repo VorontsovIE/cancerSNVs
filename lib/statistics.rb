@@ -31,7 +31,8 @@ class Statistics
 
   def variance
     return nil  if values.empty?
-    mean_square - mean**2
+    result = mean_square - mean**2
+    result >= 0 ? result : 0 # floating point bug
   end
 
   def stddev
