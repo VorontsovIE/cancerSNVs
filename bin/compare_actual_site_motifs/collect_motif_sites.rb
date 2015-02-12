@@ -1,9 +1,12 @@
 $:.unshift File.absolute_path('../../lib', __dir__)
 require 'optparse'
 require 'fileutils'
+require 'set'
+require 'site_info'
 
 flush_size = 1000
 pvalue_cutoff = 0.0005
+motifs_requested = nil
 OptionParser.new do |opts|
   opts.banner = "Usage: #{opts.program_name} <sites> <output folder>\n" +
                 "Extract each motif's site sequences (before substitution)\n" +
@@ -13,6 +16,9 @@ OptionParser.new do |opts|
   }
   opts.on('--pvalue-cutoff PVALUE', 'P-value to treat motif as a site') {|value|
     pvalue_cutoff = value.to_f
+  }
+  opts.on('--motif MOTIFS', 'Comma-separated list of motifs of interest') {|value|
+    motifs_requested = value.split(',').to_set
   }
 end.parse!(ARGV)
 
@@ -39,7 +45,9 @@ MutatatedSiteInfo.each_site(sites_filename).select{|info|
   end
 end
 
-motifs.each do |motif_name, seqs|
+motifs.select{|motif_name, seqs|
+  !motifs_requested || motifs_requested.include?(motif_name)
+}.each do |motif_name, seqs|
   motif_filename = File.join(fasta_output_folder, "#{motif_name}.fasta")
   File.open(motif_filename, 'a') do |fw|
     fw.puts seqs
