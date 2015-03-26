@@ -1,6 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    bioinform (0.2.1)
     hoe (3.13.0)
       rake (>= 0.8, < 11.0)
     interval_notation (0.1.1)
@@ -12,5 +13,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  bioinform
   interval_notation (~> 0.1.1)
   rubystats
