@@ -2,7 +2,7 @@ $:.unshift File.absolute_path('lib', __dir__)
 require 'rate_comparison_infos'
 require 'statistics'
 
-random_variants = ['random_genome_13', 'random_genome_15', 'random_genome_17', 'random_shuffle_135', 'random_shuffle_137', 'random_shuffle_139']
+random_variants = ARGV
 motif_names = File.readlines('./source_data/motif_names.txt').map(&:chomp)
 sample_names = Dir.glob('./results/motif_statistics/full/any/samples/*').select{|fn| 
   File.directory?(fn) 
