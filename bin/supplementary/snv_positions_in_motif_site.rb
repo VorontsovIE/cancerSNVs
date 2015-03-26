@@ -1,86 +1,10 @@
 $:.unshift File.absolute_path('../../lib', __dir__)
 require 'site_info'
+require 'measurement_vector'
 require 'bioinform'
 require 'shellwords'
 require 'optparse'
 require 'fileutils'
-
-class Vector
-  attr_reader :values
-  def initialize(values)
-    @values = values
-  end
-
-  def [](ind)
-    @values[ind]
-  end
-
-  def dim
-    values.size
-  end
-
-  def +(other)
-    raise 'Incompatible dimensionality'  unless dim == other.dim
-    Vector.new( dim.times.map{|i| self[i] + other[i]} )
-  end
-
-  def -(other)
-    raise 'Incompatible dimensionality'  unless dim == other.dim
-    Vector.new( dim.times.map{|i| self[i] - other[i]} )
-  end
-
-  def *(other)
-    if other.is_a?(Vector)
-      raise 'Incompatible dimensionality'  unless dim == other.dim
-      Vector.new( dim.times.map{|i| self[i] * other[i] } )
-    elsif other.is_a?(Numeric)
-      Vector.new( @values.map{|el| el * other } )
-    else
-      raise
-    end
-  end
-
-  def /(other)
-    if other.is_a?(Vector)
-      raise 'Incompatible dimensionality'  unless dim == other.dim
-      Vector.new( dim.times.map{|i| self[i] / other[i] } )
-    elsif other.is_a?(Numeric)
-      Vector.new( @values.map{|el| el / other } )
-    else
-      raise
-    end
-  end
-
-  def **(k)
-    Vector.new( @values.map{|el| el ** k } )
-  end
-
-  def coerce(other)
-    if other.is_a?(Numeric)
-      [self, other]
-    else
-      raise
-    end
-  end
-
-  def each(&block)
-    @values.each(&block)
-  end
-
-  def to_s
-    @values.join("\t")
-  end
-
-  def inspect
-    '<' + @values.join(',') + '>'
-  end
-
-  def round(rate = 0)
-    Vector.new(@values.map{|el| el.round(rate) })
-  end
-
-  include Enumerable
-end
 
 def mean(values)
   values.inject(&:+) / values.size.to_f
@@ -91,10 +15,10 @@ def stddev(values)
   (values.map{|x| (x - m) ** 2 }.inject(&:+) / (values.size.to_f - 1.0)) ** 0.5
 end
 
-motif_collection_folder = '/home/ilya/iogen/hocomoco/'
+motif_collection_folder = './source_data/motif_collection/'
 
 motifs = Dir.glob(File.join(motif_collection_folder, '*.pwm')).map{|fn| Bioinform::MotifModel::PWM.from_file(fn) }
-motif_names = motifs.map(&:name)
+motif_names = motifs.map(&:name).map(&:to_sym)
 
 requested_motifs = motif_names
 folder = nil # './results/disruption_position_profile'
@@ -125,30 +49,23 @@ end
 mutation_profiles = sites_filenames.map do |sites_filename|
   mutation_profile_by_motif = {}
   motifs.each do |motif|
-    mutation_profile_by_motif[ motif.name ] = Array.new(motif.length, 0)
+    mutation_profile_by_motif[ motif.name.to_sym ] = Array.new(motif.length, 0)
   end
 
+  # MutatatedSiteInfo.each_site(sites_filename).select{|site| site.disrupted?(fold_change_cutoff: 1) }.each do |site|
   MutatatedSiteInfo.each_site(sites_filename).each do |site|
     mutation_profile_by_motif[site.motif_name][site.snv_position_in_site_1_pwm] += 1
   end
   mutation_profile_by_motif
 end
 
-def print_info(motif_mutation_profiles, stream_main, stream_additional)
-  motif_mutation_profiles.each{|motif_profile|  stream_additional.puts motif_profile }
-  stream_additional.puts '========================'
-
-
+def print_info(motif_mutation_profiles, stream)
   normalized_profiles = motif_mutation_profiles.map{|motif_profile|
     motif_profile / motif_profile.inject(0.0, &:+)
   }
 
-  normalized_profiles.each{|motif_profile|  stream_additional.puts motif_profile.round(4) }
-  stream_additional.puts '========================'
-
-  stream_main.puts mean(normalized_profiles).round(4)
-  stream_main.puts stddev(normalized_profiles).round(4)
-  stream_additional.puts (100 * stddev(normalized_profiles) / mean(normalized_profiles)).round(2)
+  stream.puts mean(normalized_profiles).round(4)
+  # stream.puts stddev(normalized_profiles).round(4)
 end
 
 requested_motifs.each do |motif|
@@ -156,12 +73,11 @@ requested_motifs.each do |motif|
     Vector.new(mutation_profile[motif])
   }
   if folder
-    $stderr.puts motif
     File.open(File.join(folder, "#{motif}.txt"), 'w') do |f|
-      print_info(motif_mutation_profiles, f, $stderr)
+      print_info(motif_mutation_profiles, f)
     end
   else
-    puts motif
-    print_info(motif_mutation_profiles, $stdout, $stderr)
+    $stdout.puts motif
+    print_info(motif_mutation_profiles, $stdout)
   end
 end
