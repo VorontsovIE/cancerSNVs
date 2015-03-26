@@ -143,6 +143,10 @@ class Histogram
       1 # element added
     end
   end
+
+  def fitter
+    HistogramFitter.new(self)
+  end
 end
 
 def range_formatting(range, rate: 3)
