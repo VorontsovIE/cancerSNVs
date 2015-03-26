@@ -33,12 +33,20 @@ def load_motif_underfitting_rates(fitting_log_filename)
 end
 
 pvalue_correction_method = 'fdr'
+control_set_multiplier = 1
+ignore_underfitting = false
 
 OptionParser.new do |opts|
   opts.banner = "Usage: #{opts.program_name} <cancer statistics folder> <random stats folder> <motif names> <hocomoco gene infos> [options]"
   opts.separator('Options:')
   opts.on('--correction METHOD', 'P-value correction method (holm/fdr/hochberg/hommel/bonferroni/BH/BY/none -- it\'s processed by R). Default is fdr.') {|value|
     pvalue_correction_method = value
+  }
+  opts.on('--expand-control-set N', 'Calculate statistics as if numbers in control set were N times greater. Use it only for preliminary checks') {|value|
+    control_set_multiplier = Integer(value)
+  }
+  opts.on('--ignore-underfitting', 'Don\'t take underfitted values into account. Use it only for preliminary checks' ) {
+    ignore_underfitting = true
   }
 end.parse!(ARGV)
 
@@ -73,8 +81,6 @@ motif_infos.default_proc = ->(hsh,k) { hsh[k] = {} }
 significance_calculator = PvalueCalculator.new(class_counts: :class_and_total)
 significance_corrector = PvalueCorrector.new(pvalue_correction_method)
 
-mult = 2
-
 motif_names.each {|motif|
   motif_infos[:motif][motif] = motif
 
@@ -83,10 +89,10 @@ motif_names.each {|motif|
   cancer_emerged = motif_infos[:cancer_emerged][motif]
   cancer_total_after = motif_infos[:cancer_total_after_substitution][motif]
 
-  random_disrupted = motif_infos[:random_disrupted][motif] * mult
-  random_total_before = motif_infos[:random_total_before_substitution][motif] * mult
-  random_emerged = motif_infos[:random_emerged][motif] * mult
-  random_total_after = motif_infos[:random_total_after_substitution][motif] * mult
+  random_disrupted = motif_infos[:random_disrupted][motif] * control_set_multiplier
+  random_total_before = motif_infos[:random_total_before_substitution][motif] * control_set_multiplier
+  random_emerged = motif_infos[:random_emerged][motif] * control_set_multiplier
+  random_total_after = motif_infos[:random_total_after_substitution][motif] * control_set_multiplier
 
   cancer_disruption_rate = cancer_disrupted.to_f / cancer_total_before
   random_disruption_rate = random_disrupted.to_f / random_total_before
@@ -94,7 +100,7 @@ motif_names.each {|motif|
   cancer_emergence_rate = cancer_emerged.to_f / cancer_total_after
   random_emergence_rate = random_emerged.to_f / random_total_after
 
-  random_underfitted = (fitting_logs[motif] || 0) * mult
+  random_underfitted = ignore_underfitting ? 0 : fitting_logs.fetch(motif, 0) * control_set_multiplier
 
   ###
   motif_infos[:cancer_disruption_rate][motif] = cancer_disruption_rate
