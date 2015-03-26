@@ -2,7 +2,7 @@ DIRECTORIES=`ls --directory ./results/motif_statistics/full/any/samples/PD*`
 SAMPLES=`basename --multiple $DIRECTORIES`
  
 
-for CONTEXT  in  any cpg tpc; do
+for CONTEXT  in  ${CONTEXTS}; do
   mkdir -p ./results/sample_profiles/${CONTEXT}/disruption/
   mkdir -p ./results/motif_statistics/full/${CONTEXT}/samples/all
   rm -f ./results/sample_profiles/${CONTEXT}/disruption/genome.txt

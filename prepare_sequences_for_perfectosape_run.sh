@@ -7,7 +7,7 @@ cd "$(dirname "$0")"
 mkdir -p  $CHUNK_FOLDER
 
 # Split sequences into equal-size chunks for computation parallelization
-for VARIANT  in  cancer  random_genome_13  random_genome_15  random_genome_17  random_shuffle_135  random_shuffle_137  random_shuffle_139; do
+for VARIANT  in  cancer  ${RANDOM_VARIANTS}; do
   split  --number=l/${NUMBER_OF_CORES}  --numeric-suffixes=1  --suffix-length=`expr length ${NUMBER_OF_CORES}`  --additional-suffix=.txt   ${SEQ_FOLDER}/sequences_${VARIANT}.txt  ${CHUNK_FOLDER}/sequences_${VARIANT}_chunk_
   for SUFFIX in `seq --equal-width  1 ${NUMBER_OF_CORES}`; do
     mkdir -p ${CHUNK_FOLDER}/core_${SUFFIX}
@@ -30,7 +30,7 @@ for SUFFIX in `seq --equal-width  1 ${NUMBER_OF_CORES}`; do
   echo '#!/bin/bash' > ${CHUNK_FOLDER}/core_${SUFFIX}/run_perfectosape.sh
   chmod 755 ${CHUNK_FOLDER}/core_${SUFFIX}/run_perfectosape.sh
   echo 'cd "$(dirname "$0")"'  >>  ${CHUNK_FOLDER}/core_${SUFFIX}/run_perfectosape.sh
-  for VARIANT  in  cancer  random_genome_13  random_genome_15  random_genome_17  random_shuffle_135  random_shuffle_137  random_shuffle_139; do
+  for VARIANT  in  cancer  ${RANDOM_VARIANTS}; do
     echo "java -cp ape.jar ru.autosome.perfectosape.SNPScan  ./motif_collection  ./sequences_${VARIANT}.txt  --fold-change-cutoff 1  --precalc ./motif_thresholds  >  ./sites_${VARIANT}.txt"  >>  ${CHUNK_FOLDER}/core_${SUFFIX}/run_perfectosape.sh
   done
 
@@ -46,9 +46,13 @@ echo '#!/bin/bash' > ${CHUNK_FOLDER}/concatenate_results.sh
 chmod 755 ${CHUNK_FOLDER}/concatenate_results.sh
 echo 'cd "$(dirname "$0")"'  >>  ${CHUNK_FOLDER}/concatenate_results.sh
 
-for VARIANT  in  cancer  random_genome_13  random_genome_15  random_genome_17  random_shuffle_135  random_shuffle_137  random_shuffle_139; do
+for VARIANT  in  cancer  ${RANDOM_VARIANTS}; do
   echo "cat /dev/null > ./sites_${VARIANT}.txt"  >>  ${CHUNK_FOLDER}/concatenate_results.sh
-  echo "grep -P ^# ./core_1/sites_${VARIANT}.txt  >>  ./sites_${VARIANT}.txt"  >>  ${CHUNK_FOLDER}/concatenate_results.sh
+  
+  # header
+  CORE_INDEX=`seq --equal-width  1 ${NUMBER_OF_CORES} | head -1`
+  echo "grep -P ^# ./core_${CORE_INDEX}/sites_${VARIANT}.txt  >>  ./sites_${VARIANT}.txt"  >>  ${CHUNK_FOLDER}/concatenate_results.sh
+  
   for SUFFIX in `seq --equal-width  1 ${NUMBER_OF_CORES}`; do
     echo "grep --invert-match -P ^# ./core_${SUFFIX}/sites_${VARIANT}.txt  >>  ./sites_${VARIANT}.txt"  >>  ${CHUNK_FOLDER}/concatenate_results.sh
 

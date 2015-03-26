@@ -9,6 +9,36 @@ export SITES_FOLDER=${RESULTS_FOLDER}/sites
 export FITTING_FOLDER=${RESULTS_FOLDER}/fitted_sites
 export MOTIF_STATISTICS_FOLDER=${RESULTS_FOLDER}/motif_statistics
 
+
+FITTING_FOLD=1
+
+CONTEXTS="any cpg tpc non_tpc"
+
+RANDOM_GENOME_SEEDS="13 15 17"
+RANDOM_SHUFFLE_SEEDS="135 137 139"
+
+RANDOM_GENOME_VARIANTS=""
+for SEED in ${RANDOM_GENOME_SEEDS}; do
+  RANDOM_GENOME_VARIANTS+=" random_genome_${SEED}"
+done
+
+RANDOM_SHUFFLE_VARIANTS=""
+for SEED in ${RANDOM_SHUFFLE_SEEDS}; do
+  RANDOM_SHUFFLE_VARIANTS+=" random_shuffle_${SEED}"
+done
+
+RANDOM_VARIANTS=""
+RANDOM_VARIANTS+=" ${RANDOM_GENOME_VARIANTS}"
+RANDOM_VARIANTS+=" ${RANDOM_SHUFFLE_VARIANTS}"
+
+export RANDOM_GENOME_SEEDS
+export RANDOM_GENOME_VARIANTS
+export RANDOM_SHUFFLE_SEEDS
+export RANDOM_SHUFFLE_VARIANTS
+export RANDOM_VARIANTS
+export CONTEXTS
+export FITTING_FOLD
+
 # Prepare marked up SNVs and sequences.
 # Generate random sequences.
 # Split files into chunks for running computations in parallel.
@@ -26,11 +56,12 @@ export MOTIF_STATISTICS_FOLDER=${RESULTS_FOLDER}/motif_statistics
 ${CHUNK_FOLDER}/run_perfectosape_multithread.sh
 
 # Separate sites by contexts.
-./sites_filtering.sh
+time ./sites_filtering.sh
 # Perform random sites fitting.
-./sites_fitting.sh
+time ./sites_fitting.sh
 
 # Extract motif statistics slices.
-./collect_motif_statistics_slices.sh
+time ./collect_motif_statistics_slices.sh
 # Aggregate motif statistics slices and find motifs of interest
-./aggregate_motifs_statistics.sh
+time ./aggregate_motifs_statistics.sh
+time ./aggregate_additional_motifs_statistics.sh

@@ -1,27 +1,33 @@
 #!/bin/bash
 
 # SNV_FOLDER, CHUNK_FOLDER and SITES_FOLDER should be specified in environment variables
+# CONTEXT_DECLARATIONS should be declared as an associative array
 cd "$(dirname "$0")"
 
-for CONTEXT in any cpg tpc
-do
+declare -A CONTEXT_DECLARATIONS # All except any
+CONTEXT_DECLARATIONS=( \
+                        [tpc]="--contexts TCN  --mutation-types promoter,intronic" \
+                        [cpg]="--contexts NCG  --mutation-types promoter,intronic" \
+                        [non_tpc]="--invert-context-request  --contexts TCN  --mutation-types promoter,intronic" \
+                      )
+
+for CONTEXT in ${CONTEXTS}; do
   mkdir -p ${SITES_FOLDER}/${CONTEXT}
 done
 
-for VARIANT  in  cancer  random_genome_13  random_genome_15  random_genome_17  random_shuffle_135  random_shuffle_137  random_shuffle_139; do
+for VARIANT  in  cancer  ${RANDOM_VARIANTS}; do
   ln -f  ${CHUNK_FOLDER}/sites_${VARIANT}.txt  ${SITES_FOLDER}/any/sites_${VARIANT}.txt
 done
 
 # generate subsets of sites in TpC/CpG mutation contexts
-for RANDOM_VARIANT  in  cancer  random_genome_13  random_genome_15  random_genome_17  random_shuffle_135  random_shuffle_137  random_shuffle_139; do
+for CONTEXT in ${CONTEXTS}; do
+  if [[ "$CONTEXT" != "any" ]]; then
+    for VARIANT  in  cancer  ${RANDOM_VARIANTS}; do
 
-  ruby bin/preparations/filter_mutations.rb   ${SNV_FOLDER}/SNV_infos_${RANDOM_VARIANT}.txt  \
-                                              ${SITES_FOLDER}/any/sites_${RANDOM_VARIANT}.txt  \
-                                              --contexts TCN  --mutation-types promoter,intronic  \
-                                              >  ${SITES_FOLDER}/tpc/sites_${RANDOM_VARIANT}.txt
-
-  ruby bin/preparations/filter_mutations.rb   ${SNV_FOLDER}/SNV_infos_${RANDOM_VARIANT}.txt  \
-                                              ${SITES_FOLDER}/any/sites_${RANDOM_VARIANT}.txt  \
-                                              --contexts NCG  --mutation-types promoter,intronic  \
-                                              >  ${SITES_FOLDER}/cpg/sites_${RANDOM_VARIANT}.txt
+      ruby bin/preparations/filter_mutations.rb   ${SNV_FOLDER}/SNV_infos_${VARIANT}.txt  \
+                                                  ${SITES_FOLDER}/any/sites_${VARIANT}.txt  \
+                                                  ${CONTEXT_DECLARATIONS[$CONTEXT]} \
+                                                  >  ${SITES_FOLDER}/${CONTEXT}/sites_${VARIANT}.txt
+    done
+  fi
 done

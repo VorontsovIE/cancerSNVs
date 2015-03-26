@@ -5,14 +5,48 @@
 
 cd "$(dirname "$0")"
 
+declare -A CANCER_SAMPLES_BY_TYPE
+CANCER_SAMPLES_BY_TYPE=( \
+                        [ER_plus_ve_HER2_plus_ve]=PD4194a,PD4198a \
+                        [ER_plus_ve_HER2_minus_ve]=PD4120a,PD4103a,PD4088a,PD4085a,PD3851a \
+                        [ER_minus_ve_HER2_plus_ve]=PD4199a,PD4192a \
+                        [triple_negative]=PD4248a,PD4086a,PD4109a \
+                        [BRCA1]=PD4107a,PD3890a,PD3905a,PD4005a,PD4006a \
+                        [BRCA2]=PD3904a,PD3945a,PD4115a,PD4116a \
+                        [PD3851a]=PD3851a \
+                        [PD3890a]=PD3890a \
+                        [PD3904a]=PD3904a \
+                        [PD3905a]=PD3905a \
+                        [PD3945a]=PD3945a \
+                        [PD4005a]=PD4005a \
+                        [PD4006a]=PD4006a \
+                        [PD4085a]=PD4085a \
+                        [PD4086a]=PD4086a \
+                        [PD4088a]=PD4088a \
+                        [PD4103a]=PD4103a \
+                        [PD4107a]=PD4107a \
+                        [PD4109a]=PD4109a \
+                        [PD4115a]=PD4115a \
+                        [PD4116a]=PD4116a \
+                        [PD4120a]=PD4120a \
+                        [PD4192a]=PD4192a \
+                        [PD4194a]=PD4194a \
+                        [PD4198a]=PD4198a \
+                        [PD4199a]=PD4199a \
+                        [PD4248a]=PD4248a \
+                        [ER_plus_ve_HER2_minus_ve_without_PD4120a]=PD4103a,PD4088a,PD4085a,PD3851a \
+                        [all_except_PD4120a]=PD3851a,PD3890a,PD3904a,PD3905a,PD3945a,PD4005a,PD4006a,PD4085a,PD4086a,PD4088a,PD4103a,PD4107a,PD4109a,PD4115a,PD4116a,PD4192a,PD4194a,PD4198a,PD4199a,PD4248a \
+                      )
+
 for CANCER_TYPE  in  ${!CANCER_SAMPLES_BY_TYPE[@]};  do
-  for CONTEXT in any cpg tpc; do
+  for CONTEXT in ${CONTEXTS}; do
     mkdir -p  ${MOTIF_STATISTICS_FOLDER}/full/${CONTEXT}/samples/${CANCER_TYPE}
 
-    for RANDOM_VARIANT  in  random_shuffle_135  random_shuffle_137  random_shuffle_139  random_genome_13  random_genome_15  random_genome_17; do
+    for RANDOM_VARIANT  in  ${RANDOM_VARIANTS}; do
       ruby summary.rb   ${MOTIF_STATISTICS_FOLDER}/slices/${CONTEXT}/samples/${CANCER_TYPE}/cancer  \
                         ${MOTIF_STATISTICS_FOLDER}/slices/${CONTEXT}/samples/${CANCER_TYPE}/${RANDOM_VARIANT}  \
                         ./source_data/motif_names.txt  ./source_data/hocomoco_genes_infos.csv  \
+                        ${MOTIF_STATISTICS_FOLDER}/fitting_log/${CONTEXT}/samples/${CANCER_TYPE}/${RANDOM_VARIANT}.log  \
                         --correction fdr  \
                         >  ${MOTIF_STATISTICS_FOLDER}/full/${CONTEXT}/samples/${CANCER_TYPE}/${RANDOM_VARIANT}.csv
 
@@ -22,8 +56,6 @@ for CANCER_TYPE  in  ${!CANCER_SAMPLES_BY_TYPE[@]};  do
           ruby filter_summary.rb  ${MOTIF_STATISTICS_FOLDER}/full/${CONTEXT}/samples/${CANCER_TYPE}/${RANDOM_VARIANT}.csv  \
                                   --motif-qualities A,B,C,D  --significance 0.05  \
                                   --${DISRUPTION_OR_EMERGENCE}  --${SUBJECTED_OR_PROTECTED}  \
-                                  --fitting-log ${MOTIF_STATISTICS_FOLDER}/fitting_log/${CONTEXT}/samples/${CANCER_TYPE}/${RANDOM_VARIANT}.log  \
-                                  --min-fitting-rate $MIN_FITTING_RATE  \
                                   >  ${MOTIF_STATISTICS_FOLDER}/filtered/${SUBJECTED_OR_PROTECTED}/${DISRUPTION_OR_EMERGENCE}/${CONTEXT}/samples/${CANCER_TYPE}/${RANDOM_VARIANT}.csv
         done
       done
@@ -35,7 +67,7 @@ for CANCER_TYPE  in  ${!CANCER_SAMPLES_BY_TYPE[@]};  do
     ls ${MOTIF_STATISTICS_FOLDER}/full/${CONTEXT}/samples/${CANCER_TYPE}/random_*.csv | ruby motif_pvalue_stats.rb  >  ${MOTIF_STATISTICS_FOLDER}/pvalue_statitics/${CONTEXT}/samples/${CANCER_TYPE}/compared_to_each.csv
   done
 
-  for CONTEXT in any cpg tpc; do
+  for CONTEXT in ${CONTEXTS}; do
     for SUBJECTED_OR_PROTECTED  in  subjected  protected; do
       for DISRUPTION_OR_EMERGENCE  in  disruption  emergence; do
 
@@ -54,7 +86,7 @@ done
 
 
 for CANCER_TYPE_1  in  ${!CANCER_SAMPLES_BY_TYPE[@]};  do
-  for CONTEXT in any cpg tpc; do
+  for CONTEXT in ${CONTEXTS}; do
     mkdir -p  ${MOTIF_STATISTICS_FOLDER}/full/${CONTEXT}/samples_vs_samples/${CANCER_TYPE_1}/
 
     for CANCER_TYPE_2  in  ${!CANCER_SAMPLES_BY_TYPE[@]};  do

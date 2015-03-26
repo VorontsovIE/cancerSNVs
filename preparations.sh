@@ -19,9 +19,10 @@ cd "$(dirname "$0")"
 # Ensembl exons from (also hg19 version)
 # # http://feb2014.archive.ensembl.org/biomart/martview/b139ef98cf27cbd5649f7c5f6d3e2c0c?VIRTUALSCHEMANAME=default&ATTRIBUTES=hsapiens_gene_ensembl.default.structure.ensembl_gene_id|hsapiens_gene_ensembl.default.structure.ensembl_transcript_id|hsapiens_gene_ensembl.default.structure.exon_chrom_start|hsapiens_gene_ensembl.default.structure.exon_chrom_end|hsapiens_gene_ensembl.default.structure.is_constitutive|hsapiens_gene_ensembl.default.structure.rank|hsapiens_gene_ensembl.default.structure.phase|hsapiens_gene_ensembl.default.structure.cdna_coding_start|hsapiens_gene_ensembl.default.structure.cdna_coding_end|hsapiens_gene_ensembl.default.structure.genomic_coding_start|hsapiens_gene_ensembl.default.structure.genomic_coding_end|hsapiens_gene_ensembl.default.structure.ensembl_exon_id|hsapiens_gene_ensembl.default.structure.cds_start|hsapiens_gene_ensembl.default.structure.cds_end|hsapiens_gene_ensembl.default.structure.ensembl_peptide_id|hsapiens_gene_ensembl.default.structure.chromosome_name|hsapiens_gene_ensembl.default.structure.start_position|hsapiens_gene_ensembl.default.structure.end_position|hsapiens_gene_ensembl.default.structure.transcript_start|hsapiens_gene_ensembl.default.structure.transcript_end|hsapiens_gene_ensembl.default.structure.strand|hsapiens_gene_ensembl.default.structure.external_gene_id|hsapiens_gene_ensembl.default.structure.external_gene_db|hsapiens_gene_ensembl.default.structure.5_utr_start|hsapiens_gene_ensembl.default.structure.5_utr_end|hsapiens_gene_ensembl.default.structure.3_utr_start|hsapiens_gene_ensembl.default.structure.3_utr_end|hsapiens_gene_ensembl.default.structure.cds_length|hsapiens_gene_ensembl.default.structure.transcript_count|hsapiens_gene_ensembl.default.structure.description|hsapiens_gene_ensembl.default.structure.gene_biotype&FILTERS=
 
+ruby bin/preparations/expand_motif_flanks.rb  /home/ilya/iogen/hocomoco  ./source_data/hocomoco_11bp_expanded_flanks
 ln -sf  /home/ilya/iogen/genome/hg19  ./source_data/genome
 ln -sf  /home/ilya/iogen/genome/hg19_exons\(ensembl\,GRCh37.p13\).txt  ./source_data/exons.txt
-ln -f  /home/ilya/iogen/hocomoco  ./source_data/motif_collection
+ln -sf  `realpath ./source_data/hocomoco_11bp_expanded_flanks/`  ./source_data/motif_collection
 ln -f  /home/ilya/iogen/hocomoco-thresholds  ./source_data/motif_thresholds
 
 mkdir -p  $SEQ_FOLDER  $SNV_FOLDER  $CHUNK_FOLDER
@@ -37,7 +38,7 @@ ln -f  ${RESULTS_FOLDER}/SNV_infos_regulatory.txt  ${SNV_FOLDER}/SNV_infos_cance
 ##################################
 
 # Extract sequences around SNVs
-ruby bin/preparations/extract_snv_sequences.rb  ${SNV_FOLDER}/SNV_infos_cancer.txt  ./source_data/genome  --flank-length 25  >  ${SEQ_FOLDER}/sequences_cancer.txt
+ruby bin/preparations/extract_snv_sequences.rb  ${SNV_FOLDER}/SNV_infos_cancer.txt  ./source_data/genome  --flank-length 50  >  ${SEQ_FOLDER}/sequences_cancer.txt
 
 # Generate random sequences
 ./prepare_random_sequences.sh
