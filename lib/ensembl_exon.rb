@@ -33,7 +33,7 @@ EnsemblExon = Struct.new( :ensembl_gene_id, :ensembl_transcript_id, :exon_chr_st
     region_by_boundaries(gene_start, gene_end)
   end
 
-  # not exon region, whole transcript region (several exons -- at leastones corresponding to the same transcript -- have the same transcript_region)!
+  # not exon region, whole transcript region (several exons -- at least, ones corresponding to the same transcript -- have the same transcript_region)!
   def transcript_region
     region_by_boundaries(transcript_start, transcript_end)
   end
