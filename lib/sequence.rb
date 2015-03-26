@@ -1,7 +1,7 @@
 class Sequence
   attr_reader :sequence, :name
   def initialize(sequence, options = {})
-    raise "Wrong sequence `#{sequence}`"  unless Sequence.valid_sequence?(sequence)
+    # raise "Wrong sequence `#{sequence}`"  unless Sequence.valid_sequence?(sequence)
     @sequence = sequence
     @name = options[:name] || sequence
   end
@@ -35,6 +35,6 @@ class Sequence
   end
 
   def self.valid_sequence?(sequence)
-    sequence.match /\A[acgt]+\z/i
+    sequence.match /\A[acgtn]+\z/i
   end
 end

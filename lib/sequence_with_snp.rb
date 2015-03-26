@@ -3,9 +3,9 @@ require_relative 'sequence'
 class SequenceWithSNP
   attr_reader :left, :allele_variants, :right, :name
   def initialize(left, allele_variants, right, options = {})
-    raise "SequenceWithSNP left part is invalid: #{left}" unless Sequence.valid_sequence?(left)
-    raise "SequenceWithSNP right part is invalid: #{right}" unless Sequence.valid_sequence?(right)
-    raise "SequenceWithSNP allele_variants are invalid: #{allele_variants}" unless allele_variants.map(&:to_s).all?{|letter| %w[A C G T].include?(letter.upcase) }
+    # raise "SequenceWithSNP left part is invalid: #{left}" unless Sequence.valid_sequence?(left)
+    # raise "SequenceWithSNP right part is invalid: #{right}" unless Sequence.valid_sequence?(right)
+    # raise "SequenceWithSNP allele_variants are invalid: #{allele_variants}" unless allele_variants.map(&:to_s).all?{|letter| %w[A C G T N].include?(letter.upcase) }
     @left, @allele_variants, @right = left, allele_variants.map(&:to_s), right
     @name = options[:name] || (left + '_' + allele_variants.join('-') + '_' + right)
   end
