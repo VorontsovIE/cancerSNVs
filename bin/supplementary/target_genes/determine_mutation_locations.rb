@@ -33,8 +33,8 @@ interval_object_pairs_by_chromosome_non_reduced.each do |chr, intervals|
 end
 
 contexts = {
-  tpc: MutationContext.new('T','C','N'),
-  cpg: MutationContext.new('N','C','G')
+  tpc: MutationContext.new('T','C','N', should_raise: false),
+  cpg: MutationContext.new('N','C','G', should_raise: false)
 }.map{|name, context|
   [name, [context, context.revcomp]]
 }.to_h

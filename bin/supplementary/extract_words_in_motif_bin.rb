@@ -20,7 +20,7 @@ end.parse!(ARGV)
 
 
 sites_filename = ARGV[0] # sites_cancer.txt
-motif_name = ARGV[1] # AHR_si
+motif_name = ARGV[1].to_sym # AHR_si
 from = ARGV[2] # 15
 to = ARGV[3] # 16
 snv_infos_filename = ARGV[4] # './source_data/SNV_infos.txt'

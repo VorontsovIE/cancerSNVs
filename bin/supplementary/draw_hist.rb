@@ -4,7 +4,7 @@ require 'histogram'
 require 'breast_cancer_snv'
 require 'site_info'
 
-motif = ARGV[0] # AHR_si
+motif = ARGV[0].to_sym # AHR_si
 mutated_site_infos_filename = ARGV[1] # './source_data/sites_cancer.txt'
 snv_infos_filename = ARGV[2] #'./source_data/SNV_infos.txt'
 
