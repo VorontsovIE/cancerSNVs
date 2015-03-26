@@ -15,15 +15,15 @@ MutatatedSiteInfo = Struct.new( :line,
               variants,
               pvalue_1, pvalue_2, fold_change = line.split("\t")
     MutatatedSiteInfo.new(line,
-                          variant_id, motif_name,
+                          variant_id, motif_name.to_sym,
                           fold_change.to_f, pvalue_1.to_f, pvalue_2.to_f,
                           pos_1.to_i, orientation_1.to_sym, seq_1,
                           pos_2.to_i, orientation_2.to_sym, seq_2,
-                          variants)
+                          variants.to_sym)
   end
 
   def normalized_snp_name
-    variant_id.split("_")[0]
+    variant_id.split("_", 2)[0]
   end
 
   def length
