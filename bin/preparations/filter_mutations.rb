@@ -7,9 +7,15 @@ require 'site_info'
 require 'breast_cancer_snv'
 require 'import_information'
 
+def snv_in_set(line, set)
+  snv_normalized_name = line.split(' ', 2)[0].split('_')[0]
+  set.include?(snv_normalized_name)
+end
+
 requested_mutation_types = nil
 requested_mutation_contexts = nil
 requested_cancer_samples = nil
+invert_context_request = nil
 show_possible_mutation_types_and_exit = false
 show_possible_cancer_samples_and_exit = false
 OptionParser.new do |opts|
@@ -25,7 +31,7 @@ OptionParser.new do |opts|
   opts.on('--contexts POSS_CONTEXTS',  "Specify possible mutation contexts (e.g. `TCN,NCG`)",
                                         "`N` represents any-nucleotide placeholder. `N`-s are independent",
                                         "Context is a 3nt string, with center representing a mutation" ) {|value|
-    requested_mutation_contexts = value.upcase.split(',').map{|context| MutationContext.from_string(context) }
+    requested_mutation_contexts = value.upcase.split(',').map{|context| MutationContext.from_string(context, should_raise: false) }
   }
 
   opts.on('--cancer-samples POSSIBLE_SAMPLES', 'Specify cancer samples to retain.',
@@ -42,12 +48,15 @@ OptionParser.new do |opts|
     show_possible_cancer_samples_and_exit = true
   }
 
+  opts.on('--invert-context-request', 'Filter only mutations NOT matching specified context') {
+    invert_context_request = true
+  }
 end.parse!(ARGV)
 
 if requested_mutation_contexts
   requested_mutation_contexts = (requested_mutation_contexts + requested_mutation_contexts.map(&:revcomp)).uniq
 else
-  requested_mutation_contexts = [MutationContext.new('N','N','N')]
+  requested_mutation_contexts = [MutationContext.new('N','N','N', should_raise: false)]
 end
 
 raise 'Specify SNV infos file'  unless mutations_markup_filename = ARGV[0] # './source_data/SNV_infos.txt'
@@ -62,24 +71,60 @@ if show_possible_cancer_samples_and_exit
   exit
 end
 
+##########################
 
-snvs = BreastCancerSNV.each_substitution_in_file(mutations_markup_filename).map{|snv| [snv.variant_id, snv] }.to_h
+if invert_context_request
+  context_filter = ->(snv){
+    requested_mutation_contexts.none?{|requested_context| requested_context.match?(snv.context_before_snv_plus_strand) }
+  }
+else
+  context_filter = ->(snv){
+    requested_mutation_contexts.any?{|requested_context| requested_context.match?(snv.context_before_snv_plus_strand) }
+  }
+end
+
+##########
+
+if requested_cancer_samples
+  sample_filter = ->(snv) {
+    requested_cancer_samples.include?(snv.sample_id)
+  }
+else
+  sample_filter = ->(snv){ true }
+end
+
+##########
+
+if requested_mutation_types
+  mutation_type_filter = ->(snv) {
+    requested_mutation_types.intersect?(snv.mut_types)
+  }
+else
+  mutation_type_filter = ->(snv){ true }
+end
+
+##########
+
+snvs_to_choose = BreastCancerSNV
+  .each_substitution_in_file(mutations_markup_filename)
+  .select(&context_filter)
+  .select(&sample_filter)
+  .select(&mutation_type_filter)
+  .map(&:variant_id)
+  .force
+  .to_set
+
+######################
 
 if $stdin.tty?
   raise 'Specify site infos'  unless site_fold_changes_filename = ARGV[1] # './source_data/sites_cancer.txt'
-  site_iterator = MutatatedSiteInfo.each_site(site_fold_changes_filename)
+  File.open(site_fold_changes_filename) do |f|
+    f.each_line do |line|
+      puts line  if snv_in_set(line, snvs_to_choose) # comment-line has normalized name starting with `#` so it's not in set
+    end
+  end
 else
-  site_iterator = MutatatedSiteInfo.each_site_in_stream($stdin)
+  $stdin.each_line do |line|
+    puts line  if snv_in_set(line, snvs_to_choose) # comment-line has normalized name starting with `#` so it's not in set
+  end
 end
-
-site_iterator.map{|site, snv|
-  [site, snvs[site.normalized_snp_name]]
-}.select{|site, snv|
-  requested_mutation_contexts.any?{|requested_context| requested_context.match?(snv.context_before_snv_plus_strand) }
-}.select{|site, snv|
-  !requested_cancer_samples || requested_cancer_samples.include?(snv.sample_id)
-}.select{|site, snv|
-  !requested_mutation_types || requested_mutation_types.intersect?(snv.mut_types)
-}.each{|site, snv|
-  puts site.line
-}
