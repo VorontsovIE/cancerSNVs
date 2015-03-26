@@ -88,7 +88,7 @@ mutated_sites = MutatatedSiteInfo.each_site(mutated_site_infos_filename)
                                 .select(&fold_change_checker)
                                 .map(&:motif_name)
 
-motif_names = File.readlines(motifs_filename).map(&:strip)
+motif_names = File.readlines(motifs_filename).map(&:strip).map(&:to_sym)
 
 number_of_motifs = count_each_element(mutated_sites)
 motif_names.each do |motif_name|
