@@ -21,6 +21,13 @@ BreastCancerSNV = Struct.new( :variant_id,
                               :mRNA_mut_syntax, :cds_mut_syntax, :aa_mut_syntax,
                               :current_conf_status, :validation_platform ) do
 
+
+  attr_accessor :_mut_types_raw
+
+  def mut_types
+    @mut_types ||= _mut_types_raw.split(',').map(&:downcase).map(&:to_sym).to_set
+  end
+
   # '27607140	PD3851a	1	67165085	GRCh37	G	A	GAGGATGACA	C	T	GCAAGCTGCC		-SGIP1	ENSG00000118473	CCDS30744.1	ENST00000371037	ProteinCoding	Intronic,Promoter	r.?			None'
   def self.from_string(str)
     variant_id,
@@ -45,9 +52,12 @@ BreastCancerSNV = Struct.new( :variant_id,
 
                         strand_of_mutation_in_pyrimidine_context.to_sym,
                         gene, gene_id, ccds_id, transcript_id,
-                        gene_type.to_sym, mut_types.split(',').map(&:downcase).map(&:to_sym).to_set,
+                        gene_type.to_sym, nil, # don't initialize mut_type right now
                         mRNA_mut_syntax, cds_mut_syntax, aa_mut_syntax,
                         current_conf_status.to_sym, validation_platform.to_sym )
+    .tap {|snv|
+      snv._mut_types_raw = mut_types # lazy initialization of mut_types
+    }
   end
 
 
@@ -143,12 +153,45 @@ BreastCancerSNV = Struct.new( :variant_id,
     "#{five_prime_flanking_sequence_plus_strand}#{mutant_base_plus_strand}#{three_prime_flanking_sequence_plus_strand}"
   end
 
-  def snp_sequence_pyrimidine_context
-    "#{five_prime_flanking_sequence_in_pyrimidine_context}[#{ref_base_pyrimidine_context}/#{mutant_base_pyrimidine_context}]#{three_prime_flanking_sequence_in_pyrimidine_context}"
+  def snp_sequence_pyrimidine_context(five_prime_flank_length: nil, three_prime_flank_length: nil)
+    five_prime_flank_length ||= five_prime_flanking_sequence_in_pyrimidine_context.length
+    three_prime_flank_length ||= three_prime_flanking_sequence_in_pyrimidine_context.length
+    five_prime_chunk = five_prime_flanking_sequence_in_pyrimidine_context[-five_prime_flank_length..-1]
+    three_prime_chunk = three_prime_flanking_sequence_in_pyrimidine_context[0, three_prime_flank_length]
+    "#{ five_prime_chunk }[#{ref_base_pyrimidine_context}/#{mutant_base_pyrimidine_context}]#{ three_prime_chunk }"
   end
 
   def snp_sequence_plus_strand
     "#{five_prime_flanking_sequence_plus_strand}[#{ref_base_plus_strand}/#{mutant_base_plus_strand}]#{three_prime_flanking_sequence_plus_strand}"
+  end
+
+
+  def sequence_with_snv_in_pyrimidine_context(five_prime_flank_length: nil, three_prime_flank_length: nil, name: variant_id)
+    five_prime_flank_length ||= five_prime_flanking_sequence_in_pyrimidine_context.length
+    three_prime_flank_length ||= three_prime_flanking_sequence_in_pyrimidine_context.length
+    SequenceWithSNP.new(
+      five_prime_flanking_sequence_in_pyrimidine_context[-five_prime_flank_length..-1],
+      [ref_base_pyrimidine_context, mutant_base_pyrimidine_context],
+      three_prime_flanking_sequence_in_pyrimidine_context[0, three_prime_flank_length]
+    )
+  end
+
+  # SNV sequence from information in object itself (doesn't involve loading sequence from genome). See also #snp_sequence_from_genome
+  def sequence_with_snv(five_prime_flank_length: nil, three_prime_flank_length: nil, name: variant_id)
+    five_prime_flank_length ||= five_prime_flanking_sequence_plus_strand.length
+    three_prime_flank_length ||= three_prime_flanking_sequence_plus_strand.length
+    if five_prime_flank_length > five_prime_flanking_sequence_plus_strand.length
+      raise "Can't obtain such a long subsequence from provided data: requested #{five_prime_flank_length}bp. But provided 5' flank is of length #{five_prime_flanking_sequence_plus_strand.length}.\n" +
+            "Use snp_sequence_from_genome instead"
+    end
+    if three_prime_flank_length > three_prime_flanking_sequence_plus_strand.length
+      raise "Can't obtain such a long subsequence from provided data: requested #{three_prime_flank_length}bp. But provided 3' flank is of length #{three_prime_flanking_sequence_plus_strand.length}.\n" +
+            "Use snp_sequence_from_genome instead"
+    end
+    seq_5 = five_prime_flanking_sequence_plus_strand[five_prime_flanking_sequence_plus_strand.length - five_prime_flank_length, five_prime_flank_length]
+    seq_3 = three_prime_flanking_sequence_plus_strand[0, three_prime_flank_length]
+    allele_variants = [ref_base_plus_strand, mutant_base_plus_strand]
+    SequenceWithSNP.new(seq_5, allele_variants, seq_3, name: name)
   end
 
   def snp_sequence_from_genome(genome_folder, five_prime_flank_length, three_prime_flank_length, name: variant_id)
