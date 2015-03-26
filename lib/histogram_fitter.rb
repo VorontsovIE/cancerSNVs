@@ -1,6 +1,6 @@
 require_relative 'histogram'
 
-class HistogramFitting
+class HistogramFitter
   attr_reader :goal_distribution, :current_distribution
   def initialize(goal_distribution)
     @goal_distribution = goal_distribution
@@ -29,9 +29,16 @@ class HistogramFitting
      @current_distribution.elements_total_in_range
   end
 
-
   def fitted?
     current_total >= goal_total
+  end
+
+  def num_underfitted
+    goal_total - current_total
+  end
+
+  def underfitting_percentage
+    100.0 * num_underfitted / goal_total
   end
 
   def each_bin(ignore_flanks: true)
@@ -43,20 +50,17 @@ class HistogramFitting
     end
   end
 
-  def print_discrepancies(output_stream: $stderr)
-    output_stream.puts "Found #{current_total} from #{goal_total} (#{percentage(current_total, goal_total)}%)"
+  def print_discrepancies(output_stream: $stderr, note: nil, level_mark: "")
+    return  if fitted?
+
+    output_stream.puts "#{level_mark}#{note}"
+    output_stream.puts "#{level_mark}#{num_underfitted} underfitted (#{underfitting_percentage}%)"
     each_bin do |bin_range, current_bin_count, goal_bin_count|
       if current_bin_count != goal_bin_count
-        str = "#{range_formatting(bin_range, rate: 3)}: " +
-              "found #{current_bin_count} from #{goal_bin_count}"
-        output_stream.puts(str)
+        range_repr = range_formatting(bin_range, rate: 3)
+        output_stream.puts "#{level_mark}#{range_repr}: found #{current_bin_count} from #{goal_bin_count}"
       end
     end
-    output_stream.puts
+    # output_stream.puts "#{level_mark}"
   end
-
-  def percentage(count, total)
-    100.0 * count / total
-  end
-  private :percentage
 end
