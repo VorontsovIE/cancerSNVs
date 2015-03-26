@@ -49,4 +49,20 @@ class EnsemblTranscript
   def exonic_non_utr
     exonic_region - utr_3 - utr_5
   end
+  def transcript_start
+    exons.first.transcript_start # any exon has the same transcript start
+  end
+  def transcript_end
+    exons.first.transcript_end
+  end
+  def promoter(five_prime_length:, three_prime_length:)
+    case strand
+    when :+
+      IntervalNotation::Syntax::Long.closed_closed(transcript_start - five_prime_length, transcript_start + three_prime_length - 1)
+    when :-
+      IntervalNotation::Syntax::Long.closed_closed(transcript_end - three_prime_length + 1, transcript_end + five_prime_length)
+    else
+      raise 'Wrong strand format'
+    end
+  end
 end
