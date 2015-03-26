@@ -4,32 +4,40 @@ end
 
 RateComparisonInfo = Struct.new(
                   :motif, :official_gene_name, :quality,
-                  :cancer_to_random_disruption_ratio, :disruption_significance,
-                  :cancer_to_random_emergence_ratio, :emergence_significance,
+                  :cancer_to_random_disruption_ratio, :disruption_significance_fitting_aware,
+                  :cancer_to_random_emergence_ratio, :emergence_significance_fitting_aware,
                   :random_disrupted, :random_emerged, :random_total_before_substitution, :random_total_after_substitution,
                   :cancer_disrupted, :cancer_emerged, :cancer_total_before_substitution, :cancer_total_after_substitution,
                   :cancer_disruption_rate, :cancer_emergence_rate, :random_disruption_rate, :random_emergence_rate,
                   :disruption_significance_uncorrected, :emergence_significance_uncorrected,
-                  :gene) do
+                  :gene, :underfitted,
+                  :disruption_significance, :emergence_significance,
+                  :disruption_significance_uncorrected_fitting_aware, :emergence_significance_uncorrected_fitting_aware,
+                  ) do
 
   def self.from_string(line)
       motif, official_gene_name, quality,
-          cancer_to_random_disruption_ratio, disruption_significance,
-          cancer_to_random_emergence_ratio, emergence_significance,
+          cancer_to_random_disruption_ratio, disruption_significance_fitting_aware,
+          cancer_to_random_emergence_ratio, emergence_significance_fitting_aware,
           random_disrupted, random_emerged, random_total_before_substitution, random_total_after_substitution,
           cancer_disrupted, cancer_emerged, cancer_total_before_substitution, cancer_total_after_substitution,
           cancer_disruption_rate, cancer_emergence_rate, random_disruption_rate, random_emergence_rate,
           disruption_significance_uncorrected, emergence_significance_uncorrected,
-          gene = line.chomp.split("\t")
+          gene, underfitted,
+          disruption_significance, emergence_significance,
+          disruption_significance_uncorrected_fitting_aware, emergence_significance_uncorrected_fitting_aware = line.chomp.split("\t")
       RateComparisonInfo.new(
           motif, official_gene_name, quality.upcase.to_sym,
-          to_float(cancer_to_random_disruption_ratio), to_float(disruption_significance),
-          to_float(cancer_to_random_emergence_ratio), to_float(emergence_significance),
+          to_float(cancer_to_random_disruption_ratio), to_float(disruption_significance_fitting_aware),
+          to_float(cancer_to_random_emergence_ratio), to_float(emergence_significance_fitting_aware),
           random_disrupted.to_i, random_emerged.to_i, random_total_before_substitution.to_i, random_total_after_substitution.to_i,
           cancer_disrupted.to_i, cancer_emerged.to_i, cancer_total_before_substitution.to_i, cancer_total_after_substitution.to_i,
           cancer_disruption_rate.to_f, cancer_emergence_rate.to_f, random_disruption_rate.to_f, random_emergence_rate.to_f,
           to_float(disruption_significance_uncorrected), to_float(emergence_significance_uncorrected),
-          gene)
+          gene, underfitted,
+          to_float(disruption_significance), to_float(emergence_significance),
+          to_float(disruption_significance_uncorrected_fitting_aware), to_float(emergence_significance_uncorrected_fitting_aware),
+        )
   end
 
   def self.each_in_file(filename, &block)
@@ -76,13 +84,21 @@ RateComparisonInfo::COLUMN_NAMES = {
   emergence_significance_uncorrected: 'Significance of difference in emergence rate (not corrected)',
   disruption_significance: 'Significance of difference in disruption rate (corrected on multiple comparison)',
   emergence_significance: 'Significance of difference in emergence rate (corrected on multiple comparison)',
+  underfitted: 'Number of sites underfitted',
+  disruption_significance_uncorrected_fitting_aware: 'Significance of difference in disruption rate (not corrected, fitting aware)',
+  emergence_significance_uncorrected_fitting_aware: 'Significance of difference in emergence rate (not corrected, fitting aware)',
+  disruption_significance_fitting_aware: 'Significance of difference in disruption rate (corrected on multiple comparison, fitting aware)',
+  emergence_significance_fitting_aware: 'Significance of difference in emergence rate (corrected on multiple comparison, fitting aware)',
 }
 
 RateComparisonInfo::COLUMN_ORDER = [:motif, :official_gene_name, :quality,
-                  :cancer_to_random_disruption_ratio, :disruption_significance,
-                  :cancer_to_random_emergence_ratio, :emergence_significance,
+                  :cancer_to_random_disruption_ratio, :disruption_significance_fitting_aware,
+                  :cancer_to_random_emergence_ratio, :emergence_significance_fitting_aware,
                   :random_disrupted, :random_emerged, :random_total_before_substitution, :random_total_after_substitution,
                   :cancer_disrupted, :cancer_emerged, :cancer_total_before_substitution, :cancer_total_after_substitution,
                   :cancer_disruption_rate, :cancer_emergence_rate, :random_disruption_rate, :random_emergence_rate,
                   :disruption_significance_uncorrected, :emergence_significance_uncorrected,
-                  :gene]
+                  :gene, :underfitted,
+                  :disruption_significance, :emergence_significance,
+                  :disruption_significance_uncorrected_fitting_aware, :emergence_significance_uncorrected_fitting_aware,
+                ]
