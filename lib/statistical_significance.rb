@@ -1,14 +1,6 @@
-require 'tempfile'
+require 'open3'
 require 'rubystats'
 require_relative 'table'
-
-def with_temp_file(filename, &block)
-  temp_file = Tempfile.new(filename)
-  yield temp_file
-ensure
-  temp_file.close
-  temp_file.unlink
-end
 
 class PvalueCalculator
   attr_reader :class_counts
@@ -17,18 +9,32 @@ class PvalueCalculator
     @class_counts = class_counts
   end
 
-  # either  n_11,n_21,n_12, n_22
-  # or      n_11, n_21, total_1, total_2
+  # either  a_1, b_1, a_2, b_2
+  # or      a_1, b_1, total_a, total_b
   # depending on class_counts
-  def calculate(values)
+  # unclassified are not included in total, they are additional
+  def calculate(values, unclassified_a: 0, unclassified_b: 0)
     case class_counts
     when :two_classes
-      n_11, n_21, n_12, n_22 = *values
-      Rubystats::FishersExactTest.new.calculate(n_11, n_12, n_21, n_22)[:twotail]
+      a_1, b_1, a_2, b_2 = *values
     when :class_and_total
-      n_11, n_21, total_1, total_2 = *values
-      Rubystats::FishersExactTest.new.calculate(n_11, total_1 - n_11, n_21, total_2 - n_21)[:twotail]
+      a_1, b_1, total_a, total_b = *values
+      a_2 = total_a - a_1
+      b_2 = total_b - b_1
     end
+
+    fet = Rubystats::FishersExactTest.new
+    # Sorry, slow method. I don't want to make assumptions about significance
+    (0..unclassified_a).flat_map{|a_1_add|
+      a_2_add = unclassified_a - a_1_add
+
+      (0..unclassified_b).map{|b_1_add|
+        b_2_add = unclassified_b - b_1_add
+
+        fet.calculate(a_1 + a_1_add, a_2 + a_2_add,
+                      b_1 + b_1_add, b_2 + b_2_add)[:twotail]
+      }
+    }.max
   end
 end
 
@@ -39,21 +45,12 @@ class PvalueCorrector
   end
 
   def correct(pvalues)
-    with_temp_file('uncorrected_pvalues.txt') do |uncorrected_pvalues_file|
-      pvalues.each do |pvalue|
-        uncorrected_pvalues_file.puts(pvalue)
-      end
-      uncorrected_pvalues_file.close
-
-      with_temp_file('corrected_pvalues.txt') do |corrected_pvalues_file|
-        corrected_pvalues_file.close
-
-        run_correction_script(uncorrected_pvalues_file.path, corrected_pvalues_file.path, correction_method: correction_method)
-
-        corrected_pvalues_file.open
-        corrected_pvalues_file.readlines.map(&:strip).map(&:to_f)
-      end
-    end
+    script_path = File.absolute_path('correct_significance.r', __dir__) # runned with Rscript (shebang syntax involved)
+    Open3.popen2("#{script_path} #{correction_method}"){|fread, fwrite|
+      fread.puts pvalues
+      fread.close
+      fwrite.readlines.map(&:strip).map(&:to_f)
+    }
   end
 
   def correct_hash(pvalues_hash)
@@ -65,19 +62,6 @@ class PvalueCorrector
     }
     names.zip(correct(pvalues)).to_h
   end
-
-  def run_correction_script(from_file, to_file, correction_method: 'holm')
-    with_temp_file('correction_script.r') do |correction_script_file|
-      correction_script_file.puts('dataT <- read.table("' + from_file + '")')
-      correction_script_file.puts('values <- data.frame(dataT)')
-      correction_script_file.puts('newValues <- p.adjust(values$V1, method="' + correction_method + '")')
-      correction_script_file.puts('write.table(newValues, "'+ to_file + '", FALSE, FALSE, "\t", "\n", "NA", ".", FALSE, FALSE)')
-      correction_script_file.close
-
-      system("/usr/bin/env R --slave -f #{correction_script_file.path}")
-    end
-  end
-  private :run_correction_script
 end
 
 class IdlePvalueCorrector
