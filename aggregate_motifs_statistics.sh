@@ -4,17 +4,21 @@
 
 cd "$(dirname "$0")"
 
+EXPAND_CONTROL_SET_FOLD=1
+
 mkdir -p $MOTIF_STATISTICS_FOLDER/filtered
 
 for CONTEXT in ${CONTEXTS}; do
   mkdir -p  ${MOTIF_STATISTICS_FOLDER}/full/${CONTEXT}
 
   for RANDOM_VARIANT  in  ${RANDOM_VARIANTS}; do
+    # --ignore-underfitting \
     ruby summary.rb   ${MOTIF_STATISTICS_FOLDER}/slices/${CONTEXT}/cancer  \
                       ${MOTIF_STATISTICS_FOLDER}/slices/${CONTEXT}/${RANDOM_VARIANT}  \
                       ./source_data/motif_names.txt  ./source_data/hocomoco_genes_infos.csv  \
                       ${MOTIF_STATISTICS_FOLDER}/fitting_log/${CONTEXT}/${RANDOM_VARIANT}.log  \
                       --correction fdr  \
+                      --expand-control-set ${EXPAND_CONTROL_SET_FOLD} \
                       >  ${MOTIF_STATISTICS_FOLDER}/full/${CONTEXT}/${RANDOM_VARIANT}.csv
 
     for SUBJECTED_OR_PROTECTED  in  subjected  protected; do
@@ -36,9 +40,19 @@ for CONTEXT in ${CONTEXTS}; do
 
       mkdir -p  ${COMMON_MOTIFS_FOLDER}
 
-      ls  ${FILTERED_FOLDER}/random_genome_*.csv | ruby common_motifs.rb  >  ${COMMON_MOTIFS_FOLDER}/compared_to_each_genome.txt
-      ls  ${FILTERED_FOLDER}/random_shuffle_*.csv | ruby common_motifs.rb  >  ${COMMON_MOTIFS_FOLDER}/compared_to_each_shuffle.txt
-      ls  ${FILTERED_FOLDER}/random_*.csv | ruby common_motifs.rb  >  ${COMMON_MOTIFS_FOLDER}/compared_to_each.txt
+      RANDOM_GENOME_VARIANTS_FILTERED=""
+      for SEED in ${RANDOM_GENOME_SEEDS}; do
+        RANDOM_GENOME_VARIANTS_FILTERED+=" ${FILTERED_FOLDER}/random_genome_${SEED}.csv"
+      done
+
+      RANDOM_SHUFFLE_VARIANTS_FILTERED=""
+      for SEED in ${RANDOM_SHUFFLE_SEEDS}; do
+        RANDOM_SHUFFLE_VARIANTS_FILTERED+=" ${FILTERED_FOLDER}/random_shuffle_${SEED}.csv"
+      done
+
+      echo ${RANDOM_GENOME_VARIANTS_FILTERED} | ruby common_motifs.rb  >  ${COMMON_MOTIFS_FOLDER}/compared_to_each_genome.txt
+      echo ${RANDOM_SHUFFLE_VARIANTS_FILTERED} | ruby common_motifs.rb  >  ${COMMON_MOTIFS_FOLDER}/compared_to_each_shuffle.txt
+      echo "${RANDOM_GENOME_VARIANTS_FILTERED} ${RANDOM_SHUFFLE_VARIANTS_FILTERED}" | ruby common_motifs.rb  >  ${COMMON_MOTIFS_FOLDER}/compared_to_each.txt
     done
   done
 done
