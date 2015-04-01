@@ -13,11 +13,11 @@ motif_names = motifs.map(&:name).map(&:to_sym)
 class MutatatedSiteInfo
   def mutation_in_core?
     # raise 'Possibly you use a procedure appliable for extended motifs on unextended ones'  if length % 2 != 0
-    raise 'Possibly you use a procedure appliable for extended motifs on unextended ones'  if length <= 22
+    # raise 'Possibly you use a procedure appliable for extended motifs on unextended ones'  if length <= 22
     pos = snv_position_in_site_1_pwm
     # mot_core_length = length / 2
     # (pos >= mot_core_length / 2) && pos < mot_core_length + mot_core_length / 2
-    pos >= 11 && pos < length - 11
+    pos >= 0 && pos < length
   end
   def mutation_in_flank?
     ! in_core?

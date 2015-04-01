@@ -22,7 +22,8 @@ cd "$(dirname "$0")"
 ruby bin/preparations/expand_motif_flanks.rb  /home/ilya/iogen/hocomoco  ./source_data/hocomoco_11bp_expanded_flanks
 ln -sf  /home/ilya/iogen/genome/hg19  ./source_data/genome
 ln -sf  /home/ilya/iogen/genome/hg19_exons\(ensembl\,GRCh37.p13\).txt  ./source_data/exons.txt
-ln -sf  `realpath ./source_data/hocomoco_11bp_expanded_flanks/`  ./source_data/motif_collection
+# ln -sf  `realpath ./source_data/hocomoco_11bp_expanded_flanks/`  ./source_data/motif_collection
+ln -sf  /home/ilya/iogen/hocomoco/  ./source_data/motif_collection
 ln -f  /home/ilya/iogen/hocomoco-thresholds  ./source_data/motif_thresholds
 
 mkdir -p  $SEQ_FOLDER  $SNV_FOLDER  $CHUNK_FOLDER
@@ -44,4 +45,4 @@ ruby bin/preparations/extract_snv_sequences.rb  ${SNV_FOLDER}/SNV_infos_cancer.t
 ./prepare_random_sequences.sh
 
 # Split sequences into equal chunks in order to run chunks in parallel
-NUMBER_OF_CORES=4  ./prepare_sequences_for_perfectosape_run.sh
+NUMBER_OF_CORES=8  ./prepare_sequences_for_perfectosape_run.sh

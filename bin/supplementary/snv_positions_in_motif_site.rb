@@ -23,6 +23,7 @@ motif_names = motifs.map(&:name).map(&:to_sym)
 requested_motifs = motif_names
 folder = nil # './results/disruption_position_profile'
 normalize = false
+expand_region_length = 0
 
 OptionParser.new{|opts|
   opts.banner = "Usage: #{opts.program_name} <list of files with sites> [options]\n" +
@@ -31,6 +32,9 @@ OptionParser.new{|opts|
   opts.separator "Options:"
   opts.on('--motifs MOTIFS', 'Specify list of comma-separated motif names') do |value|
     requested_motifs = value.split(',')
+  end
+  opts.on('--expand-region LENGTH', 'Specify length of flanks') do |value|
+    expand_region_length = Integer(value)
   end
   opts.on('--folder FOLDER', 'Specify output folder') do |value|
     folder = value
@@ -49,12 +53,14 @@ end
 mutation_profiles = sites_filenames.map do |sites_filename|
   mutation_profile_by_motif = {}
   motifs.each do |motif|
-    mutation_profile_by_motif[ motif.name.to_sym ] = Array.new(motif.length, 0)
+    mutation_profile_by_motif[ motif.name.to_sym ] = Array.new(motif.length + 2*expand_region_length, 0)
   end
 
   # MutatatedSiteInfo.each_site(sites_filename).select{|site| site.disrupted?(fold_change_cutoff: 1) }.each do |site|
   MutatatedSiteInfo.each_site(sites_filename).each do |site|
-    mutation_profile_by_motif[site.motif_name][site.snv_position_in_site_1_pwm] += 1
+    pos = site.snv_position_in_site_1_pwm + expand_region_length
+    raise 'Bad coordinates'  if pos < 0
+    mutation_profile_by_motif[site.motif_name][pos] += 1
   end
   mutation_profile_by_motif
 end
