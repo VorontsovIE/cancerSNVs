@@ -25,7 +25,7 @@ BreastCancerSNV = Struct.new( :variant_id,
   attr_accessor :_mut_types_raw
 
   def mut_types
-    @mut_types ||= _mut_types_raw.split(',').map(&:downcase).map(&:to_sym).to_set
+    @mut_types ||= (_mut_types_raw || '').split(',').map(&:downcase).map(&:to_sym).to_set
   end
 
   # '27607140	PD3851a	1	67165085	GRCh37	G	A	GAGGATGACA	C	T	GCAAGCTGCC		-SGIP1	ENSG00000118473	CCDS30744.1	ENST00000371037	ProteinCoding	Intronic,Promoter	r.?			None'
