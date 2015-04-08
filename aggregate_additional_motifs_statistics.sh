@@ -2,12 +2,12 @@
 
 cd "$(dirname "$0")"
 
-for CONTEXT in ${CONTEXTS}; do
-  mkdir -p  ${MOTIF_STATISTICS_FOLDER}/pvalue_statitics/${CONTEXT}
-  ls ${MOTIF_STATISTICS_FOLDER}/full/${CONTEXT}/random_genome_*.csv | ruby motif_pvalue_stats.rb  >  ${MOTIF_STATISTICS_FOLDER}/pvalue_statitics/${CONTEXT}/compared_to_each_genome.csv
-  ls ${MOTIF_STATISTICS_FOLDER}/full/${CONTEXT}/random_shuffle_*.csv | ruby motif_pvalue_stats.rb  >  ${MOTIF_STATISTICS_FOLDER}/pvalue_statitics/${CONTEXT}/compared_to_each_shuffle.csv
-  ls ${MOTIF_STATISTICS_FOLDER}/full/${CONTEXT}/random_*.csv | ruby motif_pvalue_stats.rb  >  ${MOTIF_STATISTICS_FOLDER}/pvalue_statitics/${CONTEXT}/compared_to_each.csv
-done
+# for CONTEXT in ${CONTEXTS}; do
+#   mkdir -p  ${MOTIF_STATISTICS_FOLDER}/pvalue_statitics/${CONTEXT}
+#   ls ${MOTIF_STATISTICS_FOLDER}/full/${CONTEXT}/random_genome_*.csv | ruby motif_pvalue_stats.rb  >  ${MOTIF_STATISTICS_FOLDER}/pvalue_statitics/${CONTEXT}/compared_to_each_genome.csv
+#   ls ${MOTIF_STATISTICS_FOLDER}/full/${CONTEXT}/random_shuffle_*.csv | ruby motif_pvalue_stats.rb  >  ${MOTIF_STATISTICS_FOLDER}/pvalue_statitics/${CONTEXT}/compared_to_each_shuffle.csv
+#   ls ${MOTIF_STATISTICS_FOLDER}/full/${CONTEXT}/random_*.csv | ruby motif_pvalue_stats.rb  >  ${MOTIF_STATISTICS_FOLDER}/pvalue_statitics/${CONTEXT}/compared_to_each.csv
+# done
 
 mkdir -p ./results/core_flank_content/
 for CONTEXT in ${CONTEXTS}; do
