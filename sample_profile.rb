@@ -34,7 +34,7 @@ else
 end
 
 all_genome_motif_infos = filelist.flat_map do |filename|
-  RateComparisonInfo.each_in_file(filename).to_a#.map{|info| [info.motif, info] }.to_h
+  MotifCollectionStatistics.each_in_file(filename).to_a#.map{|info| [info.motif, info] }.to_h
 end.group_by(&:motif)
 
 motif_names = File.readlines(motif_names_filename).map(&:chomp)

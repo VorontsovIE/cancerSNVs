@@ -13,7 +13,7 @@ sample_names = Dir.glob('./results/motif_statistics/full/any/samples/*').select{
 sample_infos = sample_names.map{|sample_name|
   rate_infos_by_sample = random_variants.flat_map{|random_variant|
     filename = File.join('./results/motif_statistics/full/any/samples/', sample_name, "#{random_variant}.csv")
-    RateComparisonInfo.each_in_file(filename).to_a
+    MotifCollectionStatistics.each_in_file(filename).to_a
   }.group_by(&:motif)
   [sample_name, rate_infos_by_sample]
 }.to_h

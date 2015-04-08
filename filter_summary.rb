@@ -29,10 +29,10 @@ end.parse!(ARGV)
 
 if $stdin.tty?
   raise 'Specify filename'  unless filename = ARGV[0]
-  motif_infos = RateComparisonInfo.each_in_file(filename).to_a
+  motif_infos = MotifCollectionStatistics.each_in_file(filename).to_a
 else
   $stdin.readline  # skip header
-  motif_infos = RateComparisonInfo.each_in_stream($stdin).to_a
+  motif_infos = MotifCollectionStatistics.each_in_stream($stdin).to_a
 end
 
 if disruption_or_emergence == :disruption
@@ -44,26 +44,26 @@ else  # emergence
 end
 
 filtered_motif_infos = motif_infos.select{|infos|
-  infos[characteristic]
+  infos.send(characteristic)
 }.select{|infos|
   if subjected_or_protected == :subjected
-     infos[characteristic] > 1
+     infos.send(characteristic) > 1
   else # protected
-    infos[characteristic] < 1
+    infos.send(characteristic) < 1
   end
 }.select{|infos|
-  infos[characteristic_significance] && infos[characteristic_significance] < significance_cutoff
+  infos.send(characteristic_significance) && infos.send(characteristic_significance) < significance_cutoff
 }.select{|infos|
-  motif_qualities.include?(infos[:quality])
+  motif_qualities.include?(infos.quality)
 }
 
 filtered_motif_infos.sort_by!{|infos|
-  infos[characteristic]
+  infos.send(characteristic)
 }
 
 filtered_motif_infos.reverse!  if subjected_or_protected == :subjected
 
-puts RateComparisonInfo::COLUMN_ORDER.map{|col| RateComparisonInfo::COLUMN_NAMES[col] }.join("\t")
+puts MotifCollectionStatistics.table_header
 filtered_motif_infos.each{|infos|
   puts infos
 }
