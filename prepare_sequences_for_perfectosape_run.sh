@@ -21,7 +21,7 @@ echo '#!/bin/bash' > ${CHUNK_FOLDER}/run_perfectosape_multithread.sh
 chmod 755 ${CHUNK_FOLDER}/run_perfectosape_multithread.sh
 echo 'cd "$(dirname "$0")"'  >>  ${CHUNK_FOLDER}/run_perfectosape_multithread.sh
 
-echo 'export EXPAND_FLANKS="--expand-region 11"' >>  ${CHUNK_FOLDER}/run_perfectosape_multithread.sh
+echo 'export EXPAND_FLANKS="--expand-region ${EXPAND_FLANKS_LENGTH}"' >>  ${CHUNK_FOLDER}/run_perfectosape_multithread.sh
 echo 'export MEMORY_LIMIT="" #"-Xmx512M"' >>  ${CHUNK_FOLDER}/run_perfectosape_multithread.sh
 
 for SUFFIX in `seq --equal-width  1 ${NUMBER_OF_CORES}`; do

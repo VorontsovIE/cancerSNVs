@@ -20,7 +20,7 @@ for CONTEXT in ${CONTEXTS}; do
 done
 
 for CONTEXT in ${CONTEXTS}; do
-  ls ./results/fitted_sites/${CONTEXT}/sites_cancer.txt | ruby bin/supplementary/snv_positions_in_motif_site.rb  --expand-region 11  --folder ./results/disruption_position_profile/${CONTEXT}/cancer
-  ls ./results/fitted_sites/${CONTEXT}/sites_random_genome_*.txt | ruby bin/supplementary/snv_positions_in_motif_site.rb  --expand-region 11  --folder ./results/disruption_position_profile/${CONTEXT}/genome/
-  ls ./results/fitted_sites/${CONTEXT}/sites_random_shuffle_*.txt | ruby bin/supplementary/snv_positions_in_motif_site.rb  --expand-region 11  --folder ./results/disruption_position_profile/${CONTEXT}/shuffle/ 
+  ls ./results/fitted_sites/${CONTEXT}/sites_cancer.txt | ruby bin/supplementary/snv_positions_in_motif_site.rb  --expand-region ${EXPAND_FLANKS_LENGTH}  --folder ./results/disruption_position_profile/${CONTEXT}/cancer
+  ls ./results/fitted_sites/${CONTEXT}/sites_random_genome_*.txt | ruby bin/supplementary/snv_positions_in_motif_site.rb  --expand-region ${EXPAND_FLANKS_LENGTH}  --folder ./results/disruption_position_profile/${CONTEXT}/genome/
+  ls ./results/fitted_sites/${CONTEXT}/sites_random_shuffle_*.txt | ruby bin/supplementary/snv_positions_in_motif_site.rb  --expand-region ${EXPAND_FLANKS_LENGTH}  --folder ./results/disruption_position_profile/${CONTEXT}/shuffle/
 done
