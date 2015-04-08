@@ -1,6 +1,7 @@
 $:.unshift File.absolute_path('./lib', __dir__)
 require 'site_info'
 require 'bioinform'
+require 'fisher_table'
 require 'statistical_significance'
 require 'optparse'
 # require 'rate_comparison_infos'
@@ -30,20 +31,24 @@ MotifStat = Struct.new(:cancer_in_core, :random_in_core, :cancer_in_flank, :rand
   end
 
   def cancer_core_rate
-    cancer_in_core.to_f / cancer_in_flank
+    fisher_table.class_a_positive_rate
   end
 
   def random_core_rate
-    random_in_core.to_f / random_in_flank
+    fisher_table.class_b_positive_rate
   end
 
   def cancer_to_random_rate
-    cancer_core_rate / random_core_rate
+    fisher_table.a_to_b_positive_rate_ratio
+  end
+
+  def fisher_table
+    FisherTable.by_two_classes(class_a_positive: cancer_in_core, class_b_positive: random_in_core,
+                                class_a_negative: cancer_in_flank, class_b_negative: random_in_flank)
   end
 
   def significance
-    significance_calculator = PvalueCalculator.new(class_counts: :two_classes)
-    significance_calculator.calculate([cancer_in_core, cancer_in_flank, random_in_core, random_in_flank])
+    fisher_table.significance
   end
 end
 
@@ -57,7 +62,7 @@ OptionParser.new{|opts|
 raise 'Specify cancer site infos file'  unless cancer_sites_filename = ARGV[0]
 raise 'Specify random site infos file'  unless random_sites_filename = ARGV[1]
 
-motif_stats = motif_names.map{|motif_name| [motif_name, MotifStat.empty] }.to_h
+motif_stats = motif_names.map{|motif_name| [motif_name, MotifStat.empty] }.to_h # a: cancer, b: control; positive: core, negative: flank
 
 each_site = ->(filename, &block) {
   # MutatatedSiteInfo.each_site(filename).select{|site| site.disrupted?(fold_change_cutoff: 1) }.each(&block)
@@ -66,17 +71,17 @@ each_site = ->(filename, &block) {
 
 each_site.call(cancer_sites_filename) do |site|
   if site.mutation_in_core?
-    motif_stats[site.motif_name].cancer_in_core += 1
+    motif_stats[site.motif_name].cancer_in_core += 1 # add_a_positive
   else
-    motif_stats[site.motif_name].cancer_in_flank += 1
+    motif_stats[site.motif_name].cancer_in_flank += 1 # add_a_negative
   end
 end
 
 each_site.call(random_sites_filename) do |site|
   if site.mutation_in_core?
-    motif_stats[site.motif_name].random_in_core += 1
+    motif_stats[site.motif_name].random_in_core += 1 # add_b_positive
   else
-    motif_stats[site.motif_name].random_in_flank += 1
+    motif_stats[site.motif_name].random_in_flank += 1 # add_b_negative
   end
 end
 
@@ -90,7 +95,7 @@ significances = motif_stats.map{|motif_name, infos|
 
 significances_corrected = significance_corrector.correct_hash(significances)
 
-puts ['Motif', 'Cancer to random core rate ratio', 'Corrected significances', 'Cancer core rate', 'Random core rate', 'Sites in core (cancer)', 'Sites in flank (cancer)', 'Sites in core (random)', 'Sites in flank (random)'].join("\t")
+puts ['Motif', 'Cancer to random core rate ratio', 'Significances', 'Corrected significances', 'Cancer core rate', 'Random core rate', 'Sites in core (cancer)', 'Sites in flank (cancer)', 'Sites in core (random)', 'Sites in flank (random)'].join("\t")
 motif_names.sort.select{|motif_name|
   significances_corrected[motif_name] <= significance_rate_cutoff
 }.each do |motif_name|
@@ -99,6 +104,7 @@ motif_names.sort.select{|motif_name|
   random_core_rate = infos.random_core_rate
   puts [motif_name,
         infos.cancer_to_random_rate.round(3),
+        significances[motif_name],
         significances_corrected[motif_name],
         infos.cancer_core_rate.round(3), 
         infos.random_core_rate.round(3),
