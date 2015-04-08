@@ -67,6 +67,15 @@ MutatatedSiteInfo = Struct.new( :line,
     end
   end
 
+  def substitution_in_core?
+    pos = snv_position_in_site_1_pwm
+    pos >= 0 && pos < length
+  end
+
+  def substitution_in_flank?
+    ! substitution_in_core?
+  end
+
   def self.each_site_in_stream(stream, &block)
     stream.each_line.lazy.reject{|line|
       line.start_with?('#')

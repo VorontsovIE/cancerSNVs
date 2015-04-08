@@ -23,6 +23,8 @@ pvalue_before_cutoff = 0.0005
 
 site_after_substitution = false # by default don't consider whether site is after substition
 pvalue_after_cutoff = 0.0005
+substitution_should_be_in_core = false
+substitution_should_be_in_flank = false
 
 OptionParser.new do |opts|
   opts.banner = "Usage: #{opts.program_name} <sites infos> <motif names> [options]\n" +
@@ -52,12 +54,19 @@ OptionParser.new do |opts|
     mode = :emerged
     fold_change_cutoff = value.to_f  if value
   }
+
+  opts.on('--substitution-in-core', 'Consider only sites where substitution was in core of the site') {
+    substitution_should_be_in_core = true
+  }
+  opts.on('--substitution-in-flank', 'Consider only sites where substitution was in flanks of the site') {
+    substitution_should_be_in_flank = true
+  }
 end.parse!(ARGV)
 
-mutated_site_infos_filename = ARGV[0] # ./results/intermediate/site_subsets/sites_cancer_cpg.txt
-motifs_filename = ARGV[1] # './source_data/motif_names.txt'
+raise 'Specify input file with mutation infos'  unless mutated_site_infos_filename = ARGV[0] # ./results/intermediate/site_subsets/sites_cancer_cpg.txt
+raise 'Specify input file with motif names'  unless motifs_filename = ARGV[1] # './source_data/motif_names.txt'
 
-raise 'Specify input file with mutation infos'  unless mutated_site_infos_filename
+raise '--substitution-in-core and --substitution-in-flank should not be used together' if substitution_should_be_in_core && substitution_should_be_in_flank
 
 if site_before_substitution
   site_before_checker = ->(site) { site.site_before_substitution?(pvalue_cutoff: pvalue_before_cutoff) }
@@ -82,10 +91,19 @@ else
   raise LogicError, 'Should never be here'
 end
 
+if substitution_should_be_in_core
+  core_flank_checker = ->(site){ site.substitution_in_core? }
+elsif substitution_should_be_in_flank
+  core_flank_checker = ->(site){ site.substitution_in_flank? }
+else
+  core_flank_checker = ->(site) { true }
+end
+
 mutated_sites = MutatatedSiteInfo.each_site(mutated_site_infos_filename)
                                 .select(&site_before_checker)
                                 .select(&site_after_checker)
                                 .select(&fold_change_checker)
+                                .select(&core_flank_checker)
                                 .map(&:motif_name)
 
 motif_names = File.readlines(motifs_filename).map(&:strip).map(&:to_sym)
