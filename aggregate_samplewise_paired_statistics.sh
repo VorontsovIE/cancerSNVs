@@ -10,7 +10,7 @@ for CONTEXT in ${CONTEXTS}; do
 
   ruby summary.rb   ${MOTIF_STATISTICS_FOLDER}/slices/${CONTEXT}/samples/${CANCER_TYPE_1}/cancer  \
                     ${MOTIF_STATISTICS_FOLDER}/slices/${CONTEXT}/samples/${CANCER_TYPE_2}/cancer  \
-                    ./source_data/motif_names.txt  ./source_data/hocomoco_genes_infos.csv  \
+                    ${MOTIF_NAMES}  ${GENE_INFOS}  \
                     --correction ${CORRECTION_METHOD}  \
                     >  ${MOTIF_STATISTICS_FOLDER}/full/${CONTEXT}/samples_vs_samples/${CANCER_TYPE_1}/${CANCER_TYPE_2}.csv
 

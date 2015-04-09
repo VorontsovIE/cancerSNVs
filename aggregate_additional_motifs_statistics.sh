@@ -16,7 +16,7 @@ for CONTEXT in ${CONTEXTS}; do
 done
 for CONTEXT in ${CONTEXTS}; do
   mkdir -p ./results/disruption_position_profile/${CONTEXT}/combined
-  for MOTIF in `cat ./source_data/motif_names.txt`; do
+  for MOTIF in `cat ${MOTIF_NAMES}`; do
 
     rm ./results/disruption_position_profile/${CONTEXT}/combined/${MOTIF}.txt
     echo -en "cancer\t" >> ./results/disruption_position_profile/${CONTEXT}/combined/${MOTIF}.txt

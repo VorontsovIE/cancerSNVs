@@ -15,7 +15,10 @@ export CORRECTION_METHOD="fdr"
 
 export FITTING_FOLD_GENOME=35
 export FITTING_FOLD_SHUFFLE=25
-export FOLD_CHANGE=4
+export FOLD_CHANGE_CUTOFF=4
+export SITE_PVALUE_CUTOFF=0.0005
+export MOTIF_NAMES=./source_data/motif_names.txt
+export GENE_INFOS=./source_data/hocomoco_genes_infos.csv
 
 export EXPAND_CONTROL_SET_FOLD=1
 

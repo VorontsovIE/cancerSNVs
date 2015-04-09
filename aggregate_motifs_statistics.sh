@@ -13,7 +13,7 @@ for CONTEXT in ${CONTEXTS}; do
     # --ignore-underfitting \
     ruby summary.rb   ${MOTIF_STATISTICS_FOLDER}/slices/${CONTEXT}/cancer  \
                       ${MOTIF_STATISTICS_FOLDER}/slices/${CONTEXT}/${RANDOM_VARIANT}  \
-                      ./source_data/motif_names.txt  ./source_data/hocomoco_genes_infos.csv  \
+                      ${MOTIF_NAMES}  ${GENE_INFOS}  \
                       --fitting-log ${MOTIF_STATISTICS_FOLDER}/fitting_log/${CONTEXT}/${RANDOM_VARIANT}.log  \
                       --correction ${CORRECTION_METHOD}  \
                       --expand-control-set ${EXPAND_CONTROL_SET_FOLD} \
