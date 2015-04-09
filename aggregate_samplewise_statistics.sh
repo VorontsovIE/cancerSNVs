@@ -47,7 +47,7 @@ for CANCER_TYPE  in  ${!CANCER_SAMPLES_BY_TYPE[@]};  do
                         ${MOTIF_STATISTICS_FOLDER}/slices/${CONTEXT}/samples/${CANCER_TYPE}/${RANDOM_VARIANT}  \
                         ./source_data/motif_names.txt  ./source_data/hocomoco_genes_infos.csv  \
                         ${MOTIF_STATISTICS_FOLDER}/fitting_log/${CONTEXT}/samples/${CANCER_TYPE}/${RANDOM_VARIANT}.log  \
-                        --correction fdr  \
+                        --correction ${CORRECTION_METHOD}  \
                         >  ${MOTIF_STATISTICS_FOLDER}/full/${CONTEXT}/samples/${CANCER_TYPE}/${RANDOM_VARIANT}.csv
 
       for SUBJECTED_OR_PROTECTED  in  subjected  protected; do
@@ -93,7 +93,7 @@ for CANCER_TYPE_1  in  ${!CANCER_SAMPLES_BY_TYPE[@]};  do
       ruby summary.rb   ${MOTIF_STATISTICS_FOLDER}/slices/${CONTEXT}/samples/${CANCER_TYPE_1}/cancer  \
                         ${MOTIF_STATISTICS_FOLDER}/slices/${CONTEXT}/samples/${CANCER_TYPE_2}/cancer  \
                         ./source_data/motif_names.txt  ./source_data/hocomoco_genes_infos.csv  \
-                        --correction fdr  \
+                        --correction ${CORRECTION_METHOD}  \
                         >  ${MOTIF_STATISTICS_FOLDER}/full/${CONTEXT}/samples_vs_samples/${CANCER_TYPE_1}/${CANCER_TYPE_2}.csv
 
       for SUBJECTED_OR_PROTECTED  in  subjected  protected; do
