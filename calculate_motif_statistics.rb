@@ -18,10 +18,10 @@ end
 mode = :all # by default consider not only disrupted/created sites, but all sites
 fold_change_cutoff = 5
 
-site_before_substitution = false # by default don't consider whether site was before substition
+site_before_substitution = false # by default don't consider whether site was before substitution
 pvalue_before_cutoff = 0.0005
 
-site_after_substitution = false # by default don't consider whether site is after substition
+site_after_substitution = false # by default don't consider whether site is after substitution
 pvalue_after_cutoff = 0.0005
 substitution_should_be_in_core = false
 substitution_should_be_in_flank = false
