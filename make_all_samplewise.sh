@@ -38,11 +38,20 @@ CANCER_SAMPLES_BY_TYPE=( \
                         [all_except_PD4120a]=PD3851a,PD3890a,PD3904a,PD3905a,PD3945a,PD4005a,PD4006a,PD4085a,PD4086a,PD4088a,PD4103a,PD4107a,PD4109a,PD4115a,PD4116a,PD4192a,PD4194a,PD4198a,PD4199a,PD4248a \
                       )
 
-# export CANCER_SAMPLES_BY_TYPE
-
 export FITTING_FOLD=1
 export FOLD_CHANGE=5
 export MIN_FITTING_RATE=0.99
 
-./generate_samplewise_sites_and_slices.sh
-./aggregate_samplewise_statistics.sh
+for CANCER_TYPE  in  ${!CANCER_SAMPLES_BY_TYPE[@]}; do
+  ./generate_samplewise_sites_and_slices.sh ${CANCER_TYPE} ${CANCER_SAMPLES_BY_TYPE[$CANCER_TYPE]}
+end
+
+for CANCER_TYPE  in  ${!CANCER_SAMPLES_BY_TYPE[@]}; do
+  ./aggregate_samplewise_statistics.sh ${CANCER_TYPE}
+done
+
+for CANCER_TYPE_1  in  ${!CANCER_SAMPLES_BY_TYPE[@]}; do
+  for CANCER_TYPE_2  in  ${!CANCER_SAMPLES_BY_TYPE[@]}; do
+    ./aggregate_samplewise_paired_statistics.sh ${CANCER_TYPE_1} ${CANCER_TYPE_2}
+  done
+done

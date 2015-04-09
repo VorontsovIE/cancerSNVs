@@ -20,14 +20,13 @@ for VARIANT  in  cancer  ${RANDOM_VARIANTS}; do
 done
 
 # generate subsets of sites in TpC/CpG mutation contexts
-for CONTEXT in ${CONTEXTS}; do
-  if [[ "$CONTEXT" != "any" ]]; then
-    for VARIANT  in  cancer  ${RANDOM_VARIANTS}; do
-
+for VARIANT  in  cancer  ${RANDOM_VARIANTS}; do
+  for CONTEXT in ${CONTEXTS}; do
+    if [[ "$CONTEXT" != "any" ]]; then
       ruby bin/preparations/filter_mutations.rb   ${SNV_FOLDER}/SNV_infos_${VARIANT}.txt  \
                                                   ${SITES_FOLDER}/any/sites_${VARIANT}.txt  \
                                                   ${CONTEXT_DECLARATIONS[$CONTEXT]} \
                                                   >  ${SITES_FOLDER}/${CONTEXT}/sites_${VARIANT}.txt
-    done
-  fi
+    fi
+  done
 done
