@@ -26,6 +26,7 @@ end
 pvalue_correction_method = 'fdr'
 control_set_multiplier = 1
 ignore_underfitting = false
+fitting_log_filename = nil
 
 OptionParser.new do |opts|
   opts.banner = "Usage: #{opts.program_name} <cancer statistics folder> <random stats folder> <motif names> <hocomoco gene infos> <fitting_log> [options]"
@@ -39,13 +40,15 @@ OptionParser.new do |opts|
   opts.on('--ignore-underfitting', 'Don\'t take underfitted values into account. Use it only for preliminary checks' ) {
     ignore_underfitting = true
   }
+  opts.on('--fitting-log FILE', 'Specify fitting log file to make underfitting corrections') {|filename|
+    fitting_log_filename = filename
+  }
 end.parse!(ARGV)
 
 raise 'Specify folder for cancer statistics'  unless cancer_dirname = ARGV[0] # './results/motif_statistics/cpg/cancer'
 raise 'Specify folder for random statistics'  unless random_dirname = ARGV[1] # './results/motif_statistics/cpg/random'
 raise 'Specify file with motif names'  unless motif_names_filename = ARGV[2] # './source_data/motif_names.txt'
 raise 'Specify file with motif collection infos'  unless hocomoco_motifs_filename = ARGV[3] # './source_data/hocomoco_genes_infos.csv'
-raise 'Specify fitting log file'  unless fitting_log_filename = ARGV[4] # './results/motif_statistics/fitting_log/any/random_genome_13.log'
 
 motif_names = File.readlines(motif_names_filename).map(&:strip)
 motif_collection_infos = load_motif_infos(hocomoco_motifs_filename)
