@@ -56,18 +56,19 @@ motif_infos = {
   random_emerged: File.join(random_dirname, "sites_emerged.txt"),
   random_total_before_substitution: File.join(random_dirname, "sites_before.txt"),
   random_total_after_substitution: File.join(random_dirname, "sites_after.txt"),
+  random_core: File.join(random_dirname, "substitutions_in_core.txt"),
+  random_flank: File.join(random_dirname, "substitutions_in_flank.txt"),
 
   cancer_disrupted: File.join(cancer_dirname, "sites_disrupted.txt"),
   cancer_emerged: File.join(cancer_dirname, "sites_emerged.txt"),
   cancer_total_before_substitution: File.join(cancer_dirname, "sites_before.txt"),
   cancer_total_after_substitution: File.join(cancer_dirname, "sites_after.txt"),
+  cancer_core: File.join(cancer_dirname, "substitutions_in_core.txt"),
+  cancer_flank: File.join(cancer_dirname, "substitutions_in_flank.txt"),
 }.map {|column_name, filename|
   [column_name, read_motif_counts(filename)]
 }.to_h
 
-motif_infos.default_proc = ->(hsh,k) { hsh[k] = {} }
-
-significance_calculator = PvalueCalculator.new(class_counts: :class_and_total)
 significance_corrector = PvalueCorrector.new(pvalue_correction_method)
 
 motif_statistics = motif_names.map{|motif|
@@ -84,6 +85,13 @@ motif_statistics = motif_names.map{|motif|
       class_a_positive: motif_infos[:cancer_emerged][motif],
       class_b_total: motif_infos[:random_total_after_substitution][motif] * control_set_multiplier,
       class_b_positive: motif_infos[:random_emerged][motif] * control_set_multiplier
+    ),
+
+    core_flank_table: FisherTable.by_two_classes(
+      class_a_positive: motif_infos[:cancer_core][motif],
+      class_a_negative: motif_infos[:cancer_flank][motif],
+      class_b_positive: motif_infos[:random_core][motif],
+      class_b_negative: motif_infos[:random_flank][motif]
     ),
     random_unclassified: ignore_underfitting ? 0 : fitting_logs.fetch(motif, 0) * control_set_multiplier,
 

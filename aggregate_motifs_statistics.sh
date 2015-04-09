@@ -22,21 +22,21 @@ for CONTEXT in ${CONTEXTS}; do
                       >  ${MOTIF_STATISTICS_FOLDER}/full/${CONTEXT}/${RANDOM_VARIANT}.csv
 
     for SUBJECTED_OR_PROTECTED  in  subjected  protected; do
-      for DISRUPTION_OR_EMERGENCE  in  disruption  emergence; do
-        mkdir -p ${MOTIF_STATISTICS_FOLDER}/filtered/${SUBJECTED_OR_PROTECTED}/${DISRUPTION_OR_EMERGENCE}/${CONTEXT}
+      for CHARACTERISTIC  in  disruption  emergence 'substitution-in-core'; do
+        mkdir -p ${MOTIF_STATISTICS_FOLDER}/filtered/${SUBJECTED_OR_PROTECTED}/${CHARACTERISTIC}/${CONTEXT}
         ruby filter_summary.rb  ${MOTIF_STATISTICS_FOLDER}/full/${CONTEXT}/${RANDOM_VARIANT}.csv  \
                                 --motif-qualities A,B,C,D  --significance 0.05  \
-                                --${DISRUPTION_OR_EMERGENCE}  --${SUBJECTED_OR_PROTECTED}  \
-                                >  ${MOTIF_STATISTICS_FOLDER}/filtered/${SUBJECTED_OR_PROTECTED}/${DISRUPTION_OR_EMERGENCE}/${CONTEXT}/${RANDOM_VARIANT}.csv
+                                --characteristic ${CHARACTERISTIC}  --${SUBJECTED_OR_PROTECTED}  \
+                                >  ${MOTIF_STATISTICS_FOLDER}/filtered/${SUBJECTED_OR_PROTECTED}/${CHARACTERISTIC}/${CONTEXT}/${RANDOM_VARIANT}.csv
       done
     done
   done
 
   for SUBJECTED_OR_PROTECTED  in  subjected  protected; do
-    for DISRUPTION_OR_EMERGENCE  in  disruption  emergence; do
+    for CHARACTERISTIC  in  disruption  emergence 'substitution-in-core'; do
 
-      FILTERED_FOLDER=${MOTIF_STATISTICS_FOLDER}/filtered/${SUBJECTED_OR_PROTECTED}/${DISRUPTION_OR_EMERGENCE}/${CONTEXT}
-      COMMON_MOTIFS_FOLDER=${MOTIF_STATISTICS_FOLDER}/common_motifs/${SUBJECTED_OR_PROTECTED}/${DISRUPTION_OR_EMERGENCE}/${CONTEXT}
+      FILTERED_FOLDER=${MOTIF_STATISTICS_FOLDER}/filtered/${SUBJECTED_OR_PROTECTED}/${CHARACTERISTIC}/${CONTEXT}
+      COMMON_MOTIFS_FOLDER=${MOTIF_STATISTICS_FOLDER}/common_motifs/${SUBJECTED_OR_PROTECTED}/${CHARACTERISTIC}/${CONTEXT}
 
       mkdir -p  ${COMMON_MOTIFS_FOLDER}
 
