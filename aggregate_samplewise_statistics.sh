@@ -7,8 +7,6 @@ cd "$(dirname "$0")"
 
 CANCER_TYPE=$1
 
-EXPAND_CONTROL_SET_FOLD=1
-
 for CONTEXT in ${CONTEXTS}; do
   mkdir -p  ${MOTIF_STATISTICS_FOLDER}/full/${CONTEXT}/samples/${CANCER_TYPE}
 

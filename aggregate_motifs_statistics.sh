@@ -4,8 +4,6 @@
 
 cd "$(dirname "$0")"
 
-EXPAND_CONTROL_SET_FOLD=1
-
 mkdir -p $MOTIF_STATISTICS_FOLDER/filtered
 
 for CONTEXT in ${CONTEXTS}; do
