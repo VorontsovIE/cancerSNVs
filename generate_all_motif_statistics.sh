@@ -4,6 +4,7 @@ cd "$(dirname "$0")"
 SITES_FILE=$1
 OUTPUT_DIR=$2
 
+mkdir -p  ${OUTPUT_DIR}
 # ruby calculate_motif_statistics.rb  ${SITES_FILE}  ${MOTIF_NAMES}  >  ${OUTPUT_DIR}/all.txt
 ruby calculate_motif_statistics.rb  ${SITES_FILE}  ${MOTIF_NAMES}  --site-before ${SITE_PVALUE_CUTOFF}  >  ${OUTPUT_DIR}/sites_before.txt &
 ruby calculate_motif_statistics.rb  ${SITES_FILE}  ${MOTIF_NAMES}  --site-after ${SITE_PVALUE_CUTOFF}  >  ${OUTPUT_DIR}/sites_after.txt &
