@@ -54,14 +54,22 @@ for CANCER_TYPE_1  in  ${!CANCER_SAMPLES_BY_TYPE[@]}; do
   done
 done
 
-# for CANCER_TYPE  in  ${!CANCER_SAMPLES_BY_TYPE[@]}; do
-#   for VARIANT  in  ${RANDOM_SHUFFLE_VARIANTS}; do
-#     ./filter_samplewise_sites.sh ${CANCER_TYPE} ${CANCER_SAMPLES_BY_TYPE[$CANCER_TYPE]} ${VARIANT}
-#     for CONTEXT in ${CONTEXTS}; do
-#       ./generate_all_motif_statistics.sh  ${FITTING_FOLDER}/${CONTEXT}/samples/${CANCER_TYPE}/sites_${VARIANT}.txt  \
-#                                           ${MOTIF_STATISTICS_FOLDER}/slices/${CONTEXT}/samples/${CANCER_TYPE}/${VARIANT}
-#     done
-#   done
-#   ./generate_samplewise_sites_and_slices.sh ${CANCER_TYPE}
-#   ./aggregate_samplewise_statistics.sh ${CANCER_TYPE}
-# done
+for CANCER_TYPE  in  ${!CANCER_SAMPLES_BY_TYPE[@]}; do
+  for VARIANT  in  ${RANDOM_SHUFFLE_VARIANTS}; do
+    ./filter_samplewise_sites.sh ${CANCER_TYPE} ${CANCER_SAMPLES_BY_TYPE[$CANCER_TYPE]} ${VARIANT}
+  done
+
+  ./generate_samplewise_sites_and_slices.sh ${CANCER_TYPE}
+
+  for RANDOM_VARIANT  in  ${RANDOM_VARIANTS}; do
+    for CONTEXT in ${CONTEXTS}; do
+      mkdir -p  ${MOTIF_STATISTICS_FOLDER}/slices/${CONTEXT}/samples/${CANCER_TYPE}/${RANDOM_VARIANT}
+      ./generate_all_motif_statistics.sh  ${FITTING_FOLDER}/${CONTEXT}/samples/${CANCER_TYPE}/sites_${RANDOM_VARIANT}.txt  \
+                                          ${MOTIF_STATISTICS_FOLDER}/slices/${CONTEXT}/samples/${CANCER_TYPE}/${RANDOM_VARIANT}
+    done
+  done
+
+  for CONTEXT in ${CONTEXTS}; do
+    ./aggregate_samplewise_statistics.sh ${CANCER_TYPE} ${CONTEXT}
+  done
+done
