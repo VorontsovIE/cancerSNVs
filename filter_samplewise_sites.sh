@@ -17,7 +17,7 @@ CONTEXT_DECLARATIONS=( \
                       )
 
 for CONTEXT  in  ${CONTEXTS}; do
-  mkdir -p  ${SITES_FOLDER}/${CONTEXT}/samples
+  mkdir -p  ${SITES_FOLDER}/${CONTEXT}/samples/${CANCER_TYPE}
 done
 
 ruby bin/preparations/filter_mutations.rb ${SNV_FOLDER}/SNV_infos_${VARIANT}.txt \
