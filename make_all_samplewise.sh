@@ -43,7 +43,7 @@ CANCER_SAMPLES_BY_TYPE=( \
 for CANCER_TYPE  in  ${!CANCER_SAMPLES_BY_TYPE[@]}; do
   ./filter_samplewise_sites.sh ${CANCER_TYPE} ${CANCER_SAMPLES_BY_TYPE[$CANCER_TYPE]} cancer
   for CONTEXT in ${CONTEXTS}; do
-    ./generate_all_motif_statistics.sh  ${FITTING_FOLDER}/${CONTEXT}/samples/${CANCER_TYPE}/sites_cancer.txt  \
+    ./generate_all_motif_statistics.sh  ${SITES_FOLDER}/${CONTEXT}/samples/${CANCER_TYPE}/sites_cancer.txt  \
                                         ${MOTIF_STATISTICS_FOLDER}/slices/${CONTEXT}/samples/${CANCER_TYPE}/cancer
   done
 done
