@@ -6,9 +6,9 @@ raise 'Specify file with sequences'  unless sequences_filename = ARGV[0] # './so
 puts BreastCancerSNV::FILE_HEADER
 File.readlines(sequences_filename).each.lazy.map {|line|
   full_pos, seq = line.chomp.split("\t")
-  chr, pos = full_pos.split(':')
+  chromosome, pos = full_pos.split(':')
   pos = pos.to_i
-  chr = chr.sub(/\Achr/, '')
+  chromosome = chromosome.sub(/\Achr/, '')
 
   seq_w_snv = SequenceWithSNP.from_string(seq)
   seq_w_snv_pyrimidine = seq_w_snv.in_pyrimidine_context
@@ -17,7 +17,7 @@ File.readlines(sequences_filename).each.lazy.map {|line|
   short_seq_w_snv_pyrimidine = seq_w_snv_pyrimidine.subsequence(before: 10, after: 10)
 
   BreastCancerSNV.new(full_pos,
-                      'random genome mutations', chr, pos, 'GRCh37',
+                      'random genome mutations', chromosome, pos, 'GRCh37',
 
                       seq_w_snv.allele_variants[0], seq_w_snv.allele_variants[1],
 

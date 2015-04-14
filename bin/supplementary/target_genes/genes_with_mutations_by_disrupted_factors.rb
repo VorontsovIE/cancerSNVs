@@ -18,10 +18,10 @@ mutations = File.readlines(mutated_genes_file).map do |line|
   line.chomp.split("\t")
 end
 
-genes = mutations.select{|motif, mut_name, chr, pos, mut_type, context, ensg, hgnc, fold_change, pvalue_1, pvalue_2|
+genes = mutations.select{|motif, mut_name, chromosome, pos, mut_type, context, ensg, hgnc, fold_change, pvalue_1, pvalue_2|
   fold_change = fold_change.to_f
   motifs.include?(motif) && fold_change <= fold_change_cutoff # fold_change for disruption is not greater than 1.0
-}.map{|motif, mut_name, chr, pos, mut_type, context, ensg, hgnc, fold_change, pvalue_1, pvalue_2|
+}.map{|motif, mut_name, chromosome, pos, mut_type, context, ensg, hgnc, fold_change, pvalue_1, pvalue_2|
   if can_use_ensg
     hgnc.empty? ? ensg : hgnc
   else

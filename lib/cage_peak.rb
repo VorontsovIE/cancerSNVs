@@ -67,7 +67,7 @@ CagePeak = Struct.new(:annotation, :short_description, :description, :associatio
   def self.each_in_stream(stream, &block)
     return enum_for(:each_in_stream, stream).lazy  unless block_given?
     stream.each_line.lazy.select{|line|
-      line.start_with? 'chr'
+      line.start_with?('chr')
     }.map{|line|
       CagePeak.new_by_infos(line)
     }.each(&block)

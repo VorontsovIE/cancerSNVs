@@ -15,7 +15,7 @@ gene_tss_filename = './source_data/deprecated/gene_tss_hg19.txt'
 interval_object_pairs_by_chromosome_non_reduced = Hash.new { |hash, key| hash[key] = [] }
 File.open(gene_tss_filename) do |f|
   f.each_line.lazy.drop(1).each do |line|
-    ensg, _enst, _transcript_start, _transcript_end, gene_start, gene_end, chr, strand, _tss = line.chomp.split("\t")
+    ensg, _enst, _transcript_start, _transcript_end, gene_start, gene_end, chromosome, strand, _tss = line.chomp.split("\t")
     gene_start = gene_start.to_i
     gene_end = gene_end.to_i
     if strand == '1'
@@ -23,13 +23,13 @@ File.open(gene_tss_filename) do |f|
     elsif strand == '-1'
       interval = IntervalNotation::Syntax::Long.closed_open([gene_start, gene_end - 500].min, gene_end + 2000)
     end
-    interval_object_pairs_by_chromosome_non_reduced[chr.to_s] << [interval, ensg]  if interval
+    interval_object_pairs_by_chromosome_non_reduced[chromosome.to_s] << [interval, ensg]  if interval
   end
 end
 
 interval_object_pairs_by_chromosome = {}
-interval_object_pairs_by_chromosome_non_reduced.each do |chr, intervals|
-  interval_object_pairs_by_chromosome[chr] = intervals.uniq
+interval_object_pairs_by_chromosome_non_reduced.each do |chromosome, intervals|
+  interval_object_pairs_by_chromosome[chromosome] = intervals.uniq
 end
 
 contexts = {
@@ -71,22 +71,22 @@ $stderr.puts "Sites that were around SNVs loaded"
 
 motif_for_analysis = File.readlines(motif_names_filename).map(&:strip)
 
-puts "motif\tmut_name\tchr\tpos\tmut_type\tcontext\tensg\tensg_to_hgnc[ensg]\tfold_change\tpvalue_1\tpvalue_2"
+puts ['motif','mut_name','chr','pos','mut_type','context','ensg','ensg_to_hgnc[ensg]','fold_change','pvalue_1','pvalue_2'].join("\t")
 motif_for_analysis.each do |motif|
   ensgs = []
   disrupting_mutations[motif].each do |mutated_site_info|
     mut_name = mutated_site_info.normalized_snp_name
     snv = snvs[mut_name]
-    chr = snv.chr
+    chromosome = snv.chromosome
     pos = snv.position
     mut_type = snv.mutation_types_string
     context = snvs_by_context.select{|context_name, snv_names| snv_names.include?(mut_name) }.keys.join(',')
     pos = pos.to_i
-    interval_object_pairs_by_chromosome[chr.to_s].select do |interval, ensg|
+    interval_object_pairs_by_chromosome[chromosome.to_s].select do |interval, ensg|
       interval.include_position?(pos)
     end.each do |interval, ensg|
       ensgs << ensg
-      puts [motif, mut_name, chr, pos, mut_type, context, ensg, ensg_to_hgnc[ensg],
+      puts [motif, mut_name, chromosome, pos, mut_type, context, ensg, ensg_to_hgnc[ensg],
             mutated_site_info.fold_change, mutated_site_info.pvalue_1, mutated_site_info.pvalue_2 ].join("\t")
     end
   end

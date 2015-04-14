@@ -75,7 +75,7 @@ BreastCancerSNV.each_substitution_in_file(site_infos_filename).map{|snv|
 
 snv_positions = Hash.new {|hash, key| hash[key] = [] }
 BreastCancerSNV.each_substitution_in_file(site_infos_filename).each{|snv|
-  snv_positions[snv.chr] << snv.position
+  snv_positions[snv.chromosome] << snv.position
 }
 snv_positions = snv_positions.map{|k,v| ["chr#{k}".to_sym, v.to_set] }.to_h
 # p snv_positions.keys

@@ -21,9 +21,9 @@ MutatatedSiteInfo.each_site(sites_filename).with_index.reject{|site, index|
   # it can't be correctly generalized on shuffled sequences
   # (it's hard to say whether shuffled repeats are repeats,
   # but it's more safe to remove all SNVs which have a repeat inside a 25-bp flanks)
-  ### repeats_by_chromosome[snv.chr].intersect?(snv.site_interval(site))
+  ### repeats_by_chromosome[snv.chromosome].intersect?(snv.site_interval(site))
 
-  repeats_by_chromosome[snv.chr].include_position?(snv.position)
+  repeats_by_chromosome[snv.chromosome].include_position?(snv.position)
 }.each{|site,index|
   puts site.line
 }
