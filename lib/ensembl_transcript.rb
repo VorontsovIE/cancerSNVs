@@ -9,6 +9,7 @@ class EnsemblTranscript
     raise 'Exons from different strands'  unless exons.map(&:strand).uniq.size == 1
     raise 'Exons have different gene_biotype'  unless exons.map(&:gene_biotype).uniq.size == 1
     raise 'Exons have different associated_gene_name'  unless exons.map(&:associated_gene_name).uniq.size == 1
+    raise 'Exons have different cds_length'  unless exons.map(&:cds_length).uniq.size == 1
     @exons = exons
   end
   def ensembl_transcript_id
@@ -34,6 +35,18 @@ class EnsemblTranscript
   end
   def exonic_region
     IntervalNotation::Operations.union( @exons.map(&:exon_region) )
+  end
+
+  def cds_length
+    @exons.first.cds_length
+  end
+
+  def has_coding_part?
+    !!(cds_length && cds_length > 0)
+  end
+
+  def has_coding_exons?
+    @exons.any?{|exon| exon.phase != -1 }
   end
 
   # Only exonic part of UTR
