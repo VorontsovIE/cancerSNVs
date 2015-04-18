@@ -77,3 +77,42 @@ def read_introns_by_chromosome(filename, convert_chromosome_names: true)
               [chromosome_name.to_sym, IntervalNotation::Operations.union(transcript_introns)]
             }.to_h
 end
+
+### Regions of kataegis
+KataegisRegion = Struct.new(:cancer_type, :sample_name, :chromosome, :position_start, :position_end, :number_of_variants) do
+  def interval(expansion_length: 0)
+    @interval ||= IntervalNotation::Syntax::Long.closed_closed(position_start - expansion_length, position_end + expansion_length)
+  end
+
+  def to_s
+    [cancer_type, sample_name, chromosome, position_start, position_end, number_of_variants].join("\t")
+  end
+
+  # Breast Cancer PD4224a 1 8976832 8982950 9
+  def self.from_string(line)
+    cancer_type, sample_name, chromosome, position_start, position_end, number_of_variants = line.chomp.split("\t")
+    self.new( cancer_type.to_sym, sample_name.to_sym,
+              chromosome.to_sym, position_start.to_i, position_end.to_i,
+              number_of_variants.to_i )
+  end
+
+  def self.each_in_file(filename, &block)
+    File.open(filename){|f|
+      f.readline
+      f.each_line.map{|line| self.from_string(line) }.each(&block)
+    }
+  end
+end
+
+# ./source_data/AlexandrovEtAl/coordinates_of_kataegis.csv
+def load_kataegis_regions_by_chromosome(filename, expansion_length: 1000)
+  kataegis_regions = KataegisRegion.each_in_file(filename).to_a
+  result = kataegis_regions.group_by(&:chromosome).map{|chromosome, regions|
+    expanded_intervals = regions.map{|region| region.interval(expansion_length: expansion_length) }
+    [chromosome, IntervalNotation::Operations.union(expanded_intervals)]
+  }.to_h
+  result.default_proc = proc do |hsh, k|
+    hsh[k] = IntervalNotation::Syntax::Long::Empty
+  end
+  result
+end
