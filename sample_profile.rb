@@ -1,6 +1,6 @@
 $:.unshift File.absolute_path('lib', __dir__)
 require 'rate_comparison_infos'
-require 'statistics'
+require 'statistics/statistics'
 require 'shellwords'
 require 'optparse'
 

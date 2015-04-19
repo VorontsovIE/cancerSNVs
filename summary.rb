@@ -1,7 +1,7 @@
 $:.unshift File.absolute_path('lib', __dir__)
-require 'statistical_significance'
+require 'statistics/statistical_significance'
 require 'rate_comparison_infos'
-require 'fisher_table'
+require 'statistics/fisher_table'
 require 'fitting_logs'
 require 'optparse'
 

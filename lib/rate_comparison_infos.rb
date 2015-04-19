@@ -1,6 +1,6 @@
 require 'forwardable'
-require_relative 'fisher_table'
-require_relative 'statistical_significance'
+require_relative 'statistics/fisher_table'
+require_relative 'statistics/statistical_significance'
 
 def to_float(str)
   str && str.to_f
