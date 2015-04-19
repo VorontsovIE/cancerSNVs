@@ -9,7 +9,7 @@ promoters_by_chromosome = load_promoters_by_chromosome(exons_filename, length_5_
 introns_by_chromosome = read_introns_by_chromosome(exons_filename)
 
 puts BreastCancerSNV::FILE_HEADER
-BreastCancerSNV.each_substitution_in_file(snvs_filename).each do |snv|
+BreastCancerSNV.each_in_file(snvs_filename).each do |snv|
   chromosome = "chr#{snv.chromosome}".to_sym
   snv.mut_types = [] # discard all mutation types
   if promoters_by_chromosome[chromosome].include_position?(snv.position)

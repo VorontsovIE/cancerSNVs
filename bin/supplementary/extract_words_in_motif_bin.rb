@@ -1,7 +1,7 @@
 $:.unshift File.absolute_path('../../lib', __dir__)
 require 'optparse'
 require 'breast_cancer_snv'
-require 'site_info'
+require 'perfectosape/results'
 
 mode = :words
 flank_length = nil
@@ -29,11 +29,11 @@ raise "Specify file with sites, motif name, bin boundaries (-log2 Pvalue) and SN
 from = from.to_f
 to = to.to_f
 range = from..to
-sites = MutatatedSiteInfo.each_site(sites_filename).select(&:site_before_substitution?).select{|info|
+sites = PerfectosAPE::Result.each_in_file(sites_filename).select(&:site_before_substitution?).select{|info|
   info.motif_name == motif_name && range.include?(-Math.log2(info.pvalue_1))
 }
 
-snvs = BreastCancerSNV.each_substitution_in_file(snv_infos_filename).map{|snv| [snv.variant_id, snv] }.to_h
+snvs = BreastCancerSNV.each_in_file(snv_infos_filename).map{|snv| [snv.variant_id, snv] }.to_h
 
 case mode
 when :words

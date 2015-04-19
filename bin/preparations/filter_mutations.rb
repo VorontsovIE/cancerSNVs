@@ -3,7 +3,7 @@ require 'set'
 require 'sequence_with_snp'
 require 'optparse'
 require 'mutation_context'
-require 'site_info'
+require 'perfectosape/results'
 require 'breast_cancer_snv'
 require 'import_information'
 
@@ -62,12 +62,12 @@ end
 raise 'Specify SNV infos file'  unless mutations_markup_filename = ARGV[0] # './source_data/SNV_infos.txt'
 
 if show_possible_mutation_types_and_exit
-  puts BreastCancerSNV.each_substitution_in_file(mutations_markup_filename).flat_map(&:mut_types).inject(Set.new, &:merge).to_a
+  puts BreastCancerSNV.each_in_file(mutations_markup_filename).flat_map(&:mut_types).inject(Set.new, &:merge).to_a
   exit
 end
 
 if show_possible_cancer_samples_and_exit
-  puts BreastCancerSNV.each_substitution_in_file(mutations_markup_filename).flat_map(&:sample_id).inject(Set.new, &:<<).to_a
+  puts BreastCancerSNV.each_in_file(mutations_markup_filename).flat_map(&:sample_id).inject(Set.new, &:<<).to_a
   exit
 end
 
@@ -106,7 +106,7 @@ end
 ##########
 
 snvs_to_choose = BreastCancerSNV
-  .each_substitution_in_file(mutations_markup_filename)
+  .each_in_file(mutations_markup_filename)
   .select(&context_filter)
   .select(&sample_filter)
   .select(&mutation_type_filter)

@@ -2,7 +2,7 @@ $:.unshift File.absolute_path('../../lib', __dir__)
 require 'optparse'
 require 'fileutils'
 require 'set'
-require 'site_info'
+require 'perfectosape/results'
 
 flush_size = 1000
 pvalue_cutoff = 0.0005
@@ -32,7 +32,7 @@ Dir.glob(File.join(fasta_output_folder, '*')).select{|fn| File.file?(fn) }.each{
 motifs = Hash.new{|h,k| h[k] = [] }
 
 
-MutatatedSiteInfo.each_site(sites_filename).select{|info|
+PerfectosAPE::Result.each_in_file(sites_filename).select{|info|
   info.site_before_substitution?(pvalue_cutoff: pvalue_cutoff)
 }.each do |info|
   motifs[info.motif_name] << info.seq_1

@@ -1,5 +1,5 @@
 $:.unshift File.absolute_path('../../lib', __dir__)
-require 'site_info'
+require 'perfectosape/results'
 require 'measurement_vector'
 require 'bioinform'
 require 'shellwords'
@@ -56,8 +56,8 @@ mutation_profiles = sites_filenames.map do |sites_filename|
     mutation_profile_by_motif[ motif.name.to_sym ] = Array.new(motif.length + 2*expand_region_length, 0)
   end
 
-  # MutatatedSiteInfo.each_site(sites_filename).select{|site| site.disrupted?(fold_change_cutoff: 1) }.each do |site|
-  MutatatedSiteInfo.each_site(sites_filename).each do |site|
+  # PerfectosAPE::Result.each_in_file(sites_filename).select{|site| site.disrupted?(fold_change_cutoff: 1) }.each do |site|
+  PerfectosAPE::Result.each_in_file(sites_filename).each do |site|
     pos = site.snv_position_in_site_1_pwm + expand_region_length # works for expansion procedure defined in such a way that site should ovelap snp or its expand_region_length vicinity
     raise 'Bad coordinates'  if pos < 0
     mutation_profile_by_motif[site.motif_name][pos] += 1

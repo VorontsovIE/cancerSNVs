@@ -63,7 +63,7 @@ genomic_content = genomic_content.reject{|k,v| k.match(/N/i) }
 ##################
 snv_context_content = Hash.new(0)
 snv_context_content_mut = Hash.new{|hsh, mutation_to| hsh[mutation_to] = Hash.new(0) }
-BreastCancerSNV.each_substitution_in_file(site_infos_filename).map{|snv|
+BreastCancerSNV.each_in_file(site_infos_filename).map{|snv|
   [snv.context_before_snv_plus_strand, snv.mutant_base_plus_strand]
 }.each{|context, mut|
   snv_context_content[context] += 1
@@ -74,7 +74,7 @@ BreastCancerSNV.each_substitution_in_file(site_infos_filename).map{|snv|
 
 
 snv_positions = Hash.new {|hash, key| hash[key] = [] }
-BreastCancerSNV.each_substitution_in_file(site_infos_filename).each{|snv|
+BreastCancerSNV.each_in_file(site_infos_filename).each{|snv|
   snv_positions[snv.chromosome] << snv.position
 }
 snv_positions = snv_positions.map{|k,v| ["chr#{k}".to_sym, v.to_set] }.to_h

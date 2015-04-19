@@ -61,16 +61,16 @@ BreastCancerSNV = Struct.new( :variant_id,
   end
 
 
-  # each_substitution_in_file('./source_data/SNV_infos.txt')
-  def self.each_substitution_in_file(substitutions_filename, &block)
-    return enum_for(:each_substitution_in_file, substitutions_filename).lazy  unless block_given?
+  # each_in_file('./source_data/SNV_infos.txt')
+  def self.each_in_file(substitutions_filename, &block)
+    return enum_for(:each_in_file, substitutions_filename).lazy  unless block_given?
     File.open(substitutions_filename) do |f|
       f.readline # skip header
-      each_substitution_in_stream(f, &block)
+      each_in_stream(f, &block)
     end
   end
 
-  def self.each_substitution_in_stream(stream, &block)
+  def self.each_in_stream(stream, &block)
     stream.each_line.lazy.map{|line| BreastCancerSNV.from_string(line) }.each(&block)
   end
 

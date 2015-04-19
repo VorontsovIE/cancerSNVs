@@ -1,6 +1,9 @@
 require 'set'
 
-MutatatedSiteInfo = Struct.new( :line,
+module PerfectosAPE
+end
+
+PerfectosAPE::Result = Struct.new(:line,
                                 :variant_id, :motif_name,
                                 :fold_change, :pvalue_1, :pvalue_2,
                                 :pos_1, :orientation_1, :seq_1,
@@ -14,12 +17,12 @@ MutatatedSiteInfo = Struct.new( :line,
               pos_2, orientation_2, seq_2,
               variants,
               pvalue_1, pvalue_2, fold_change = line.split("\t")
-    MutatatedSiteInfo.new(line,
-                          variant_id, motif_name.to_sym,
-                          fold_change.to_f, pvalue_1.to_f, pvalue_2.to_f,
-                          pos_1.to_i, orientation_1.to_sym, seq_1,
-                          pos_2.to_i, orientation_2.to_sym, seq_2,
-                          variants.to_sym)
+    self.new( line,
+              variant_id, motif_name.to_sym,
+              fold_change.to_f, pvalue_1.to_f, pvalue_2.to_f,
+              pos_1.to_i, orientation_1.to_sym, seq_1,
+              pos_2.to_i, orientation_2.to_sym, seq_2,
+              variants.to_sym )
   end
 
   def normalized_snp_name
@@ -76,18 +79,18 @@ MutatatedSiteInfo = Struct.new( :line,
     ! substitution_in_core?
   end
 
-  def self.each_site_in_stream(stream, &block)
+  def self.each_in_stream(stream, &block)
     stream.each_line.lazy.reject{|line|
       line.start_with?('#')
     }.map{|line|
-      MutatatedSiteInfo.from_string(line)
+      self.from_string(line)
     }.each(&block)
   end
 
-  def self.each_site(all_mutations_filename, &block)
-    return enum_for(:each_site, all_mutations_filename).lazy  unless block_given?
+  def self.each_in_file(all_mutations_filename, &block)
+    return enum_for(:each_in_file, all_mutations_filename).lazy  unless block_given?
     File.open(all_mutations_filename) do |f|
-      each_site_in_stream(f, &block)
+      each_in_stream(f, &block)
     end
   end
 end

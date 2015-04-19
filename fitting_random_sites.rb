@@ -2,7 +2,7 @@
 
 $:.unshift File.absolute_path('lib', __dir__)
 require 'histogram'
-require 'site_info'
+require 'perfectosape/results'
 require 'breast_cancer_snv'
 require 'multi_histogram_fitter'
 require 'optparse'
@@ -11,7 +11,7 @@ def context_by_snv_name(snv_infos_filename)
   results = {}
 
   BreastCancerSNV
-    .each_substitution_in_file(snv_infos_filename)
+    .each_in_file(snv_infos_filename)
     .map{|snv|
       [snv.variant_id, snv.snp_sequence_pyrimidine_context(five_prime_flank_length: 1, three_prime_flank_length: 1)]
     }.to_h
@@ -39,7 +39,7 @@ histograms = MultiHistogram.new{
   Histogram.new(-2, 2, 4){|pvalue_1| pvalue_1 }
 }
 
-MutatatedSiteInfo.each_site(mutated_site_infos_cancer_filename).each do |site|
+PerfectosAPE::Result.each_in_file(mutated_site_infos_cancer_filename).each do |site|
   motif = site.motif_name
   context = cancer_snv_contexts[ site.normalized_snp_name ]
   histograms.add_element([motif, context], site.pvalue_1)
@@ -49,7 +49,7 @@ fitters = histograms.multiply(fitting_fold).fitter(raise_on_missing: false)
 
 $stderr.puts "Loaded #{fitters.goal_total} original sites"
 
-MutatatedSiteInfo.each_site(mutated_site_infos_random_filename).each_with_index do |site, index|
+PerfectosAPE::Result.each_in_file(mutated_site_infos_random_filename).each_with_index do |site, index|
   motif = site.motif_name
   context = random_snv_contexts[ site.normalized_snp_name ]
   fitters.fit_element([motif, context], site.pvalue_1) do

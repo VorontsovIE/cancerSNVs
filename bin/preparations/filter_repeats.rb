@@ -10,11 +10,11 @@ snvs_filename = ARGV[1] # './source_data/SNV_infos.txt'
 genome_repeat_masker_folder = ARGV[2] # '/home/ilya/iogen/genome/hg19_repeatMasker'
 raise 'Specify file with sites, SNV infos and folder with repeat masker infos'  unless sites_filename && snvs_filename && genome_repeat_masker_folder
 
-snvs = BreastCancerSNV.each_substitution_in_file(snvs_filename).map{|snv| [snv.variant_id, snv] }.to_h
+snvs = BreastCancerSNV.each_in_file(snvs_filename).map{|snv| [snv.variant_id, snv] }.to_h
 repeats_by_chromosome = read_repeats_by_chromosome(genome_repeat_masker_folder, ignore_repeat_types: [:Simple_repeat, :Low_complexity], expand_length: 25)
                         .map{|chromosome_name, repeats| [chromosome_name.to_s.sub(/\Achr/,'').to_sym, repeats] }.to_h
 
-MutatatedSiteInfo.each_site(sites_filename).with_index.reject{|site, index|
+PerfectosAPE::Result.each_in_file(sites_filename).with_index.reject{|site, index|
   $stderr.puts "#{index} sites processed"  if index % 100000 == 0
   snv = snvs[site.normalized_snp_name]
   
