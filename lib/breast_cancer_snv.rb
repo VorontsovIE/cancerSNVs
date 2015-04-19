@@ -118,12 +118,14 @@ BreastCancerSNV = Struct.new( :variant_id,
     IntervalNotation::Syntax::Long.closed_closed(position - five_prime_length, position + three_prime_flank_length)
   end
 
+  # Deprecated
   # 1-based, fully closed, given snv position is 1-based
   def site_interval(site, flank_length = 0)
     interval_around_snv(flank_length + site.seq_1_five_flank_length,
                         flank_length + site.seq_1_three_flank_length)
   end
 
+  # Deprecated
   def load_site_sequence(genome_folder, site, flank_length = 0)
     load_sequence(genome_folder, flank_length + site.seq_1_five_flank_length, flank_length + site.seq_1_three_flank_length)
   end
@@ -136,44 +138,12 @@ BreastCancerSNV = Struct.new( :variant_id,
     pyrimidine_strand? ? three_prime_flanking_sequence_in_pyrimidine_context : Sequence.revcomp(five_prime_flanking_sequence_in_pyrimidine_context)
   end
 
-
-  def ref_sequence_pyrimidine_context
-    "#{five_prime_flanking_sequence_in_pyrimidine_context}#{ref_base_pyrimidine_context}#{three_prime_flanking_sequence_in_pyrimidine_context}"
-  end
-
-  def mutant_sequence_pyrimidine_context
-    "#{five_prime_flanking_sequence_in_pyrimidine_context}#{mutant_base_pyrimidine_context}#{three_prime_flanking_sequence_in_pyrimidine_context}"
-  end
-
-  def ref_sequence_plus_strand
-    "#{five_prime_flanking_sequence_plus_strand}#{ref_base_plus_strand}#{three_prime_flanking_sequence_plus_strand}"
-  end
-
-  def mutant_sequence_plus_strand
-    "#{five_prime_flanking_sequence_plus_strand}#{mutant_base_plus_strand}#{three_prime_flanking_sequence_plus_strand}"
-  end
-
   def snp_sequence_pyrimidine_context(five_prime_flank_length: nil, three_prime_flank_length: nil)
     five_prime_flank_length ||= five_prime_flanking_sequence_in_pyrimidine_context.length
     three_prime_flank_length ||= three_prime_flanking_sequence_in_pyrimidine_context.length
     five_prime_chunk = five_prime_flanking_sequence_in_pyrimidine_context[-five_prime_flank_length..-1]
     three_prime_chunk = three_prime_flanking_sequence_in_pyrimidine_context[0, three_prime_flank_length]
     "#{ five_prime_chunk }[#{ref_base_pyrimidine_context}/#{mutant_base_pyrimidine_context}]#{ three_prime_chunk }"
-  end
-
-  def snp_sequence_plus_strand
-    "#{five_prime_flanking_sequence_plus_strand}[#{ref_base_plus_strand}/#{mutant_base_plus_strand}]#{three_prime_flanking_sequence_plus_strand}"
-  end
-
-
-  def sequence_with_snv_in_pyrimidine_context(five_prime_flank_length: nil, three_prime_flank_length: nil, name: variant_id)
-    five_prime_flank_length ||= five_prime_flanking_sequence_in_pyrimidine_context.length
-    three_prime_flank_length ||= three_prime_flanking_sequence_in_pyrimidine_context.length
-    SequenceWithSNP.new(
-      five_prime_flanking_sequence_in_pyrimidine_context[-five_prime_flank_length..-1],
-      [ref_base_pyrimidine_context, mutant_base_pyrimidine_context],
-      three_prime_flanking_sequence_in_pyrimidine_context[0, three_prime_flank_length]
-    )
   end
 
   # SNV sequence from information in object itself (doesn't involve loading sequence from genome). See also #snp_sequence_from_genome
@@ -200,13 +170,7 @@ BreastCancerSNV = Struct.new( :variant_id,
     seq_5 = seq[0, five_prime_flank_length]
     seq_3 = seq[(five_prime_flank_length + 1), three_prime_flank_length]
     allele_variants = [ref_base_plus_strand, mutant_base_plus_strand]
-    seq_w_snv = SequenceWithSNP.new(seq_5, allele_variants, seq_3, name: name)
-
-    # check SNV consistency to genome sequence
-    subsequence = seq_w_snv.subsequence(before: five_prime_flanking_sequence_plus_strand.length, after: three_prime_flanking_sequence_plus_strand.length)
-    raise "Error! Sequence in genome doesn't match sequence SNV flanks"  unless subsequence.sequence_variant(0) == ref_sequence_plus_strand
-
-    seq_w_snv
+    SequenceWithSNP.new(seq_5, allele_variants, seq_3, name: name)
   end
 
   # 1-bp context on plus strand
