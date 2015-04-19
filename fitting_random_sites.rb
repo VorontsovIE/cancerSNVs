@@ -1,10 +1,10 @@
 # Sampling random sites to make distribution of random site pvalues to be the same as an actual pvalue distribution
 
 $:.unshift File.absolute_path('lib', __dir__)
-require 'histogram'
+require 'fitting/histogram'
 require 'perfectosape/results'
 require 'breast_cancer_snv'
-require 'multi_histogram_fitter'
+require 'fitting/multi_histogram_fitter'
 require 'optparse'
 
 def context_by_snv_name(snv_infos_filename)

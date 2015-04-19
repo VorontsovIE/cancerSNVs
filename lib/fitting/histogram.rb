@@ -1,3 +1,4 @@
+require_relative 'histogram_fitter'
 # Use Rationals instead of floats!
 # [from; to)
 class Histogram

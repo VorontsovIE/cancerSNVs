@@ -1,6 +1,6 @@
 $:.unshift File.absolute_path('../../lib', __dir__)
 require 'set'
-require 'histogram'
+require 'fitting/histogram'
 require 'breast_cancer_snv'
 require 'perfectosape/results'
 
