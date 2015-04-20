@@ -29,7 +29,7 @@ File.readlines(sequences_filename).each.lazy.map {|line|
                       seq_w_snv.pyrimidine_context? ? '+' : '-',
                       '', '', '', '', #:gene, :gene_id, :ccds_id, :transcript_id,
 
-                      '', Set.new, #:gene_type, :mut_types,
+                      '', RegionType.new, #:gene_type, :mutation_region_types,
 
                       '', '', '', # :mRNA_mut_syntax, :cds_mut_syntax, :aa_mut_syntax,
                       '', '' # :current_conf_status, :validation_platform

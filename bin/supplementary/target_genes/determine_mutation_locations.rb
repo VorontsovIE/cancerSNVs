@@ -79,7 +79,7 @@ motif_for_analysis.each do |motif|
     snv = snvs[mut_name]
     chromosome = snv.chromosome
     pos = snv.position
-    mut_type = snv.mutation_types_string
+    mut_type = snv.mutation_region_types
     context = snvs_by_context.select{|context_name, snv_names| snv_names.include?(mut_name) }.keys.join(',')
     pos = pos.to_i
     interval_object_pairs_by_chromosome[chromosome.to_s].select do |interval, ensg|

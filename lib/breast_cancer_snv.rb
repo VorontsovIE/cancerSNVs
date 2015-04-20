@@ -1,4 +1,5 @@
-require 'set'
+require 'forwardable'
+require 'region_type'
 require 'interval_notation'
 require_relative 'sequence'
 require_relative 'sequence_with_snp'
@@ -16,16 +17,19 @@ BreastCancerSNV = Struct.new( :variant_id,
                               :strand_of_mutation_in_pyrimidine_context,
                               :gene, :gene_id, :ccds_id, :transcript_id,
 
-                              :gene_type, :mut_types,
+                              :gene_type, :mutation_region_types,
 
                               :mRNA_mut_syntax, :cds_mut_syntax, :aa_mut_syntax,
                               :current_conf_status, :validation_platform ) do
 
 
-  attr_accessor :_mut_types_raw
+  attr_accessor :_mutation_region_types_raw
 
-  def mut_types
-    @mut_types ||= (_mut_types_raw || '').split(',').map(&:downcase).map(&:to_sym).to_set
+  extend Forwardable
+  def_delegators :mutation_region_types, *RegionType::FEATURE_INQUIRIES
+
+  def mutation_region_types
+    @mutation_region_types ||= RegionType.from_string(_mutation_region_types_raw)
   end
 
   # '27607140	PD3851a	1	67165085	GRCh37	G	A	GAGGATGACA	C	T	GCAAGCTGCC		-SGIP1	ENSG00000118473	CCDS30744.1	ENST00000371037	ProteinCoding	Intronic,Promoter	r.?			None'
@@ -37,7 +41,7 @@ BreastCancerSNV = Struct.new( :variant_id,
     mutant_base_pyrimidine_context, three_prime_flanking_sequence_in_pyrimidine_context,
     strand_of_mutation_in_pyrimidine_context,
     gene, gene_id, ccds_id, transcript_id,
-    gene_type, mut_types,
+    gene_type, mutation_region_types_raw,
     mRNA_mut_syntax, cds_mut_syntax, aa_mut_syntax,
     current_conf_status, validation_platform = str.chomp.split("\t", 23)
 
@@ -56,7 +60,7 @@ BreastCancerSNV = Struct.new( :variant_id,
                         mRNA_mut_syntax, cds_mut_syntax, aa_mut_syntax,
                         current_conf_status.to_sym, validation_platform.to_sym )
     .tap {|snv|
-      snv._mut_types_raw = mut_types # lazy initialization of mut_types
+      snv._mutation_region_types_raw = mutation_region_types_raw # lazy initialization of mutation_region_types
     }
   end
 
@@ -74,10 +78,6 @@ BreastCancerSNV = Struct.new( :variant_id,
     stream.each_line.lazy.map{|line| BreastCancerSNV.from_string(line) }.each(&block)
   end
 
-  def mutation_types_string
-    mut_types.map(&:to_s).map(&:capitalize).join(',')
-  end
-
   def to_s
     [
       variant_id, sample_id, chromosome, position, genome_build,
@@ -87,19 +87,10 @@ BreastCancerSNV = Struct.new( :variant_id,
       three_prime_flanking_sequence_in_pyrimidine_context,
       strand_of_mutation_in_pyrimidine_context,
       gene, gene_id, ccds_id, transcript_id, gene_type,
-      mutation_types_string,
+      mutation_region_types,
       mRNA_mut_syntax, cds_mut_syntax, aa_mut_syntax,
       current_conf_status, validation_platform
     ].join("\t")
-  end
-
-  def promoter?; mut_types.include?(:promoter); end
-  def intronic?; mut_types.include?(:intronic); end
-  def cage_peak?; mut_types.include?(:cage_peak); end # Note one need to markup SNV first (it's not performing by snv_markup now)
-  def in_repeat?; mut_types.include?(:repeat); end # checks whether an SNV vicinity lies on repeats; Note one need to markup SNV first (it's not performing by snv_markup now)
-  def exon_coding?; mut_types.include?(:exon_coding); end # Note one need to markup SNV first (it's not performing by snv_markup now)
-  def regulatory?
-    intronic? || promoter?
   end
 
   def pyrimidine_strand?

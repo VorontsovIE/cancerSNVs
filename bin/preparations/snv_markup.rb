@@ -11,13 +11,13 @@ introns_by_chromosome = read_introns_by_chromosome(exons_filename)
 puts BreastCancerSNV::FILE_HEADER
 BreastCancerSNV.each_in_file(snvs_filename).each do |snv|
   chromosome = "chr#{snv.chromosome}".to_sym
-  snv.mut_types = [] # discard all mutation types
+  snv.mutation_region_types.discard_types! # discard all mutation types
   if promoters_by_chromosome[chromosome].include_position?(snv.position)
-    snv.mut_types << :promoter
+    snv.mutation_region_types << :promoter
   end
 
   if introns_by_chromosome[chromosome].include_position?(snv.position)
-    snv.mut_types << :intronic
+    snv.mutation_region_types << :intronic
   end
 
   puts snv
