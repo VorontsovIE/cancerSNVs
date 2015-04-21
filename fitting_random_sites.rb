@@ -13,7 +13,7 @@ def context_by_snv_name(snv_infos_filename)
   BreastCancerSNV
     .each_in_file(snv_infos_filename)
     .map{|snv|
-      [snv.variant_id, snv.snp_sequence_pyrimidine_context(five_prime_flank_length: 1, three_prime_flank_length: 1)]
+      [snv.variant_id, snv.snv_sequence_pyrimidine_context(five_prime_flank_length: 1, three_prime_flank_length: 1)]
     }.to_h
 end
 
@@ -41,7 +41,7 @@ histograms = MultiHistogram.new{
 
 PerfectosAPE::Result.each_in_file(mutated_site_infos_cancer_filename).each do |site|
   motif = site.motif_name
-  context = cancer_snv_contexts[ site.normalized_snp_name ]
+  context = cancer_snv_contexts[ site.normalized_snv_name ]
   histograms.add_element([motif, context], site.pvalue_1)
 end
 
@@ -51,7 +51,7 @@ $stderr.puts "Loaded #{fitters.goal_total} original sites"
 
 PerfectosAPE::Result.each_in_file(mutated_site_infos_random_filename).each_with_index do |site, index|
   motif = site.motif_name
-  context = random_snv_contexts[ site.normalized_snp_name ]
+  context = random_snv_contexts[ site.normalized_snv_name ]
   fitters.fit_element([motif, context], site.pvalue_1) do
     puts site.line
   end

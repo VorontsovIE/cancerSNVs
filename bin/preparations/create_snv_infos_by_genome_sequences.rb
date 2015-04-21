@@ -10,7 +10,7 @@ File.readlines(sequences_filename).each.lazy.map {|line|
   pos = pos.to_i
   chromosome = chromosome.sub(/\Achr/, '')
 
-  seq_w_snv = SequenceWithSNP.from_string(seq)
+  seq_w_snv = SequenceWithSNV.from_string(seq)
   seq_w_snv_pyrimidine = seq_w_snv.in_pyrimidine_context
 
   short_seq_w_snv = seq_w_snv.subsequence(before: 10, after: 10)

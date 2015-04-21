@@ -1,6 +1,6 @@
 require 'interval_notation'
 require_relative '../snv_info'
-require_relative '../sequence_with_snp'
+require_relative '../sequence_with_snv'
 
 # SNV info from Alexandrov et al.
 MutationInfo = Struct.new(:sample_id, :mutation_type, :chromosome, :position_start, :position_end, :before_substitution, :after_substitution, :quality) do
@@ -49,7 +49,7 @@ MutationInfo = Struct.new(:sample_id, :mutation_type, :chromosome, :position_sta
     five_prime_flank = seq[0, flank_length]
     three_prime_flank = seq[flank_length + 1, flank_length]
     allele_variants = [before_substitution, after_substitution]
-    snv_seq = SequenceWithSNP.new(five_prime_flank, allele_variants, three_prime_flank)
+    snv_seq = SequenceWithSNV.new(five_prime_flank, allele_variants, three_prime_flank)
     SNVInfo.new(variant_id, sample_id, chromosome, position,
                 snv_seq,
                 snv_seq.context(allele_variant_number: 0),

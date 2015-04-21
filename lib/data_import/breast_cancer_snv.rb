@@ -2,7 +2,7 @@ require 'forwardable'
 require 'interval_notation'
 require_relative '../region_type'
 require_relative '../sequence'
-require_relative '../sequence_with_snp'
+require_relative '../sequence_with_snv'
 
 BreastCancerSNV = Struct.new( :variant_id,
                               :sample_id, :chromosome, :position, :genome_build,
@@ -129,7 +129,7 @@ BreastCancerSNV = Struct.new( :variant_id,
     pyrimidine_strand? ? three_prime_flanking_sequence_in_pyrimidine_context : Sequence.revcomp(five_prime_flanking_sequence_in_pyrimidine_context)
   end
 
-  def snp_sequence_pyrimidine_context(five_prime_flank_length: nil, three_prime_flank_length: nil)
+  def snv_sequence_pyrimidine_context(five_prime_flank_length: nil, three_prime_flank_length: nil)
     five_prime_flank_length ||= five_prime_flanking_sequence_in_pyrimidine_context.length
     three_prime_flank_length ||= three_prime_flanking_sequence_in_pyrimidine_context.length
     five_prime_chunk = five_prime_flanking_sequence_in_pyrimidine_context[-five_prime_flank_length..-1]
@@ -137,31 +137,31 @@ BreastCancerSNV = Struct.new( :variant_id,
     "#{ five_prime_chunk }[#{ref_base_pyrimidine_context}/#{mutant_base_pyrimidine_context}]#{ three_prime_chunk }"
   end
 
-  # SNV sequence from information in object itself (doesn't involve loading sequence from genome). See also #snp_sequence_from_genome
-  def sequence_with_snv(five_prime_flank_length: nil, three_prime_flank_length: nil, name: variant_id)
+  # SNV sequence from information in object itself (doesn't involve loading sequence from genome). See also #snv_sequence_from_genome
+  def sequence_with_snv(five_prime_flank_length: nil, three_prime_flank_length: nil)
     five_prime_flank_length ||= five_prime_flanking_sequence_plus_strand.length
     three_prime_flank_length ||= three_prime_flanking_sequence_plus_strand.length
     if five_prime_flank_length > five_prime_flanking_sequence_plus_strand.length
       raise "Can't obtain such a long subsequence from provided data: requested #{five_prime_flank_length}bp. But provided 5' flank is of length #{five_prime_flanking_sequence_plus_strand.length}.\n" +
-            "Use snp_sequence_from_genome instead"
+            "Use snv_sequence_from_genome instead"
     end
     if three_prime_flank_length > three_prime_flanking_sequence_plus_strand.length
       raise "Can't obtain such a long subsequence from provided data: requested #{three_prime_flank_length}bp. But provided 3' flank is of length #{three_prime_flanking_sequence_plus_strand.length}.\n" +
-            "Use snp_sequence_from_genome instead"
+            "Use snv_sequence_from_genome instead"
     end
     seq_5 = five_prime_flanking_sequence_plus_strand[five_prime_flanking_sequence_plus_strand.length - five_prime_flank_length, five_prime_flank_length]
     seq_3 = three_prime_flanking_sequence_plus_strand[0, three_prime_flank_length]
     allele_variants = [ref_base_plus_strand, mutant_base_plus_strand]
-    SequenceWithSNP.new(seq_5, allele_variants, seq_3, name: name)
+    SequenceWithSNV.new(seq_5, allele_variants, seq_3)
   end
 
-  def snp_sequence_from_genome(genome_folder, five_prime_flank_length, three_prime_flank_length, name: variant_id)
+  def snv_sequence_from_genome(genome_folder, five_prime_flank_length, three_prime_flank_length)
     seq = load_sequence(genome_folder, five_prime_flank_length, three_prime_flank_length)
 
     seq_5 = seq[0, five_prime_flank_length]
     seq_3 = seq[(five_prime_flank_length + 1), three_prime_flank_length]
     allele_variants = [ref_base_plus_strand, mutant_base_plus_strand]
-    SequenceWithSNP.new(seq_5, allele_variants, seq_3, name: name)
+    SequenceWithSNV.new(seq_5, allele_variants, seq_3)
   end
 
   # 1-bp context on plus strand
@@ -169,18 +169,20 @@ BreastCancerSNV = Struct.new( :variant_id,
     @context_before_snv_plus_strand ||= "#{five_prime_flanking_sequence_plus_strand[-1]}#{ref_base_plus_strand}#{three_prime_flanking_sequence_plus_strand[0]}"
   end
 
-  def to_snv_info(genome_folder, variant_id: nil, flank_length: 25)
+  def to_snv_info(genome_folder, flank_length: 25)
     seq = File.open( File.join(genome_folder, "chr#{chromosome}.plain") ){|f|
       f.seek(position - flank_length - 1)
       f.read(2*flank_length + 1).upcase
     }
+    before_substitution = ref_base_plus_strand
+    after_substitution = mutant_base_plus_strand
     unless seq[flank_length] == before_substitution.to_s
       raise "Base before substitution `#{before_substitution}` is not consistent with reference genome `#{seq[flank_length]}`"
     end
     five_prime_flank = seq[0, flank_length]
     three_prime_flank = seq[flank_length + 1, flank_length]
     allele_variants = [before_substitution, after_substitution]
-    snv_seq = SequenceWithSNP.new(five_prime_flank, allele_variants, three_prime_flank)
+    snv_seq = SequenceWithSNV.new(five_prime_flank, allele_variants, three_prime_flank)
 
     SNVInfo.new(variant_id, sample_id, chromosome, position,
                 snv_seq,

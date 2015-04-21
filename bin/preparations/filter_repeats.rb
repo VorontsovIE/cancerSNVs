@@ -16,7 +16,7 @@ repeats_by_chromosome = read_repeats_by_chromosome(genome_repeat_masker_folder, 
 
 PerfectosAPE::Result.each_in_file(sites_filename).with_index.reject{|site, index|
   $stderr.puts "#{index} sites processed"  if index % 100000 == 0
-  snv = snvs[site.normalized_snp_name]
+  snv = snvs[site.normalized_snv_name]
   
   # it can't be correctly generalized on shuffled sequences
   # (it's hard to say whether shuffled repeats are repeats,

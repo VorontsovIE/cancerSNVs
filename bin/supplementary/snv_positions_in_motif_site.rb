@@ -58,7 +58,7 @@ mutation_profiles = sites_filenames.map do |sites_filename|
 
   # PerfectosAPE::Result.each_in_file(sites_filename).select{|site| site.disrupted?(fold_change_cutoff: 1) }.each do |site|
   PerfectosAPE::Result.each_in_file(sites_filename).each do |site|
-    pos = site.snv_position_in_site_1_pwm + expand_region_length # works for expansion procedure defined in such a way that site should ovelap snp or its expand_region_length vicinity
+    pos = site.snv_position_in_site_1_pwm + expand_region_length # works for expansion procedure defined in such a way that site should ovelap SNV or its expand_region_length vicinity
     raise 'Bad coordinates'  if pos < 0
     mutation_profile_by_motif[site.motif_name][pos] += 1
   end

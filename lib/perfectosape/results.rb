@@ -25,7 +25,7 @@ PerfectosAPE::Result = Struct.new(:line,
               variants.to_sym )
   end
 
-  def normalized_snp_name
+  def normalized_snv_name
     variant_id.split("_", 2)[0]
   end
 

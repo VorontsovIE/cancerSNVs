@@ -1,7 +1,7 @@
 $:.unshift File.absolute_path('../../lib', __dir__)
 require 'set'
 require 'optparse'
-require 'sequence_with_snp'
+require 'sequence_with_snv'
 
 fold = 1
 
@@ -25,15 +25,16 @@ raise 'Specify file with SNV sequences'  unless snvs_filename = ARGV[0]      # '
 File.open(snvs_filename) do |f|
   f.each_line.lazy.reject{|line|
     line.start_with?('#')
-  }.map{|line|
-    name, seq = line.chomp.split("\t")
-    SequenceWithSNP.from_string(seq, name: name)
-  }.each{|seq_w_snv|
+  }.each{|line|
+    name, str = line.chomp.split("\t")
+    seq_w_snv = SequenceWithSNV.from_string(str)
+
     fold.times{|suffix|
-      shuffled_seq = seq_w_snv.shuffle_flanks(name: "#{seq_w_snv.name}_#{suffix}")
-      shuffled_seq = seq_w_snv.shuffle_flanks(name: "#{seq_w_snv.name}_#{suffix}")  while sequence_hashes.include?(shuffled_seq.hash) # ignore possible duplicates
+      name_of_shuffled = "#{name}_#{suffix}"
+      shuffled_seq = seq_w_snv.with_flanks_shuffled
+      shuffled_seq = seq_w_snv.with_flanks_shuffled  while sequence_hashes.include?(shuffled_seq.hash) # ignore possible duplicates
       sequence_hashes << shuffled_seq.hash
-      puts shuffled_seq
+      puts [name_of_shuffled, shuffled_seq].join("\t")
     }
   }
 end

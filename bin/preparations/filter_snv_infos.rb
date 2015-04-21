@@ -18,7 +18,7 @@ puts BreastCancerSNV::FILE_HEADER
 snvs = BreastCancerSNV.each_in_file(snvs_filename).select{|snv|
   snv.promoter? || snv.intronic?
 }.to_a.uniq{|snv| # remove duplicates
-  snv.snp_sequence_from_genome(genome_folder, flank_length, flank_length, name: snv.variant_id).in_pyrimidine_context
+  snv.snv_sequence_from_genome(genome_folder, flank_length, flank_length).in_pyrimidine_context
 }.each{|snv|
   puts snv
 }

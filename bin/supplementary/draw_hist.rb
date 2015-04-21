@@ -17,7 +17,7 @@ histogram = Histogram.new(1e-7, 0.0005, 1.0){|pvalue| - Math.log2(pvalue) }
 PerfectosAPE::Result.each_in_file(mutated_site_infos_filename).select{|site_info|
   site_info.motif_name == motif &&
   site_info.site_before_substitution?(pvalue_cutoff: 0.0005) &&
-  regulatory_mutation_names.include?(site_info.normalized_snp_name)
+  regulatory_mutation_names.include?(site_info.normalized_snv_name)
 }.each{|site_info|
   histogram.add_element( site_info.pvalue_1 )
 }
