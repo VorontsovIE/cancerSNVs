@@ -1,91 +1,44 @@
-require 'interval_notation'
+SNVInfo = Struct.new(:variant_id, :sample_id, :chromosome, :position,
+                     :snv_sequence, :context_before, :context_after,
+                     :mutation_region_types) do
+  COLUMN_ORDER = [:variant_id, :sample_id, :chromosome, :position,
+                  :snv_sequence_wo_name, :context_before, :context_after,
+                  :mutation_region_types]
+  COLUMN_TITLES = { variant_id: 'Variant id', sample_id: 'Sample',
+                    chromosome: 'Chromosome', position: 'Position',
+                    snv_sequence_wo_name: 'SNV sequence',
+                    context_before: 'Context before substitution (1bp around SNV)',
+                    context_after: 'Context after substitution (1bp around SNV)',
+                    mutation_region_types: 'Mutation region type' }
+  HEADER = COLUMN_ORDER.map{|column| COLUMN_TITLES[column] }
 
-# SNV info from Alexandrov et al.
-MutationInfo = Struct.new(:sample_id, :mutation_type, :chromosome, :position_start, :position_end, :ref_base_plus_strand, :mut_base_plus_strand, :quality) do
-  # PD3952a subs  X 41206199  41206199  C T SOMATIC-FOR-SIGNATURE-ANALYSIS
   def self.from_string(str)
-    sample_id, mutation_type, \
-      chromosome, position_start, position_end, \
-      ref_base_plus_strand, mut_base_plus_strand, \
-      quality = str.chomp.split("\t")
-
-    self.new( sample_id.to_sym, mutation_type.to_sym, chromosome.to_sym,
-                      position_start.to_i, position_end.to_i,
-                      ref_base_plus_strand.upcase.to_sym, mut_base_plus_strand.upcase.to_sym,
-                      quality.to_sym )
+    variant_id, sample_id,  chromosome, position, \
+                snv_sequence, context_before, context_after, \
+                mutation_region_types = str.chomp.split("\t")
+    SNVInfo.new(variant_id, sample_id,  chromosome, position,
+                SequenceWithSNP.from_string(snv_sequence),
+                context_before, context_after,
+                mutation_region_types)
   end
 
-  def self.each_in_stream(stream, &block)
-    stream.each_line.map{|line|
-      self.from_string(line)
-    }.each(&block)
+  def self.each_in_stream(stream)
+    stream.each_line.lazy.map{|line| from_string(line) }.each(&block)
   end
 
   def self.each_in_file(filename, &block)
-    File.open(filename){|f|
-      self.each_in_stream(f, &block)
-    }
+    return enum_for(:each_in_file, filename).lazy  unless block_given?
+    File.open(filename) do |f|
+      f.readline # skip header
+      each_in_stream(f, &block)
+    end
+  end
+
+  def snv_sequence_wo_name
+    snv_sequence.to_s_without_name
   end
 
   def to_s
-    [ sample_id, mutation_type,
-      chromosome, position_start, position_end,
-      ref_base_plus_strand, mut_base_plus_strand,
-      quality ].join("\t")
-  end
-
-  def to_snv_info
-    raise 'Can\'t convert non-SNV into SNVInfo'  unless snv?
-    SNVInfo.new(sample_id, chromosome, position_start, ref_base_plus_strand, mut_base_plus_strand)
-  end
-
-  def snv? # single nucleotide substitution
-    mutation_type == :subs
-  end
-
-  def indel?
-    mutation_type == :indel
-  end
-
-  # def load_sequence(genome_folder, five_prime_flank_length: 0, three_prime_flank_length: 0)
-  #   left, right = [position_start, position_end].sort
-  #   File.open (File.join(genome_folder, "chr#{chromosome}.plain")) do |f|
-  #     f.seek(left - five_prime_flank_length - 1)
-  #     f.read(five_prime_flank_length + three_prime_flank_length + right - left + 1).upcase
-  #   end
-  # end
-
-  def interval
-    if position_start == position_end
-      @interval ||= IntervalNotation::Syntax::Long.point(position_start)
-    elsif position_start < position_end
-      @interval ||= IntervalNotation::Syntax::Long.closed_closed(position_start, position_end)
-    else
-      @interval ||= IntervalNotation::Syntax::Long.closed_closed(position_end, position_start)
-    end
-  end
-end
-
-SNVInfo = Struct.new(:sample_id, :chromosome, :position, :ref_base_plus_strand, :mut_base_plus_strand) do
-  def to_s
-    [ sample_id, :subs,
-      chromosome, position, position,
-      ref_base_plus_strand, mut_base_plus_strand,
-    ].join("\t")
-  end
-
-  # def self.each_in_stream(stream, &block)
-  #   MutationInfo.each_in_stream(stream).select(&:snv?).map(&:to_snv_info).each(&block)
-  # end
-
-  # def self.each_in_file(filename, &block)
-  #   MutationInfo.each_in_file(filename).select(&:snv?).map(&:to_snv_info).each(&block)
-  # end
-
-  def load_sequence(genome_folder, five_prime_flank_length: 0, three_prime_flank_length: 0)
-    File.open (File.join(genome_folder, "chr#{chromosome}.plain")) do |f|
-      f.seek(position - five_prime_flank_length - 1)
-      f.read(five_prime_flank_length + three_prime_flank_length + 1).upcase
-    end
+    COLUMN_ORDER.map{|column| send(column) }.join("\t")
   end
 end

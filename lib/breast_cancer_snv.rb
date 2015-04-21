@@ -75,7 +75,7 @@ BreastCancerSNV = Struct.new( :variant_id,
   end
 
   def self.each_in_stream(stream, &block)
-    stream.each_line.lazy.map{|line| BreastCancerSNV.from_string(line) }.each(&block)
+    stream.each_line.lazy.map{|line| self.from_string(line) }.each(&block)
   end
 
   def to_s
@@ -98,7 +98,7 @@ BreastCancerSNV = Struct.new( :variant_id,
   end
 
   def load_sequence(genome_folder, five_prime_flank_length, three_prime_flank_length)
-    File.open (File.join(genome_folder, "chr#{chromosome}.plain")) do |f|
+    File.open( File.join(genome_folder, "chr#{chromosome}.plain") ) do |f|
       f.seek(position - five_prime_flank_length - 1)
       f.read(five_prime_flank_length + three_prime_flank_length + 1).upcase
     end
@@ -167,6 +167,26 @@ BreastCancerSNV = Struct.new( :variant_id,
   # 1-bp context on plus strand
   def context_before_snv_plus_strand
     @context_before_snv_plus_strand ||= "#{five_prime_flanking_sequence_plus_strand[-1]}#{ref_base_plus_strand}#{three_prime_flanking_sequence_plus_strand[0]}"
+  end
+
+  def to_snv_info(genome_folder, variant_id: nil, flank_length: 25)
+    seq = File.open( File.join(genome_folder, "chr#{chromosome}.plain") ){|f|
+      f.seek(position - flank_length - 1)
+      f.read(2*flank_length + 1).upcase
+    }
+    unless seq[flank_length] == before_substitution.to_s
+      raise "Base before substitution `#{before_substitution}` is not consistent with reference genome `#{seq[flank_length]}`"
+    end
+    five_prime_flank = seq[0, flank_length]
+    three_prime_flank = seq[flank_length + 1, flank_length]
+    allele_variants = [before_substitution, after_substitution]
+    snv_seq = SequenceWithSNP.new(five_prime_flank, allele_variants, three_prime_flank)
+
+    SNVInfo.new(variant_id, sample_id, chromosome, position,
+                snv_seq,
+                snv_seq.context(allele_variant_number: 0),
+                snv_seq.context(allele_variant_number: 1),
+                mutation_region_types)
   end
 end
 

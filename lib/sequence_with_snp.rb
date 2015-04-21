@@ -74,6 +74,10 @@ class SequenceWithSNP
     "#{name}\t#{left}[#{allele_variants.join('/')}]#{right}"
   end
 
+  def to_s_without_name
+    "#{name}\t#{left}[#{allele_variants.join('/')}]#{right}"
+  end
+
   def inspect
     to_s
   end

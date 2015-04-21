@@ -3,6 +3,8 @@
 $:.unshift File.absolute_path('../../lib', __dir__)
 require 'load_genome_structure'
 require 'cancer_mutations_loading'
+require 'region_type'
+require 'data_import/cancer_mutations_from_alexandrov_et_al'
 
 GENOME_FOLDER = './source_data/genome'
 EXONS_FILENAME = './source_data/exons.txt'
@@ -54,7 +56,7 @@ File.open('./results/alexandrov_somatic_mutations_contexts.txt', 'w') do |fw|
     }
 
     context_counts = regulatory_mutations.map{|mutation|
-      context = mutation.to_snv_info.load_sequence(GENOME_FOLDER, five_prime_flank_length: 1, three_prime_flank_length: 1).upcase
+      context = mutation.to_snv_info(GENOME_FOLDER).context_before
       ['C', 'T'].include?(context[1]) ? context : context.reverse.tr('ACGTN', 'TGCAN')
     }.group_by(&:itself).map{|context, mutations| [context, mutations.size] }.sort_by{|k,v| v }.reverse.to_h
 
