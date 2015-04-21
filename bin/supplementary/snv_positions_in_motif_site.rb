@@ -1,6 +1,7 @@
 $:.unshift File.absolute_path('../../lib', __dir__)
 require 'perfectosape/results'
 require 'measurement_vector'
+require '../experiment_configuration'
 require 'bioinform'
 require 'shellwords'
 require 'optparse'
@@ -15,9 +16,7 @@ def stddev(values)
   (values.map{|x| (x - m) ** 2 }.inject(&:+) / (values.size.to_f - 1.0)) ** 0.5
 end
 
-motif_collection_folder = './source_data/motif_collection/'
-
-motifs = Dir.glob(File.join(motif_collection_folder, '*.pwm')).map{|fn| Bioinform::MotifModel::PWM.from_file(fn) }
+motifs = Dir.glob(File.join(MOTIF_COLLECTION_FOLDER, '*.pwm')).map{|fn| Bioinform::MotifModel::PWM.from_file(fn) }
 motif_names = motifs.map(&:name).map(&:to_sym)
 
 requested_motifs = motif_names

@@ -5,9 +5,7 @@ require 'load_genome_structure'
 require 'data_import/cancer_mutations_loading'
 require 'region_type'
 require 'data_import/cancer_mutations_from_alexandrov_et_al'
-
-GENOME_FOLDER = './source_data/genome'
-EXONS_FILENAME = './source_data/exons.txt'
+require '../experiment_configuration'
 
 ALEXANDROV_ET_AL_FOLDER = './source_data/AlexandrovEtAl/'
 SOMATIC_MUTATIONS_FOLDER = File.join(ALEXANDROV_ET_AL_FOLDER, 'somatic_mutation_data')
