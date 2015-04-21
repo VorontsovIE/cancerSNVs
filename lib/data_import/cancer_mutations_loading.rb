@@ -1,6 +1,6 @@
 require 'set'
 require_relative 'sample_info'
-require_relative 'snv_info'
+require_relative '../snv_info'
 
 def whole_genome_samples_by_cancer(sample_infos_filename)
   samples = SampleInfo.each_in_file(sample_infos_filename).to_a

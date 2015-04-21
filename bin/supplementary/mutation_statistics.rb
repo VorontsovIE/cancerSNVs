@@ -2,7 +2,7 @@
 
 $:.unshift File.absolute_path('../../lib', __dir__)
 require 'load_genome_structure'
-require 'cancer_mutations_loading'
+require 'data_import/cancer_mutations_loading'
 require 'region_type'
 require 'data_import/cancer_mutations_from_alexandrov_et_al'
 
