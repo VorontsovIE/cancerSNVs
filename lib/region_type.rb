@@ -12,7 +12,13 @@ class RegionType
   end
 
   def self.from_string(str)
-    new( str.split(',').map(&:downcase).map(&:to_sym).to_set )
+    # # Optimized version of:
+    # new( str.split(',').lazy.map(&:downcase).map(&:to_sym).to_set )
+    features = Set.new
+    str.split(',').each do |feature|
+      features << feature.downcase.to_sym
+    end
+    new(features)
   end
 
   FEATURES.each do |feature|
