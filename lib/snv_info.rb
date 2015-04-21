@@ -1,16 +1,16 @@
 require_relative 'region_type'
 
-SNVInfo = Struct.new(:variant_id, :sample_id, :chromosome, :position,
+SNVInfo = Struct.new(:variant_id, :sample_id, :chromosome, :position, :strand,
                      :snv_sequence,
                      :mutation_region_types) do
 
   def self.from_string(str)
-    variant_id, sample_id,  chromosome, position, \
+    variant_id, sample_id,  chromosome, position, strand, \
                 snv_sequence, \
-                mutation_region_types = str.chomp.split("\t", 6)
-    SNVInfo.new(variant_id, sample_id,  chromosome, position,
-                SequenceWithSNV.from_string(snv_sequence),
-                RegionType.from_string(mutation_region_types))
+                mutation_region_types = str.chomp.split("\t", 7)
+    new(variant_id, sample_id,  chromosome, position, strand.to_sym,
+        SequenceWithSNV.from_string(snv_sequence),
+        RegionType.from_string(mutation_region_types))
   end
 
   def self.each_in_stream(stream, &block)
@@ -36,14 +36,37 @@ SNVInfo = Struct.new(:variant_id, :sample_id, :chromosome, :position,
   def context_after
     snv_sequence.context(before: 1, after: 1, allele_variant_number: 1)
   end
+
+  def revcomp
+    case strand
+    when :+
+      reverse_strand = :-
+    when :-
+      reverse_strand = :+
+    else
+      raise 'Unknown strand'
+    end
+
+    SNVInfo.new(variant_id, sample_id, chromosome, position, reverse_strand,
+                snv_sequence.revcomp, mutation_region_types)
+  end
+
+  def in_pyrimidine_context?
+    snv_sequence.pyrimidine_context?
+  end
+
+  def in_pyrimidine_context
+    in_pyrimidine_context? ? self : revcomp
+  end
 end
 
-SNVInfo::COLUMN_ORDER = [:variant_id, :sample_id, :chromosome, :position,
+SNVInfo::COLUMN_ORDER = [:variant_id, :sample_id, :chromosome, :position, :strand,
                          :snv_sequence, :mutation_region_types]
 
 SNVInfo::COLUMN_TITLES = {
   variant_id: 'Variant id', sample_id: 'Sample',
   chromosome: 'Chromosome', position: 'Position',
+  strand: 'Strand',
   snv_sequence: 'SNV sequence',
   mutation_region_types: 'Mutation region type'
 }
