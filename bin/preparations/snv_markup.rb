@@ -1,5 +1,5 @@
 $:.unshift File.absolute_path('../../lib', __dir__)
-require 'breast_cancer_snv'
+require 'data_import/breast_cancer_snv'
 require 'load_genome_structure'
 
 raise 'Specify SNV infos' unless snvs_filename = ARGV[0] # './source_data/SNV_infos_original.txt'

@@ -1,8 +1,8 @@
 require 'forwardable'
-require 'region_type'
 require 'interval_notation'
-require_relative 'sequence'
-require_relative 'sequence_with_snp'
+require_relative '../region_type'
+require_relative '../sequence'
+require_relative '../sequence_with_snp'
 
 BreastCancerSNV = Struct.new( :variant_id,
                               :sample_id, :chromosome, :position, :genome_build,

@@ -1,6 +1,6 @@
 $:.unshift File.absolute_path('../../lib', __dir__)
 require 'optparse'
-require 'breast_cancer_snv'
+require 'data_import/breast_cancer_snv'
 require 'perfectosape/results'
 
 mode = :words

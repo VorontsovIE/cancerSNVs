@@ -1,3 +1,5 @@
+require_relative 'region_type'
+
 SNVInfo = Struct.new(:variant_id, :sample_id, :chromosome, :position,
                      :snv_sequence, :context_before, :context_after,
                      :mutation_region_types) do
@@ -19,7 +21,7 @@ SNVInfo = Struct.new(:variant_id, :sample_id, :chromosome, :position,
     SNVInfo.new(variant_id, sample_id,  chromosome, position,
                 SequenceWithSNP.from_string(snv_sequence),
                 context_before, context_after,
-                mutation_region_types)
+                RegionType.from_string(mutation_region_types))
   end
 
   def self.each_in_stream(stream)

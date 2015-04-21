@@ -3,7 +3,7 @@
 $:.unshift File.absolute_path('lib', __dir__)
 require 'fitting/histogram'
 require 'perfectosape/results'
-require 'breast_cancer_snv'
+require 'data_import/breast_cancer_snv'
 require 'fitting/multi_histogram_fitter'
 require 'optparse'
 

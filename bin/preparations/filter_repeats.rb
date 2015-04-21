@@ -1,6 +1,6 @@
 $:.unshift File.absolute_path('../../lib', __dir__)
 require 'repeat_masker_info'
-require 'breast_cancer_snv'
+require 'data_import/breast_cancer_snv'
 require 'load_genome_structure'
 
 require 'interval_notation' # gem dependency

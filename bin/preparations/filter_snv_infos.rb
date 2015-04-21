@@ -1,5 +1,5 @@
 $:.unshift File.absolute_path('../../lib', __dir__)
-require 'breast_cancer_snv'
+require 'data_import/breast_cancer_snv'
 require 'load_genome_structure'
 require 'optparse'
 

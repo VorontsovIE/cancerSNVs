@@ -1,7 +1,7 @@
 $:.unshift File.absolute_path('../../lib', __dir__)
 require 'set'
 require 'fitting/histogram'
-require 'breast_cancer_snv'
+require 'data_import/breast_cancer_snv'
 require 'perfectosape/results'
 
 motif = ARGV[0].to_sym # AHR_si

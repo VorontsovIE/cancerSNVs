@@ -2,7 +2,7 @@ require 'interval_notation'
 $:.unshift File.absolute_path('../../../lib', __dir__)
 require 'mutation_context'
 require 'import_information'
-require 'breast_cancer_snv'
+require 'data_import/breast_cancer_snv'
 require 'perfectosape/results'
 
 snv_infos_filename = './source_data/SNV_infos.txt'

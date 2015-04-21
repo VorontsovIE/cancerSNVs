@@ -4,7 +4,7 @@ require 'sequence_with_snp'
 require 'optparse'
 require 'mutation_context'
 require 'perfectosape/results'
-require 'breast_cancer_snv'
+require 'data_import/breast_cancer_snv'
 require 'import_information'
 
 def snv_in_set(line, set)
