@@ -52,8 +52,6 @@ MutationInfo = Struct.new(:sample_id, :mutation_type, :chromosome, :position_sta
     snv_seq = SequenceWithSNV.new(five_prime_flank, allele_variants, three_prime_flank)
     SNVInfo.new(variant_id, sample_id, chromosome, position,
                 snv_seq,
-                snv_seq.context(allele_variant_number: 0),
-                snv_seq.context(allele_variant_number: 1),
                 mutation_region_types)
   end
 

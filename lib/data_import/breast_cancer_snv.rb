@@ -186,8 +186,6 @@ BreastCancerSNV = Struct.new( :variant_id,
 
     SNVInfo.new(variant_id, sample_id, chromosome, position,
                 snv_seq,
-                snv_seq.context(allele_variant_number: 0),
-                snv_seq.context(allele_variant_number: 1),
                 mutation_region_types)
   end
 end

@@ -1,26 +1,23 @@
 require_relative 'region_type'
 
 SNVInfo = Struct.new(:variant_id, :sample_id, :chromosome, :position,
-                     :snv_sequence, :context_before, :context_after,
+                     :snv_sequence,
                      :mutation_region_types) do
   COLUMN_ORDER = [:variant_id, :sample_id, :chromosome, :position,
-                  :snv_sequence, :context_before, :context_after,
+                  :snv_sequence,
                   :mutation_region_types]
   COLUMN_TITLES = { variant_id: 'Variant id', sample_id: 'Sample',
                     chromosome: 'Chromosome', position: 'Position',
                     snv_sequence: 'SNV sequence',
-                    context_before: 'Context before substitution (1bp around SNV)',
-                    context_after: 'Context after substitution (1bp around SNV)',
                     mutation_region_types: 'Mutation region type' }
   HEADER = COLUMN_ORDER.map{|column| COLUMN_TITLES[column] }
 
   def self.from_string(str)
     variant_id, sample_id,  chromosome, position, \
-                snv_sequence, context_before, context_after, \
+                snv_sequence, \
                 mutation_region_types = str.chomp.split("\t")
     SNVInfo.new(variant_id, sample_id,  chromosome, position,
                 SequenceWithSNV.from_string(snv_sequence),
-                context_before, context_after,
                 RegionType.from_string(mutation_region_types))
   end
 
@@ -38,5 +35,13 @@ SNVInfo = Struct.new(:variant_id, :sample_id, :chromosome, :position,
 
   def to_s
     COLUMN_ORDER.map{|column| send(column) }.join("\t")
+  end
+
+  def context_before
+    snv_sequence.context(before: 1, after: 1, allele_variant_number: 0)
+  end
+
+  def context_after
+    snv_sequence.context(before: 1, after: 1, allele_variant_number: 1)
   end
 end
