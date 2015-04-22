@@ -5,6 +5,25 @@ require 'load_genome_structure'
 require 'set'
 require 'optparse'
 
+class Range
+  def random_step(from, to)
+    return enum_for(:random_step, from, to)  unless block_given?
+    pos = self.begin
+    delta = to-from
+    if exclude_end?
+      while pos < self.end
+        yield pos
+        pos += (from + (rand * delta).round)
+      end
+    else
+      while pos <= self.end
+        yield pos
+        pos += (from + (rand * delta).round)
+      end
+    end
+  end
+end
+
 # chromosome should be encoded in numeric code with range of 0...alphabet_length
 def calculate_context_content(chromosome, context_length:, alphabet_length:, initial_content: nil)
   raise 'Context length should be a positive number'  unless context_length >= 1
@@ -118,7 +137,7 @@ Dir.glob(File.join(genome_folder, '*.plain')).sort.select{|chromosome_filename|
     # $stderr.puts "context: #{context}; step: #{step}"
     start_pos = flank_length + rand(step) # chromosome start (with padding)
     end_pos = sequence.length - flank_length  # chromosome end (with padding)
-    (start_pos...end_pos).step(step) ### .select{ rand <= 1.0/rate  } instead of using step is too slow
+    (start_pos...end_pos).random_step(1, 2*step - 1) ### .select{ rand <= 1.0/rate  } instead of using step is too slow
       .select{|pos| sequence[pos-1, 3] == context }
       .select{|pos| is_intron.call(chr_name, pos) || is_promoter.call(chr_name, pos) }
       .map{|pos| [pos, sequence[pos - flank_length, 2*flank_length + 1]] }
