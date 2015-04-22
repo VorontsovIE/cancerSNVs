@@ -3,7 +3,7 @@ $:.unshift File.absolute_path('../../../lib', __dir__)
 require 'mutation_context'
 require 'import_information'
 require 'snv_info'
-require 'perfectosape/results'
+require 'perfectosape/results_short'
 
 snv_infos_filename = './source_data/SNV_infos.txt'
 snv_sequences_filename = './results/intermediate/SNV_sequences.txt'
@@ -61,7 +61,7 @@ ensg_to_hgnc = File.readlines(ensg_hgnc_conversion_filename).drop(1).map{|line|
 $stderr.puts "ensg-hgnc conversion loaded"
 
 
-disrupting_mutations = PerfectosAPE::Result.each_in_file(sites_filename).select{|site|
+disrupting_mutations = PerfectosAPE::ResultShort.each_in_file(sites_filename).select{|site|
   regulatory_mutation_names.include?(site.normalized_snv_name) &&
   site.site_before_substitution?(pvalue_cutoff: 0.0005) &&
   site.disrupted?(fold_change_cutoff: 5)

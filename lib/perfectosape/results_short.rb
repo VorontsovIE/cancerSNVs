@@ -1,26 +1,34 @@
+# Attention! This file relies on its disposition
+# (because it loads motifs from collection folder which is set by relative path)
 require 'set'
+require 'bioinform'
 
 module PerfectosAPE
-  Result = Struct.new(:line,
-                      :variant_id, :motif_name,
-                      :fold_change, :pvalue_1, :pvalue_2,
-                      :pos_1, :orientation_1, :seq_1,
-                      :pos_2, :orientation_2, :seq_2,
-                      :variants ) do
+    
+  ResultShort = Struct.new( :line,
+                            :variant_id, :motif_name,
+                            :pvalue_1, :pvalue_2,
+                            :pos_1, :orientation_1,
+                            :pos_2, :orientation_2) do
+    
+    # it's impossible to get length from short site info, so we preload motifs
+    class << self
+      attr_reader :motif_lengths
+    end
+    @motif_lengths = {}
+    Dir.glob(File.join(File.absolute_path("../../source_data/motif_collection/", __dir__), '*.pwm')) do |motif_filename|
+      motif = Bioinform::MotifModel::PWM.from_file(motif_filename)
+      @motif_lengths[motif.name.to_sym] ||= motif.length
+    end
 
-    # "27610826_3 MAZ_f1  -7  direct  cggctgaGgaggaggag -7  direct  cggctgaCgaggaggag G/C 1.1218764110455249E-4 9.602413003842941E-4  0.11683275970285215"
+    # "27610826_3 MAZ_f1   1.12e-04  9.60e-04  -7  +  -7  +"
     def self.from_string(line)
-      variant_id, motif_name,
-                pos_1, orientation_1, seq_1,
-                pos_2, orientation_2, seq_2,
-                variants,
-                pvalue_1, pvalue_2, fold_change = line.split("\t")
+      variant_id, motif_name, pvalue_1, pvalue_2,  pos_1, orientation_1,  pos_2, orientation_2 = line.split("\t")
       self.new( line,
                 variant_id, motif_name.to_sym,
-                fold_change.to_f, pvalue_1.to_f, pvalue_2.to_f,
-                pos_1.to_i, orientation_1.to_sym, seq_1,
-                pos_2.to_i, orientation_2.to_sym, seq_2,
-                variants.to_sym )
+                pvalue_1.to_f, pvalue_2.to_f,
+                pos_1.to_i,  (orientation_1 == '+') ? :direct : :revcomp,
+                pos_2.to_i,  (orientation_2 == '+') ? :direct : :revcomp )
     end
 
     def normalized_snv_name
@@ -28,12 +36,7 @@ module PerfectosAPE
     end
 
     def length
-      seq_1.length
-    end
-
-    # Not used
-    def seq_1_direct_strand
-      orientation_1 == :direct ? seq_1 : Sequence.revcomp(seq_1)
+      PerfectosAPE::ResultShort.motif_lengths[motif_name]
     end
 
     def seq_1_five_flank_length
@@ -42,6 +45,10 @@ module PerfectosAPE
 
     def seq_1_three_flank_length
       length - 1 + pos_1
+    end
+
+    def fold_change
+      pvalue_1 / pvalue_2
     end
 
     def site_before_substitution?(pvalue_cutoff: 0.0005)

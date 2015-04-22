@@ -3,12 +3,11 @@ require 'set'
 require 'sequence_with_snv'
 require 'optparse'
 require 'mutation_context'
-require 'perfectosape/results'
 require 'snv_info'
 require 'import_information'
 
 def snv_in_set(line, set)
-  snv_normalized_name = line.split(' ', 2)[0].split('_')[0]
+  snv_normalized_name = line.split("\t", 2)[0].split('_')[0]
   set.include?(snv_normalized_name)
 end
 

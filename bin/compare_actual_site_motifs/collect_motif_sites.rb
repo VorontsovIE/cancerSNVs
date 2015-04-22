@@ -1,3 +1,4 @@
+# Caution! Script can work only with full perfectosape format, not with a short one
 $:.unshift File.absolute_path('../../lib', __dir__)
 require 'optparse'
 require 'fileutils'

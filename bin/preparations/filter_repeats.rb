@@ -1,6 +1,7 @@
 $:.unshift File.absolute_path('../../lib', __dir__)
 require 'repeat_masker_info'
 require 'snv_info'
+require 'perfectosape/results_short'
 require 'load_genome_structure'
 
 require 'interval_notation' # gem dependency
@@ -14,7 +15,7 @@ snvs = SNVInfo.each_in_file(snvs_filename).map{|snv| [snv.variant_id, snv] }.to_
 repeats_by_chromosome = read_repeats_by_chromosome(genome_repeat_masker_folder, ignore_repeat_types: [:Simple_repeat, :Low_complexity], expand_length: 25)
                         .map{|chromosome_name, repeats| [chromosome_name.to_s.sub(/\Achr/,'').to_sym, repeats] }.to_h
 
-PerfectosAPE::Result.each_in_file(sites_filename).with_index.reject{|site, index|
+PerfectosAPE::ResultShort.each_in_file(sites_filename).with_index.reject{|site, index|
   $stderr.puts "#{index} sites processed"  if index % 100000 == 0
   snv = snvs[site.normalized_snv_name]
   

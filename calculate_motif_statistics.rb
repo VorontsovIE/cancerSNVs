@@ -1,5 +1,5 @@
 $:.unshift File.absolute_path('lib', __dir__)
-require 'perfectosape/results'
+require 'perfectosape/results_short'
 require 'optparse'
 require 'set'
 
@@ -99,7 +99,7 @@ else
   core_flank_checker = ->(site) { true }
 end
 
-mutated_sites = PerfectosAPE::Result.each_in_file(mutated_site_infos_filename)
+mutated_sites = PerfectosAPE::ResultShort.each_in_file(mutated_site_infos_filename)
                                 .select(&site_before_checker)
                                 .select(&site_after_checker)
                                 .select(&fold_change_checker)

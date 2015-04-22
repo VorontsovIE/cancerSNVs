@@ -2,7 +2,7 @@
 
 $:.unshift File.absolute_path('lib', __dir__)
 require 'fitting/histogram'
-require 'perfectosape/results'
+require 'perfectosape/results_short'
 require 'snv_info'
 require 'fitting/multi_histogram_fitter'
 require 'optparse'
@@ -38,7 +38,7 @@ histograms = MultiHistogram.new{
   Histogram.new(-2, 2, 4){|pvalue_1| pvalue_1 }
 }
 
-PerfectosAPE::Result.each_in_file(mutated_site_infos_cancer_filename).each do |site|
+PerfectosAPE::ResultShort.each_in_file(mutated_site_infos_cancer_filename).each do |site|
   motif = site.motif_name
   context = cancer_snv_contexts[ site.normalized_snv_name ]
   histograms.add_element([motif, context], site.pvalue_1)
@@ -48,7 +48,7 @@ fitters = histograms.multiply(fitting_fold).fitter(raise_on_missing: false)
 
 $stderr.puts "Loaded #{fitters.goal_total} original sites"
 
-PerfectosAPE::Result.each_in_file(mutated_site_infos_random_filename).each_with_index do |site, index|
+PerfectosAPE::ResultShort.each_in_file(mutated_site_infos_random_filename).each_with_index do |site, index|
   motif = site.motif_name
   context = random_snv_contexts[ site.normalized_snv_name ]
   fitters.fit_element([motif, context], site.pvalue_1) do
