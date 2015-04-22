@@ -1,15 +1,16 @@
 require_relative 'region_type'
 
-SNVInfo = Struct.new(:variant_id, :sample_id, :chromosome, :position, :strand,
-                     :snv_sequence,
+SNVInfo = Struct.new(:variant_id, :snv_sequence,
+                     :sample_id, :chromosome, :position, :strand,
                      :mutation_region_types) do
 
   def self.from_string(str)
-    variant_id, sample_id,  chromosome, position, strand, \
-                snv_sequence, \
-                mutation_region_types = str.chomp.split("\t", 7)
-    new(variant_id, sample_id,  chromosome, position, strand.to_sym,
+    variant_id, snv_sequence, \
+      sample_id,  chromosome, position, strand, \
+      mutation_region_types = str.chomp.split("\t", 7)
+    new(variant_id,
         SequenceWithSNV.from_string(snv_sequence),
+        sample_id,  chromosome.to_sym, position.to_i, strand.to_sym,
         RegionType.from_string(mutation_region_types))
   end
 
@@ -20,7 +21,7 @@ SNVInfo = Struct.new(:variant_id, :sample_id, :chromosome, :position, :strand,
   def self.each_in_file(filename, &block)
     return enum_for(:each_in_file, filename).lazy  unless block_given?
     File.open(filename) do |f|
-      # f.readline # skip header
+      f.readline # skip header
       each_in_stream(f, &block)
     end
   end
@@ -37,22 +38,25 @@ SNVInfo = Struct.new(:variant_id, :sample_id, :chromosome, :position, :strand,
     snv_sequence.context(before: 1, after: 1, allele_variant_number: 1)
   end
 
-  def revcomp
-    case strand
+  def self.reverse_strand(original_strand)
+    case original_strand
     when :+
-      reverse_strand = :-
+      :-
     when :-
-      reverse_strand = :+
+      :+
     else
       raise 'Unknown strand'
     end
+  end
 
-    SNVInfo.new(variant_id, sample_id, chromosome, position, reverse_strand,
-                snv_sequence.revcomp, mutation_region_types)
+  def revcomp
+    SNVInfo.new(variant_id, snv_sequence.revcomp,
+                sample_id, chromosome, position, SNVInfo.reverse_strand(strand),
+                mutation_region_types)
   end
 
   def in_pyrimidine_context?
-    snv_sequence.pyrimidine_context?
+    snv_sequence.in_pyrimidine_context?
   end
 
   def in_pyrimidine_context
@@ -60,8 +64,9 @@ SNVInfo = Struct.new(:variant_id, :sample_id, :chromosome, :position, :strand,
   end
 end
 
-SNVInfo::COLUMN_ORDER = [:variant_id, :sample_id, :chromosome, :position, :strand,
-                         :snv_sequence, :mutation_region_types]
+SNVInfo::COLUMN_ORDER = [:variant_id, :snv_sequence,
+                         :sample_id, :chromosome, :position,
+                         :strand, :mutation_region_types]
 
 SNVInfo::COLUMN_TITLES = {
   variant_id: 'Variant id', sample_id: 'Sample',

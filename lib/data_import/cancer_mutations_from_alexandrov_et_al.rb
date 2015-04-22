@@ -50,7 +50,7 @@ MutationInfo = Struct.new(:sample_id, :mutation_type, :chromosome, :position_sta
     three_prime_flank = seq[flank_length + 1, flank_length]
     allele_variants = [before_substitution, after_substitution]
     snv_seq = SequenceWithSNV.new(five_prime_flank, allele_variants, three_prime_flank)
-    SNVInfo.new(variant_id, sample_id, chromosome, position, :+, snv_seq, mutation_region_types)
+    SNVInfo.new(variant_id, snv_seq, sample_id, chromosome, position, :+, mutation_region_types)
   end
 
   def snv? # single nucleotide substitution
