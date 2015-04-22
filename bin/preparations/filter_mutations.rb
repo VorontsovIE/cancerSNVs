@@ -4,7 +4,7 @@ require 'sequence_with_snv'
 require 'optparse'
 require 'mutation_context'
 require 'perfectosape/results'
-require 'data_import/breast_cancer_snv'
+require 'snv_info'
 require 'import_information'
 
 def snv_in_set(line, set)
@@ -62,12 +62,12 @@ end
 raise 'Specify SNV infos file'  unless mutations_markup_filename = ARGV[0] # './source_data/SNV_infos.txt'
 
 if show_possible_mutation_region_types_and_exit
-  puts BreastCancerSNV.each_in_file(mutations_markup_filename).map(&:mutation_region_types).flat_map(&:features).inject(Set.new, &:merge).to_a
+  puts SNVInfo.each_in_file(mutations_markup_filename).map(&:mutation_region_types).flat_map(&:features).inject(Set.new, &:merge).to_a
   exit
 end
 
 if show_possible_cancer_samples_and_exit
-  puts BreastCancerSNV.each_in_file(mutations_markup_filename).flat_map(&:sample_id).inject(Set.new, &:<<).to_a
+  puts SNVInfo.each_in_file(mutations_markup_filename).flat_map(&:sample_id).inject(Set.new, &:<<).to_a
   exit
 end
 
@@ -75,11 +75,13 @@ end
 
 if invert_context_request
   context_filter = ->(snv){
-    requested_mutation_contexts.none?{|requested_context| requested_context.match?(snv.context_before_snv_plus_strand) }
+    snv_context = snv.context_before
+    requested_mutation_contexts.none?{|requested_context| requested_context.match?(snv_context) }
   }
 else
   context_filter = ->(snv){
-    requested_mutation_contexts.any?{|requested_context| requested_context.match?(snv.context_before_snv_plus_strand) }
+    snv_context = snv.context_before
+    requested_mutation_contexts.any?{|requested_context| requested_context.match?(snv_context) }
   }
 end
 
@@ -97,7 +99,8 @@ end
 
 if requested_mutation_region_types
   mutation_region_type_filter = ->(snv) {
-    requested_mutation_region_types.features.intersect?(snv.mutation_region_types.features)
+    snv_features = snv.mutation_region_types.features
+    requested_mutation_region_types.features.intersect?(snv_features)
   }
 else
   mutation_region_type_filter = ->(snv){ true }
@@ -105,7 +108,7 @@ end
 
 ##########
 
-snvs_to_choose = BreastCancerSNV
+snvs_to_choose = SNVInfo
   .each_in_file(mutations_markup_filename)
   .select(&context_filter)
   .select(&sample_filter)

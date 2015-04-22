@@ -1,7 +1,7 @@
 $:.unshift File.absolute_path('../../lib', __dir__)
 require 'set'
 require 'fitting/histogram'
-require 'data_import/breast_cancer_snv'
+require 'snv_info'
 require 'perfectosape/results'
 
 motif = ARGV[0].to_sym # AHR_si
@@ -10,7 +10,7 @@ snv_infos_filename = ARGV[2] #'./source_data/SNV_infos.txt'
 
 raise "Specify motif name, file with sites infos and file with SNV infos"  unless motif && mutated_site_infos_filename && snv_infos_filename
 
-regulatory_mutation_names = BreastCancerSNV.each_in_file(snv_infos_filename).select(&:regulatory?).map(&:variant_id).to_set
+regulatory_mutation_names = SNVInfo.each_in_file(snv_infos_filename).select(&:regulatory?).map(&:variant_id).to_set
 
 histogram = Histogram.new(1e-7, 0.0005, 1.0){|pvalue| - Math.log2(pvalue) }
 

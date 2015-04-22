@@ -1,5 +1,5 @@
 $:.unshift File.absolute_path('../../lib', __dir__)
-require 'data_import/breast_cancer_snv'
+require 'snv_info'
 require 'sequence_encoding'
 require 'load_genome_structure'
 require 'set'
@@ -44,8 +44,12 @@ raise 'Specify ensembl exons markup'  unless exons_filename = ARGV[1] # '/home/i
 
 raise 'Specify genome folder'  unless genome_folder = ARGV[2] # '/home/ilya/iogen/genome/hg19'
 
+# TODO:make promoter expansion configurable!
 promoters_by_chromosome = load_promoters_by_chromosome(exons_filename, length_5_prime: 2000, length_3_prime: 500)
 introns_by_chromosome = read_introns_by_chromosome(exons_filename)
+
+is_promoter = ->(chr, pos) { promoters_by_chromosome[chr] && promoters_by_chromosome[chr].include_position?(pos) }
+is_intron = ->(chr, pos) { introns_by_chromosome[chr] && introns_by_chromosome[chr].include_position?(pos) }
 
 encoder = SequenceEncoder.default_encoder
 
@@ -58,13 +62,13 @@ encoder = SequenceEncoder.default_encoder
 genomic_content = {0=>110995028, 1=>42125960, 8=>46557445, 43=>57819574, 91=>57133135, 80=>56717307, 27=>58762946, 12=>51523761, 61=>34547919, 58=>40536627, 41=>48861274, 83=>64119652, 42=>58800571, 88=>58497976, 66=>27417189, 85=>56740626, 53=>38691998, 18=>72131745, 40=>37300780, 77=>37346116, 13=>46615697, 67=>43640460, 86=>41753576, 92=>54944630, 68=>42283909, 90=>60157436, 78=>59611666, 93=>111360191, 81=>44797566, 30=>53461290, 26=>43541886, 6=>33722474, 28=>53159342, 15=>59562478, 16=>38646516, 55=>41724811, 76=>32820831, 33=>51568473, 5=>58303460, 10=>64039825, 50=>57071784, 2=>57725267, 87=>53554990, 63=>33755618, 31=>38200529, 52=>48868606, 62=>38247266, 60=>44823835, 3=>72039236, 75=>60075904, 25=>54742690, 17=>53161506, 56=>34556602, 57=>6940766, 35=>6411783, 11=>40523652, 32=>8046785, 38=>7306090, 51=>27383861, 65=>32833817, 7=>7289162, 37=>8048543, 82=>6423366, 36=>6933663, 4=>33, 24=>46, 124=>239849850, 123=>33, 115=>12, 29=>13, 122=>283, 110=>183, 84=>177, 49=>285, 120=>47, 100=>25, 14=>14, 74=>41, 89=>12, 44=>14, 99=>47, 94=>32, 64=>19, 121=>33, 108=>18, 107=>5, 34=>102, 112=>98, 79=>6, 118=>5, 39=>5, 102=>14, 69=>10, 98=>6, 117=>14, 106=>13, 19=>7, 95=>5, 71=>4, 105=>10, 116=>11, 103=>11, 101=>10, 45=>5, 9=>7, 59=>6, 72=>3, 20=>2, 113=>5, 21=>4, 73=>2, 119=>2, 22=>1, 70=>1, 111=>3, 54=>3, 96=>5, 23=>2, 97=>2, 114=>1, 109=>1, 47=>1, 46=>1, 48=>1}
 genomic_content = genomic_content.map{|k,v| [encoder.decode_sequence(k, code_length: 3), v] }.to_h
 genomic_content = genomic_content.reject{|k,v| k.match(/N/i) }
-# p genomic_content
 
 ##################
 snv_context_content = Hash.new(0)
 snv_context_content_mut = Hash.new{|hsh, mutation_to| hsh[mutation_to] = Hash.new(0) }
-BreastCancerSNV.each_in_file(site_infos_filename).map{|snv|
-  [snv.context_before_snv_plus_strand, snv.mutant_base_plus_strand]
+
+SNVInfo.each_in_file(site_infos_filename).map{|snv|
+  [snv.context_before, snv.mutant_base]
 }.each{|context, mut|
   snv_context_content[context] += 1
   snv_context_content_mut[context][mut] += 1
@@ -74,11 +78,10 @@ BreastCancerSNV.each_in_file(site_infos_filename).map{|snv|
 
 
 snv_positions = Hash.new {|hash, key| hash[key] = [] }
-BreastCancerSNV.each_in_file(site_infos_filename).each{|snv|
+SNVInfo.each_in_file(site_infos_filename).each{|snv|
   snv_positions[snv.chromosome] << snv.position
 }
 snv_positions = snv_positions.map{|k,v| ["chr#{k}".to_sym, v.to_set] }.to_h
-# p snv_positions.keys
 
 
 rates = {}
@@ -99,9 +102,6 @@ snv_context_content_mut.each_key do |context|
   end
 end
 
-# $stderr.puts necessary_seqs_mut
-
-# $stderr.puts necessary_seqs
 
 sequence_hashes = Set.new
 
@@ -116,10 +116,12 @@ Dir.glob(File.join(genome_folder, '*.plain')).sort.select{|chromosome_filename|
     rate = rates[context]
     step = (rate / (fold * 1.95)).to_i
     # $stderr.puts "context: #{context}; step: #{step}"
-    ((flank_length + rand(step))...(sequence.length - flank_length)).step(step) ### .select{ rand <= 1.0/rate  } instead of using step is too slow
+    start_pos = flank_length + rand(step) # chromosome start (with padding)
+    end_pos = sequence.length - flank_length  # chromosome end (with padding)
+    (start_pos...end_pos).step(step) ### .select{ rand <= 1.0/rate  } instead of using step is too slow
       .select{|pos| sequence[pos-1, 3] == context }
-      .select{|pos| introns_by_chromosome[chr_name] && introns_by_chromosome[chr_name].include_position?(pos) || promoters_by_chromosome[chr_name] && promoters_by_chromosome[chr_name].include_position?(pos) }
-      .map{|pos| [pos, sequence[pos-flank_length, 2*flank_length + 1]] }
+      .select{|pos| is_intron.call(chr_name, pos) || is_promoter.call(chr_name, pos) }
+      .map{|pos| [pos, sequence[pos - flank_length, 2*flank_length + 1]] }
       .reject{|pos,seq| seq.match(/N/) }
       .reject{|pos,seq| snv_positions[chr_name] && snv_positions[chr_name].include?(pos) }
       .each do |pos,seq|

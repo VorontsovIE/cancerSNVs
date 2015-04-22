@@ -3,17 +3,16 @@
 $:.unshift File.absolute_path('lib', __dir__)
 require 'fitting/histogram'
 require 'perfectosape/results'
-require 'data_import/breast_cancer_snv'
+require 'snv_info'
 require 'fitting/multi_histogram_fitter'
 require 'optparse'
 
 def context_by_snv_name(snv_infos_filename)
   results = {}
-
-  BreastCancerSNV
+  SNVInfo
     .each_in_file(snv_infos_filename)
     .map{|snv|
-      [snv.variant_id, snv.snv_sequence_pyrimidine_context(five_prime_flank_length: 1, three_prime_flank_length: 1)]
+      [snv.variant_id, snv.in_pyrimidine_context.snv_sequence.context_before]
     }.to_h
 end
 

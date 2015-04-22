@@ -2,7 +2,7 @@ require 'interval_notation'
 $:.unshift File.absolute_path('../../../lib', __dir__)
 require 'mutation_context'
 require 'import_information'
-require 'data_import/breast_cancer_snv'
+require 'snv_info'
 require 'perfectosape/results'
 
 snv_infos_filename = './source_data/SNV_infos.txt'
@@ -46,8 +46,8 @@ snvs_by_context = contexts.map {|context_name, requested_mutation_contexts|
 
 ########
 
-snvs = BreastCancerSNV.each_in_file(snv_infos_filename).map{|snv| [snv.variant_id, snv] }.to_h
-regulatory_mutation_names = BreastCancerSNV.each_in_file(snv_infos_filename).select(&:regulatory?).map(&:variant_id).to_set
+snvs = SNVInfo.each_in_file(snv_infos_filename).map{|snv| [snv.variant_id, snv] }.to_h
+regulatory_mutation_names = SNVInfo.each_in_file(snv_infos_filename).select(&:regulatory?).map(&:variant_id).to_set
 ############
 
 

@@ -38,6 +38,18 @@ SNVInfo = Struct.new(:variant_id, :snv_sequence,
     snv_sequence.context(before: 1, after: 1, allele_variant_number: 1)
   end
 
+  def reference_base
+    snv_sequence.allele_variants[0]
+  end
+
+  def mutant_base
+    snv_sequence.allele_variants[1]
+  end
+
+  def context_full
+    snv_sequence.subsequence(before: 1, after: 1).to_s
+  end
+
   def self.reverse_strand(original_strand)
     case original_strand
     when :+
@@ -61,6 +73,22 @@ SNVInfo = Struct.new(:variant_id, :snv_sequence,
 
   def in_pyrimidine_context
     in_pyrimidine_context? ? self : revcomp
+  end
+
+
+  # Deprecated
+  def load_sequence(genome_folder, five_prime_flank_length, three_prime_flank_length)
+    File.open( File.join(genome_folder, "chr#{chromosome}.plain") ) do |f|
+      f.seek(position - five_prime_flank_length - 1)
+      f.read(five_prime_flank_length + three_prime_flank_length + 1).upcase
+    end
+  end
+
+  # Deprecated
+  def load_site_sequence(genome_folder, site, flank_length = 0)
+    load_sequence(genome_folder,
+                  flank_length + site.seq_1_five_flank_length,
+                  flank_length + site.seq_1_three_flank_length)
   end
 end
 

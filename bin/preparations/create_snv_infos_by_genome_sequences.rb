@@ -1,5 +1,4 @@
 $:.unshift File.absolute_path('../../lib', __dir__)
-require 'data_import/breast_cancer_snv'
 require 'snv_info'
 
 raise 'Specify file with sequences'  unless sequences_filename = ARGV[0] # './source_data/sequences_background_genome.txt'

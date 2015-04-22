@@ -1,6 +1,6 @@
 $:.unshift File.absolute_path('../../lib', __dir__)
 require 'repeat_masker_info'
-require 'data_import/breast_cancer_snv'
+require 'snv_info'
 require 'load_genome_structure'
 
 require 'interval_notation' # gem dependency
@@ -10,7 +10,7 @@ snvs_filename = ARGV[1] # './source_data/SNV_infos.txt'
 genome_repeat_masker_folder = ARGV[2] # '/home/ilya/iogen/genome/hg19_repeatMasker'
 raise 'Specify file with sites, SNV infos and folder with repeat masker infos'  unless sites_filename && snvs_filename && genome_repeat_masker_folder
 
-snvs = BreastCancerSNV.each_in_file(snvs_filename).map{|snv| [snv.variant_id, snv] }.to_h
+snvs = SNVInfo.each_in_file(snvs_filename).map{|snv| [snv.variant_id, snv] }.to_h
 repeats_by_chromosome = read_repeats_by_chromosome(genome_repeat_masker_folder, ignore_repeat_types: [:Simple_repeat, :Low_complexity], expand_length: 25)
                         .map{|chromosome_name, repeats| [chromosome_name.to_s.sub(/\Achr/,'').to_sym, repeats] }.to_h
 

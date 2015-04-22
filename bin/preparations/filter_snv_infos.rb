@@ -1,5 +1,5 @@
 $:.unshift File.absolute_path('../../lib', __dir__)
-require 'data_import/breast_cancer_snv'
+require 'snv_info'
 require 'load_genome_structure'
 require 'optparse'
 
@@ -14,11 +14,11 @@ end.parse!(ARGV)
 raise 'Specify file with SNV infos'  unless snvs_filename = ARGV[0] # './source_data/SNV_infos.txt'
 raise 'Specify genome folder'  unless genome_folder = ARGV[1] # './source_data/SNV_infos.txt'
 
-puts BreastCancerSNV::FILE_HEADER
-snvs = BreastCancerSNV.each_in_file(snvs_filename).select{|snv|
+puts SNVInfo::HEADER
+SNVInfo.each_in_file(snvs_filename).select{|snv|
   snv.promoter? || snv.intronic?
 }.to_a.uniq{|snv| # remove duplicates
-  snv.snv_sequence_from_genome(genome_folder, flank_length, flank_length).in_pyrimidine_context
+  snv.in_pyrimidine_context.snv_sequence
 }.each{|snv|
   puts snv
 }

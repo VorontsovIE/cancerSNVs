@@ -1,6 +1,6 @@
 $:.unshift File.absolute_path('../../lib', __dir__)
 require 'optparse'
-require 'data_import/breast_cancer_snv'
+require 'snv_info'
 require 'perfectosape/results'
 
 mode = :words
@@ -33,7 +33,7 @@ sites = PerfectosAPE::Result.each_in_file(sites_filename).select(&:site_before_s
   info.motif_name == motif_name && range.include?(-Math.log2(info.pvalue_1))
 }
 
-snvs = BreastCancerSNV.each_in_file(snv_infos_filename).map{|snv| [snv.variant_id, snv] }.to_h
+snvs = SNVInfo.each_in_file(snv_infos_filename).map{|snv| [snv.variant_id, snv] }.to_h
 
 case mode
 when :words
