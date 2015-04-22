@@ -1,6 +1,7 @@
 require_relative 'sequence'
 
 class SequenceWithSNV
+  PYRIMIDINES = ['C', 'T']
   attr_reader :left, :allele_variants, :right
   def initialize(left, allele_variants, right)
     # raise "SequenceWithSNV left part is invalid: #{left}" unless Sequence.valid_sequence?(left)
@@ -27,12 +28,12 @@ class SequenceWithSNV
                         Sequence.revcomp(left))
   end
 
-  def pyrimidine_context?
-    ['C', 'T'].include?(allele_variants.first.upcase)
+  def in_pyrimidine_context?
+    PYRIMIDINES.include?(allele_variants.first.upcase)
   end
 
   def in_pyrimidine_context
-    pyrimidine_context? ? self : self.revcomp
+    in_pyrimidine_context? ? self : self.revcomp
   end
 
   def ==(other)

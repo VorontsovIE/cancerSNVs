@@ -1,9 +1,8 @@
 class Sequence
-  attr_reader :sequence, :name
-  def initialize(sequence, options = {})
+  attr_reader :sequence
+  def initialize(sequence)
     # raise "Wrong sequence `#{sequence}`"  unless Sequence.valid_sequence?(sequence)
     @sequence = sequence
-    @name = options[:name] || sequence
   end
 
   def length
@@ -11,7 +10,7 @@ class Sequence
   end
 
   def revcomp
-    Sequence.new(Sequence.revcomp(sequence), name: name)
+    Sequence.new(Sequence.revcomp(sequence))
   end
 
   def ==(other)
@@ -26,12 +25,14 @@ class Sequence
     @sequence.hash
   end
 
+  ACGT = 'acgtACGT'.freeze
+  TGCA = 'tgcaTGCA'.freeze
   def self.complement(sequence)
-    sequence.tr('acgtnACGTN'.freeze, 'tgcanTGCAN'.freeze)
+    sequence.tr(ACGT, TGCA)
   end
 
   def self.revcomp(sequence)
-    complement(sequence).reverse
+    complement(sequence).reverse!
   end
 
   def self.valid_sequence?(sequence)
