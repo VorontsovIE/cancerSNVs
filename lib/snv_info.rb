@@ -1,4 +1,5 @@
 require_relative 'region_type'
+require_relative 'sequence_with_snv'
 
 SNVInfo = Struct.new(:variant_id, :snv_sequence,
                      :sample_id, :chromosome, :position, :strand,
@@ -104,4 +105,4 @@ SNVInfo::COLUMN_TITLES = {
   mutation_region_types: 'Mutation region type'
 }
 
-SNVInfo::HEADER = SNVInfo::COLUMN_ORDER.map{|column| SNVInfo::COLUMN_TITLES[column] }.join("\t")
+SNVInfo::HEADER = '# ' + SNVInfo::COLUMN_ORDER.map{|column| SNVInfo::COLUMN_TITLES[column] }.join("\t")

@@ -6,7 +6,8 @@ raise 'Specify file with sequences'  unless sequences_filename = ARGV[0] # './so
 # Can be easily replaced with SNVInfo, because this script is not needed in this form
 puts SNVInfo::HEADER
 File.readlines(sequences_filename).each.lazy.map {|line|
-  full_pos, seq = line.chomp.split("\t")
+  full_name, seq = line.chomp.split("\t")
+  full_pos, mutated_to = full_name.split("/")
   chromosome, position = full_pos.split(':')
   position = position.to_i
   chromosome = chromosome.sub(/\Achr/, '')

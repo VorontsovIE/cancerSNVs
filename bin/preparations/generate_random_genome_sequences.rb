@@ -151,7 +151,7 @@ Dir.glob(File.join(genome_folder, '*.plain')).sort.select{|chromosome_filename|
         next
       end
 
-      synthetic_snv_name = "#{chr_name}:#{pos + 1}"
+      synthetic_snv_name = "#{chr_name}:#{pos + 1}/#{mut}"
       seq_w_snv = SequenceWithSNV.new(seq[0, flank_length], [seq[flank_length], mut], seq[flank_length + 1, flank_length])
 
       next  if sequence_hashes.include?(seq_w_snv.in_pyrimidine_context.hash) # possibly duplicate
