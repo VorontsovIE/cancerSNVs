@@ -2,16 +2,16 @@ require_relative 'region_type'
 require_relative 'sequence_with_snv'
 
 SNVInfo = Struct.new(:variant_id, :snv_sequence,
-                     :sample_id, :chromosome, :position, :strand,
+                     :cancer_type, :sample_id, :chromosome, :position, :strand,
                      :mutation_region_types) do
 
   def self.from_string(str)
     variant_id, snv_sequence, \
-      sample_id,  chromosome, position, strand, \
-      mutation_region_types = str.chomp.split("\t", 7)
+      cancer_type, sample_id,  chromosome, position, strand, \
+      mutation_region_types = str.chomp.split("\t", 8)
     new(variant_id,
         SequenceWithSNV.from_string(snv_sequence),
-        sample_id,  chromosome.to_sym, position.to_i, strand.to_sym,
+        cancer_type.to_sym, sample_id.to_sym,  chromosome.to_sym, position.to_i, strand.to_sym,
         RegionType.from_string(mutation_region_types))
   end
 
@@ -64,7 +64,7 @@ SNVInfo = Struct.new(:variant_id, :snv_sequence,
 
   def revcomp
     SNVInfo.new(variant_id, snv_sequence.revcomp,
-                sample_id, chromosome, position, SNVInfo.reverse_strand(strand),
+                cancer_type, sample_id, chromosome, position, SNVInfo.reverse_strand(strand),
                 mutation_region_types)
   end
 
@@ -94,11 +94,11 @@ SNVInfo = Struct.new(:variant_id, :snv_sequence,
 end
 
 SNVInfo::COLUMN_ORDER = [:variant_id, :snv_sequence,
-                         :sample_id, :chromosome, :position,
+                         :cancer_type, :sample_id, :chromosome, :position,
                          :strand, :mutation_region_types]
 
 SNVInfo::COLUMN_TITLES = {
-  variant_id: 'Variant id', sample_id: 'Sample',
+  variant_id: 'Variant id', cancer_type: 'Cancer type', sample_id: 'Sample',
   chromosome: 'Chromosome', position: 'Position',
   strand: 'Strand',
   snv_sequence: 'SNV sequence',

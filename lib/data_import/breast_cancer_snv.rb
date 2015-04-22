@@ -184,7 +184,7 @@ BreastCancerSNV = Struct.new( :variant_id,
     allele_variants = [before_substitution, after_substitution]
     snv_seq = SequenceWithSNV.new(five_prime_flank, allele_variants, three_prime_flank)
 
-    SNVInfo.new(variant_id, snv_seq, sample_id, chromosome, position, :+, mutation_region_types)
+    SNVInfo.new(variant_id, snv_seq, :'Breast cancer (Nik-Zainal)', sample_id, chromosome, position, :+, mutation_region_types)
   end
 end
 

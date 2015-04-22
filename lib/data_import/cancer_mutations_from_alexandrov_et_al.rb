@@ -36,7 +36,7 @@ MutationInfo = Struct.new(:sample_id, :mutation_type, :chromosome, :position_sta
       quality ].join("\t")
   end
 
-  def to_snv_info(genome_folder, variant_id: nil, mutation_region_types: RegionType.new, flank_length: 25)
+  def to_snv_info(genome_folder, cancer_type: nil, variant_id: nil, mutation_region_types: RegionType.new, flank_length: 25)
     raise 'Can\'t convert non-SNV into SNVInfo'  unless snv?
     position = position_start
     seq = File.open( File.join(genome_folder, "chr#{chromosome}.plain") ){|f|
@@ -50,7 +50,7 @@ MutationInfo = Struct.new(:sample_id, :mutation_type, :chromosome, :position_sta
     three_prime_flank = seq[flank_length + 1, flank_length]
     allele_variants = [before_substitution, after_substitution]
     snv_seq = SequenceWithSNV.new(five_prime_flank, allele_variants, three_prime_flank)
-    SNVInfo.new(variant_id, snv_seq, sample_id, chromosome, position, :+, mutation_region_types)
+    SNVInfo.new(variant_id, snv_seq, cancer_type, sample_id, chromosome, position, :+, mutation_region_types)
   end
 
   def snv? # single nucleotide substitution

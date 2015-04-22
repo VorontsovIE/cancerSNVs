@@ -16,9 +16,10 @@ File.readlines(sequences_filename).each.lazy.map {|line|
   strand = seq_w_snv.in_pyrimidine_context?  ?  :+  :  :-
 
   variant_id = full_pos
+  cancer_type = 'random genome mutations'
   sample_id = 'random genome mutations'
   SNVInfo.new(variant_id, seq_w_snv.in_pyrimidine_context,
-              sample_id, chromosome, position, strand,
+              cancer_type, sample_id, chromosome, position, strand,
               RegionType.new)
 }.each {|snv_info|
   puts snv_info.to_s

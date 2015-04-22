@@ -113,7 +113,7 @@ snvs_to_choose = SNVInfo
   .select(&sample_filter)
   .select(&mutation_region_type_filter)
   .map(&:variant_id)
-  .force
+  .to_a
   .to_set
 
 ######################
