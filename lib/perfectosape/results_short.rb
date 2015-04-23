@@ -1,5 +1,6 @@
-# Attention! This file relies on its disposition
+# Attention! This file relies on experiment configuration!
 # (because it loads motifs from collection folder which is set by relative path)
+require_relative '../experiment_configuration'
 require 'set'
 require 'bioinform'
 
@@ -16,7 +17,7 @@ module PerfectosAPE
       attr_reader :motif_lengths
     end
     @motif_lengths = {}
-    Dir.glob(File.join(File.absolute_path("../../source_data/motif_collection/", __dir__), '*.pwm')) do |motif_filename|
+    Dir.glob(File.join(MOTIF_COLLECTION_FOLDER, '*.pwm')) do |motif_filename|
       motif = Bioinform::MotifModel::PWM.from_file(motif_filename)
       @motif_lengths[motif.name.to_sym] ||= motif.length
     end

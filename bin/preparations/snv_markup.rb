@@ -1,4 +1,5 @@
 $:.unshift File.absolute_path('../../lib', __dir__)
+require 'experiment_configuration'
 require 'snv_info'
 require 'load_genome_structure'
 require 'optparse'
@@ -8,7 +9,7 @@ promoter_length_3_prime = 500
 kataegis_expansion_length = 1000
 
 OptionParser.new do |opts|
-  opts.banner = "Usage: #{opts.program_name} <SNV infos> <exons markup> [options]"
+  opts.banner = "Usage: #{opts.program_name} <SNV infos> [options]"
   opts.on('--promoter-upstream LENGTH', "Promoter's length upstream of TSS") {|value|
     promoter_length_5_prime = Integer(value)
   }
@@ -21,10 +22,9 @@ OptionParser.new do |opts|
 end.parse!(ARGV)
 
 raise 'Specify SNV infos' unless snvs_filename = ARGV[0] # './source_data/SNV_infos_original.txt'
-raise 'Specify ensembl exons markup' unless exons_filename = ARGV[1] # '/home/ilya/iogen/genome/hg19_exons(ensembl,GRCh37.p13).txt'
 
-introns_by_chromosome = read_introns_by_chromosome(exons_filename, convert_chromosome_names: false)
-promoters_by_chromosome = load_promoters_by_chromosome(exons_filename,
+introns_by_chromosome = read_introns_by_chromosome(EXONS_FILENAME, convert_chromosome_names: false)
+promoters_by_chromosome = load_promoters_by_chromosome(EXONS_FILENAME,
                                                       length_5_prime: promoter_length_5_prime,
                                                       length_3_prime: promoter_length_3_prime,
                                                       convert_chromosome_names: false)

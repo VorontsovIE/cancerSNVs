@@ -12,11 +12,10 @@ OptionParser.new do |opts|
 end.parse!(ARGV)
 
 raise 'Specify file with SNV infos'  unless snvs_filename = ARGV[0] # './source_data/SNV_infos.txt'
-raise 'Specify genome folder'  unless genome_folder = ARGV[1] # './source_data/SNV_infos.txt'
 
 puts SNVInfo::HEADER
 SNVInfo.each_in_file(snvs_filename).select{|snv|
-  snv.promoter? || snv.intronic?
+  snv.regulatory?
 }.to_a.uniq{|snv| # remove duplicates
   snv.in_pyrimidine_context.snv_sequence
 }.each{|snv|

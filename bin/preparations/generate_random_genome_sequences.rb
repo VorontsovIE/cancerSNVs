@@ -56,7 +56,7 @@ promoter_length_3_prime = 500
 kataegis_expansion_length = 1000
 
 OptionParser.new do |opts|
-  opts.banner = 'Usage: #{program_name} <SNVs file> <ensembl genome markup> <genome folder> [options]'
+  opts.banner = 'Usage: #{program_name} <SNVs file> [options]'
   opts.separator 'Options:'
   opts.on('--flank-length LENGTH', 'Length of substitution sequence flanks') {|value| flank_length = value.to_i }
   opts.on('--fold FOLD', 'Multiply original context distribution FOLD times') {|value| fold = value.to_i }
@@ -74,12 +74,9 @@ OptionParser.new do |opts|
 end.parse!(ARGV)
 
 raise 'Specify SNV infos'  unless site_infos_filename = ARGV[0] # 'source_data/SNV_infos.txt'
-raise 'Specify ensembl exons markup'  unless exons_filename = ARGV[1] # '/home/ilya/iogen/genome/hg19_exons(ensembl,GRCh37.p13).txt'
 
-raise 'Specify genome folder'  unless genome_folder = ARGV[2] # '/home/ilya/iogen/genome/hg19'
-
-introns_by_chromosome = read_introns_by_chromosome(exons_filename, convert_chromosome_names: true)
-promoters_by_chromosome = load_promoters_by_chromosome(exons_filename,
+introns_by_chromosome = read_introns_by_chromosome(EXONS_FILENAME, convert_chromosome_names: true)
+promoters_by_chromosome = load_promoters_by_chromosome(EXONS_FILENAME,
                                                        length_5_prime: promoter_length_5_prime,
                                                        length_3_prime: promoter_length_3_prime,
                                                        convert_chromosome_names: true)
@@ -95,7 +92,7 @@ is_regulatory = ->(chr, pos) { (is_intronic.(chr, pos) || is_promoter.(chr, pos)
 encoder = SequenceEncoder.default_encoder
 
 # genomic_content = nil
-# Dir.glob(File.join(genome_folder, '*.plain')).sort.each do |chromosome_filename|
+# Dir.glob(File.join(GENOME_FOLDER, '*.plain')).sort.each do |chromosome_filename|
 #   $stderr.puts chromosome_filename
 #   sequence_code = encoder.encode_sequence(File.read(chromosome_filename))
 #   genomic_content = calculate_context_content(sequence_code, context_length: 3, alphabet_length: encoder.alphabet_length, initial_content: genomic_content)
@@ -147,7 +144,7 @@ end
 sequence_hashes = Set.new
 
 miss = 0
-Dir.glob(File.join(genome_folder, '*.plain')).sort.select{|chromosome_filename|
+Dir.glob(File.join(GENOME_FOLDER, '*.plain')).sort.select{|chromosome_filename|
   chr_name = File.basename(chromosome_filename, File.extname(chromosome_filename)).to_sym
   promoters_by_chromosome.has_key?(chr_name) || introns_by_chromosome.has_key?(chr_name)
 }.each do |chromosome_filename|

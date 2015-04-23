@@ -25,11 +25,6 @@ OptionParser.new do |opts|
   }
 end.parse!(ARGV)
 
-ALEXANDROV_ET_AL_FOLDER = './source_data/AlexandrovEtAl/'
-SOMATIC_MUTATIONS_FOLDER = File.join(ALEXANDROV_ET_AL_FOLDER, 'somatic_mutation_data')
-KATAEGIS_COORDINATES_FILENAME = File.join(ALEXANDROV_ET_AL_FOLDER, 'coordinates_of_kataegis.csv')
-SAMPLE_INFOS_FILENAME = File.join(ALEXANDROV_ET_AL_FOLDER, 'samples_summary.txt')
-
 introns_by_chromosome = read_introns_by_chromosome(EXONS_FILENAME, convert_chromosome_names: false)
 promoters_by_chromosome = load_promoters_by_chromosome(EXONS_FILENAME,
                                                       length_5_prime: promoter_length_5_prime,
