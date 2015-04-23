@@ -1,9 +1,13 @@
+require 'forwardable'
 require_relative 'region_type'
 require_relative 'sequence_with_snv'
 
 SNVInfo = Struct.new(:variant_id, :snv_sequence,
                      :cancer_type, :sample_id, :chromosome, :position, :strand,
                      :mutation_region_types) do
+
+  extend Forwardable
+  def_delegators :mutation_region_types, *RegionType::FEATURE_INQUIRIES
 
   def self.from_string(str)
     variant_id, snv_sequence, \

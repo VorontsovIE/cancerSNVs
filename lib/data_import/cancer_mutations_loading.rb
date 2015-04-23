@@ -1,5 +1,6 @@
 require 'set'
 require_relative 'sample_info'
+require_relative 'cancer_mutations_from_alexandrov_et_al'
 require_relative '../snv_info'
 
 def whole_genome_samples_by_cancer(sample_infos_filename)

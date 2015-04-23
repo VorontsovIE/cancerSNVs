@@ -4,8 +4,8 @@ require_relative 'repeat_masker_info'
 require_relative 'ensembl_exon'
 
 # /home/ilya/iogen/genome/hg19_exons(ensembl,GRCh37.p13).txt
-def load_promoters_by_chromosome(filename, length_5_prime: 2000, length_3_prime: 500, convert_chromosome_names: true)
-  EnsemblExon.each_in_file(filename)
+def load_promoters_by_chromosome(filename, length_5_prime: 5000, length_3_prime: 500, convert_chromosome_names: false)
+  result = EnsemblExon.each_in_file(filename)
             .group_by(&:chromosome)
             .map{|chromosome, exons|
               promoter_regions = exons.select(&:transcript_start).map{|exon|
@@ -24,6 +24,8 @@ def load_promoters_by_chromosome(filename, length_5_prime: 2000, length_3_prime:
               end
               [chromosome_name.to_sym, IntervalNotation::Operations.union(promoter_regions)]
             }.to_h
+  result.default = IntervalNotation::Syntax::Long::Empty
+  result
 end
 
 def load_cage_peaks_by_chromosome(filename, length_5_prime: 2000, length_3_prime: 500)
@@ -61,8 +63,8 @@ def read_coding_exons_by_chromosome(filename)
 end
 
 # /home/ilya/iogen/genome/hg19_exons(ensembl,GRCh37.p13).txt
-def read_introns_by_chromosome(filename, convert_chromosome_names: true)
-  EnsemblExon.each_in_file(filename)
+def read_introns_by_chromosome(filename, convert_chromosome_names: false)
+  result = EnsemblExon.each_in_file(filename)
             .group_by(&:chromosome)
             .map{|chromosome, exons|
               transcript_introns = exons.group_by(&:ensembl_transcript_id).map{|ensembl_transcript_id, exons|
@@ -76,6 +78,8 @@ def read_introns_by_chromosome(filename, convert_chromosome_names: true)
               end
               [chromosome_name.to_sym, IntervalNotation::Operations.union(transcript_introns)]
             }.to_h
+  result.default = IntervalNotation::Syntax::Long::Empty
+  result
 end
 
 ### Regions of kataegis
@@ -105,14 +109,19 @@ KataegisRegion = Struct.new(:cancer_type, :sample_name, :chromosome, :position_s
 end
 
 # ./source_data/AlexandrovEtAl/coordinates_of_kataegis.csv
-def load_kataegis_regions_by_chromosome(filename, expansion_length: 1000)
+def load_kataegis_regions_by_chromosome(filename, expansion_length: 1000, convert_chromosome_names: false)
   kataegis_regions = KataegisRegion.each_in_file(filename).to_a
   result = kataegis_regions.group_by(&:chromosome).map{|chromosome, regions|
     expanded_intervals = regions.map{|region| region.interval(expansion_length: expansion_length) }
-    [chromosome, IntervalNotation::Operations.union(expanded_intervals)]
+
+    if convert_chromosome_names
+      chromosome_name = chromosome.to_s.start_with?('chr') ? chromosome : "chr#{chromosome}"
+    else
+      chromosome_name = chromosome
+    end
+    [chromosome_name.to_sym, IntervalNotation::Operations.union(expanded_intervals)]
   }.to_h
-  result.default_proc = proc do |hsh, k|
-    hsh[k] = IntervalNotation::Syntax::Long::Empty
-  end
+
+  result.default = IntervalNotation::Syntax::Long::Empty
   result
 end

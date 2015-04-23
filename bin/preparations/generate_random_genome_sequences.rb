@@ -1,4 +1,5 @@
 $:.unshift File.absolute_path('../../lib', __dir__)
+require 'experiment_configuration'
 require 'snv_info'
 require 'sequence_encoding'
 require 'load_genome_structure'
@@ -31,7 +32,7 @@ def calculate_context_content(chromosome, context_length:, alphabet_length:, ini
   content = initial_content || Hash.new(0)
 
   number_of_contexts = alphabet_length ** context_length
-  
+
   # initial window
   window_code = 0
   chromosome.take(context_length){|letter_code|
@@ -50,12 +51,26 @@ end
 flank_length = 25
 fold = 10 # how many times we should multiply original distribution
 
+promoter_length_5_prime = 5000
+promoter_length_3_prime = 500
+kataegis_expansion_length = 1000
+
 OptionParser.new do |opts|
-  opts.banner = 'Usage: #{program_name} <SNVs file> <ensembl genome markup> [options]'
+  opts.banner = 'Usage: #{program_name} <SNVs file> <ensembl genome markup> <genome folder> [options]'
   opts.separator 'Options:'
   opts.on('--flank-length LENGTH', 'Length of substitution sequence flanks') {|value| flank_length = value.to_i }
   opts.on('--fold FOLD', 'Multiply original context distribution FOLD times') {|value| fold = value.to_i }
   opts.on('--random-seed SEED', 'Seed for random generator') {|value| srand(Integer(value)) }
+
+  opts.on('--promoter-upstream LENGTH', "Promoter's length upstream of TSS") {|value|
+    promoter_length_5_prime = Integer(value)
+  }
+  opts.on('--promoter-downstream LENGTH', "Promoter's length downstream of TSS") {|value|
+    promoter_length_3_prime = Integer(value)
+  }
+  opts.on('--kataegis-expansion LENGTH', "Kataegis region expansion radius") {|value|
+    kataegis_expansion_length = Integer(value)
+  }
 end.parse!(ARGV)
 
 raise 'Specify SNV infos'  unless site_infos_filename = ARGV[0] # 'source_data/SNV_infos.txt'
@@ -63,12 +78,19 @@ raise 'Specify ensembl exons markup'  unless exons_filename = ARGV[1] # '/home/i
 
 raise 'Specify genome folder'  unless genome_folder = ARGV[2] # '/home/ilya/iogen/genome/hg19'
 
-# TODO:make promoter expansion configurable!
-promoters_by_chromosome = load_promoters_by_chromosome(exons_filename, length_5_prime: 2000, length_3_prime: 500)
-introns_by_chromosome = read_introns_by_chromosome(exons_filename)
+introns_by_chromosome = read_introns_by_chromosome(exons_filename, convert_chromosome_names: true)
+promoters_by_chromosome = load_promoters_by_chromosome(exons_filename,
+                                                       length_5_prime: promoter_length_5_prime,
+                                                       length_3_prime: promoter_length_3_prime,
+                                                       convert_chromosome_names: true)
+kataegis_regions_by_chromosome = load_kataegis_regions_by_chromosome(KATAEGIS_COORDINATES_FILENAME,
+                                                                    expansion_length: kataegis_expansion_length,
+                                                                    convert_chromosome_names: true)
 
-is_promoter = ->(chr, pos) { promoters_by_chromosome[chr] && promoters_by_chromosome[chr].include_position?(pos) }
-is_intron = ->(chr, pos) { introns_by_chromosome[chr] && introns_by_chromosome[chr].include_position?(pos) }
+is_promoter = ->(chr, pos) { promoters_by_chromosome[chr].include_position?(pos) }
+is_intronic = ->(chr, pos) { introns_by_chromosome[chr].include_position?(pos) }
+is_kataegis = ->(chr, pos) { kataegis_regions_by_chromosome[chr].include_position?(pos) }
+is_regulatory = ->(chr, pos) { (is_intronic.(chr, pos) || is_promoter.(chr, pos)) && !is_kataegis.(chr, pos) }
 
 encoder = SequenceEncoder.default_encoder
 
@@ -127,7 +149,7 @@ sequence_hashes = Set.new
 miss = 0
 Dir.glob(File.join(genome_folder, '*.plain')).sort.select{|chromosome_filename|
   chr_name = File.basename(chromosome_filename, File.extname(chromosome_filename)).to_sym
-  promoters_by_chromosome.has_key?(chr_name) || introns_by_chromosome.has_key?(chr_name)  
+  promoters_by_chromosome.has_key?(chr_name) || introns_by_chromosome.has_key?(chr_name)
 }.each do |chromosome_filename|
   sequence = File.read(chromosome_filename).upcase
   chr_name = File.basename(chromosome_filename, File.extname(chromosome_filename)).to_sym
@@ -139,7 +161,7 @@ Dir.glob(File.join(genome_folder, '*.plain')).sort.select{|chromosome_filename|
     end_pos = sequence.length - flank_length  # chromosome end (with padding)
     (start_pos...end_pos).random_step(1, 2*step - 1) ### .select{ rand <= 1.0/rate  } instead of using step is too slow
       .select{|pos| sequence[pos-1, 3] == context }
-      .select{|pos| is_intron.call(chr_name, pos) || is_promoter.call(chr_name, pos) }
+      .select{|pos| is_regulatory.(chr_name, pos) }
       .map{|pos| [pos, sequence[pos - flank_length, 2*flank_length + 1]] }
       .reject{|pos,seq| seq.match(/N/) }
       .reject{|pos,seq| snv_positions[chr_name] && snv_positions[chr_name].include?(pos) }

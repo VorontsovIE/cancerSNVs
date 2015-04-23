@@ -28,7 +28,7 @@ class RegionType
   end
 
   def regulatory?
-    intronic? || promoter?
+    (intronic? || promoter?) && ! kataegis?
   end
 
 
