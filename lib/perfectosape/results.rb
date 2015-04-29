@@ -23,6 +23,10 @@ module PerfectosAPE
                 variants.to_sym )
     end
 
+    def to_s
+      line
+    end
+
     def normalized_snv_name
       variant_id.split("_", 2)[0]
     end
