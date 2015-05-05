@@ -4,7 +4,7 @@ GEM
     bioinform (0.2.1)
     hoe (3.13.0)
       rake (>= 0.8, < 11.0)
-    interval_notation (0.1.1)
+    interval_notation (0.1.2)
     rake (10.4.2)
     rubystats (0.2.3)
       hoe (>= 1.7.0)
@@ -14,5 +14,5 @@ PLATFORMS
 
 DEPENDENCIES
   bioinform
-  interval_notation (~> 0.1.1)
+  interval_notation (~> 0.1.2)
   rubystats
