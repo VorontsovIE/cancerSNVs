@@ -11,15 +11,17 @@ cd "$(dirname "$0")"
 # wget http://opera.autosome.ru/downloads/ape.jar -O ape.jar
 
 # Genome assembly (strictly hg19)
-# wget --timestamping 'ftp://hgdownload.soe.ucsc.edu/goldenPath/hg19/bigZips/chromFa.tar.gz' -O chromFa.tar.gz
-# tar -zxf chromFa.tar.gz
-# TODO: rename folder
-# TODO: decode FASTA into plain sequences (remove possible headers and newline breaks; rename *.fa --> *.plain)
+GENOME_FOLDER='/home/ilya/iogen/genome/Ensembl-GRCh37.p13'
+# mkdir -p ${GENOME_FOLDER}
+# wget --directory-prefix=${GENOME_FOLDER} ftp://ftp.ensembl.org/pub/release-75/fasta/homo_sapiens/dna/README
+# wget --directory-prefix=${GENOME_FOLDER} ftp://ftp.ensembl.org/pub/release-75/fasta/homo_sapiens/dna/Homo_sapiens.GRCh37.75.dna_sm.chromosome.*.fa.gz
+# gzip -d ${GENOME_FOLDER}/*.fa.gz
+# ruby bin/preparations/convert_fasta_to_plain.rb ${GENOME_FOLDER}
 
 # Ensembl exons from (also hg19 version)
 # # http://feb2014.archive.ensembl.org/biomart/martview/b139ef98cf27cbd5649f7c5f6d3e2c0c?VIRTUALSCHEMANAME=default&ATTRIBUTES=hsapiens_gene_ensembl.default.structure.ensembl_gene_id|hsapiens_gene_ensembl.default.structure.ensembl_transcript_id|hsapiens_gene_ensembl.default.structure.exon_chrom_start|hsapiens_gene_ensembl.default.structure.exon_chrom_end|hsapiens_gene_ensembl.default.structure.is_constitutive|hsapiens_gene_ensembl.default.structure.rank|hsapiens_gene_ensembl.default.structure.phase|hsapiens_gene_ensembl.default.structure.cdna_coding_start|hsapiens_gene_ensembl.default.structure.cdna_coding_end|hsapiens_gene_ensembl.default.structure.genomic_coding_start|hsapiens_gene_ensembl.default.structure.genomic_coding_end|hsapiens_gene_ensembl.default.structure.ensembl_exon_id|hsapiens_gene_ensembl.default.structure.cds_start|hsapiens_gene_ensembl.default.structure.cds_end|hsapiens_gene_ensembl.default.structure.ensembl_peptide_id|hsapiens_gene_ensembl.default.structure.chromosome_name|hsapiens_gene_ensembl.default.structure.start_position|hsapiens_gene_ensembl.default.structure.end_position|hsapiens_gene_ensembl.default.structure.transcript_start|hsapiens_gene_ensembl.default.structure.transcript_end|hsapiens_gene_ensembl.default.structure.strand|hsapiens_gene_ensembl.default.structure.external_gene_id|hsapiens_gene_ensembl.default.structure.external_gene_db|hsapiens_gene_ensembl.default.structure.5_utr_start|hsapiens_gene_ensembl.default.structure.5_utr_end|hsapiens_gene_ensembl.default.structure.3_utr_start|hsapiens_gene_ensembl.default.structure.3_utr_end|hsapiens_gene_ensembl.default.structure.cds_length|hsapiens_gene_ensembl.default.structure.transcript_count|hsapiens_gene_ensembl.default.structure.description|hsapiens_gene_ensembl.default.structure.gene_biotype&FILTERS=
 
-ln -sf  /home/ilya/iogen/genome/hg19  ./source_data/genome
+ln -sf  ${GENOME_FOLDER}  ./source_data/genome
 ln -sf  /home/ilya/iogen/genome/hg19_exons\(ensembl\,GRCh37.p13\).txt  ./source_data/exons.txt
 ln -sf  /home/ilya/iogen/hocomoco/  ./source_data/motif_collection
 ln -f  /home/ilya/iogen/hocomoco-thresholds  ./source_data/motif_thresholds
