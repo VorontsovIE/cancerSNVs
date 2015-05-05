@@ -3,10 +3,10 @@ $:.unshift File.absolute_path('../../lib', __dir__)
 require 'optparse'
 require 'snv_info'
 require 'perfectosape/results'
+require 'experiment_configuration'
 
 mode = :words
 flank_length = nil
-genome_folder = nil
 
 OptionParser.new do |opts|
   opts.banner = "Usage: #{opts.program_name} <site infos file> <motif> <-log2(pvalue) from> <-log2(pvalue) to> <SNV infos> [options]\n" +
@@ -16,7 +16,6 @@ OptionParser.new do |opts|
     raise "Unknown mode `#{mode}`"  unless [:words, :variant_ids].include?(mode)
   }
   opts.on('--expand-flank LENGTH', 'Extracted words should be expanded (from a genome) by a specified length') {|value| flank_length = value.to_i }
-  opts.on('--genome-folder FOLDER', 'Folder with a genome to load flanks from'){|value| genome_folder = value }
 end.parse!(ARGV)
 
 
@@ -39,10 +38,9 @@ snvs = SNVInfo.each_in_file(snv_infos_filename).map{|snv| [snv.variant_id, snv] 
 case mode
 when :words
   if flank_length
-    raise 'Specify genome folder if you want to load flanks of a site'  unless genome_folder
     data = sites.map do |site|
       snv = snvs[site.variant_id]
-      seq = snv.load_site_sequence(genome_folder, site, flank_length)
+      seq = snv.load_site_sequence(GENOME_READER, site, flank_length)
       site.orientation_1 == :direct ? seq : Sequence.revcomp(seq)
     end
   else

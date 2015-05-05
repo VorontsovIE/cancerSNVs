@@ -82,16 +82,13 @@ SNVInfo = Struct.new(:variant_id, :snv_sequence,
 
 
   # Deprecated
-  def load_sequence(genome_folder, five_prime_flank_length, three_prime_flank_length)
-    File.open( File.join(genome_folder, "chr#{chromosome}.plain") ) do |f|
-      f.seek(position - five_prime_flank_length - 1)
-      f.read(five_prime_flank_length + three_prime_flank_length + 1).upcase
-    end
+  def load_sequence(genome_reader, five_prime_flank_length, three_prime_flank_length)
+    genome_reader.read_sequence(chromosome, ONE_BASED_INCLUSIVE, position - five_prime_flank_length, position + three_prime_flank_length).upcase
   end
 
   # Deprecated
-  def load_site_sequence(genome_folder, site, flank_length = 0)
-    load_sequence(genome_folder,
+  def load_site_sequence(genome_reader, site, flank_length = 0)
+    load_sequence(genome_reader,
                   flank_length + site.seq_1_five_flank_length,
                   flank_length + site.seq_1_three_flank_length)
   end

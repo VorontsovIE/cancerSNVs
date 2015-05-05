@@ -97,11 +97,8 @@ BreastCancerSNV = Struct.new( :variant_id,
     strand_of_mutation_in_pyrimidine_context == :+
   end
 
-  def load_sequence(genome_folder, five_prime_flank_length, three_prime_flank_length)
-    File.open( File.join(genome_folder, "chr#{chromosome}.plain") ) do |f|
-      f.seek(position - five_prime_flank_length - 1)
-      f.read(five_prime_flank_length + three_prime_flank_length + 1).upcase
-    end
+  def load_sequence(genome_reader, five_prime_flank_length, three_prime_flank_length)
+    genome_reader.load_sequence(chromosome, ONE_BASED_INCLUSIVE, position - five_prime_flank_length, position + three_prime_flank_length)
   end
 
   # 1-based, fully closed, given snv position is 1-based
@@ -117,8 +114,8 @@ BreastCancerSNV = Struct.new( :variant_id,
   end
 
   # Deprecated
-  def load_site_sequence(genome_folder, site, flank_length = 0)
-    load_sequence(genome_folder, flank_length + site.seq_1_five_flank_length, flank_length + site.seq_1_three_flank_length)
+  def load_site_sequence(genome_reader, site, flank_length = 0)
+    load_sequence(genome_reader, flank_length + site.seq_1_five_flank_length, flank_length + site.seq_1_three_flank_length)
   end
 
   def five_prime_flanking_sequence_plus_strand
@@ -155,8 +152,9 @@ BreastCancerSNV = Struct.new( :variant_id,
     SequenceWithSNV.new(seq_5, allele_variants, seq_3)
   end
 
-  def snv_sequence_from_genome(genome_folder, five_prime_flank_length, three_prime_flank_length)
-    seq = load_sequence(genome_folder, five_prime_flank_length, three_prime_flank_length)
+  # Not used at a moment
+  def snv_sequence_from_genome(genome_reader, five_prime_flank_length, three_prime_flank_length)
+    seq = load_sequence(genome_reader, five_prime_flank_length, three_prime_flank_length)
 
     seq_5 = seq[0, five_prime_flank_length]
     seq_3 = seq[(five_prime_flank_length + 1), three_prime_flank_length]
@@ -169,11 +167,8 @@ BreastCancerSNV = Struct.new( :variant_id,
     @context_before_snv_plus_strand ||= "#{five_prime_flanking_sequence_plus_strand[-1]}#{ref_base_plus_strand}#{three_prime_flanking_sequence_plus_strand[0]}"
   end
 
-  def to_snv_info(genome_folder, flank_length: 25)
-    seq = File.open( File.join(genome_folder, "chr#{chromosome}.plain") ){|f|
-      f.seek(position - flank_length - 1)
-      f.read(2*flank_length + 1).upcase
-    }
+  def to_snv_info(genome_reader, flank_length: 25)
+    seq = genome_reader.read_sequence(chromosome, ONE_BASED_INCLUSIVE, position - flank_length, position + flank_length).upcase
     before_substitution = ref_base_plus_strand
     after_substitution = mutant_base_plus_strand
     unless seq[flank_length] == before_substitution.to_s

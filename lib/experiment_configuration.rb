@@ -10,16 +10,17 @@ KATAEGIS_COORDINATES_FILENAME = File.absolute_path('../source_data/AlexandrovEtA
 SOMATIC_MUTATIONS_FOLDER = File.absolute_path('../source_data/AlexandrovEtAl/somatic_mutation_data', __dir__)
 SAMPLE_INFOS_FILENAME = File.absolute_path('../source_data/AlexandrovEtAl/samples_summary.txt', __dir__)
 
-EnsemblGenomeReader = GenomeReader::DiskReader.new(
+ONE_BASED_INCLUSIVE = GenomeReader::CoordinateSystem::ONE_BASED_INCLUSIVE
+ZERO_BASED_EXCLUSIVE = GenomeReader::CoordinateSystem::ZERO_BASED_EXCLUSIVE
+
+GENOME_READER = GenomeReader::DiskReader.new(
   GENOME_FOLDER,
-  GenomeReader::CoordinateSystem::OneBasedInclusive.new,
   chromosome_file_by_name: ->(chr){ "chr#{chr}.plain" },
   chromosome_name_matcher: /^chr(?<chromosome>\w+)\.plain$/
 )
 
-# EnsemblGenomeReader = GenomeReader::DiskReader.new(
+# GENOME_READER = GenomeReader::DiskReader.new(
 #   File.absolute_path('../source_data/genome/', __dir__),
-#   GenomeReader::CoordinateSystem::OneBasedInclusive.new,
 #   chromosome_file_by_name: ->(chr){ "Homo_sapiens.GRCh37.75.dna_sm.chromosome.#{chr}.plain" },
 #   chromosome_name_matcher: /^Homo_sapiens\.GRCh37.75\.dna_sm\.chromosome\.(?<chromosome>\w+)\.plain$/
 # )

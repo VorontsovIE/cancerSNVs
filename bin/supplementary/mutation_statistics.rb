@@ -72,7 +72,7 @@ File.open('./results/alexandrov_somatic_mutations_contexts.txt', 'w') do |fw|
     }
 
     context_counts = regulatory_mutations.map{|mutation|
-      context = mutation.to_snv_info(GENOME_FOLDER, cancer_type: cancer_type).context_before
+      context = mutation.to_snv_info(GENOME_READER, cancer_type: cancer_type).context_before
       ['C', 'T'].include?(context[1]) ? context : context.reverse.tr('ACGTN', 'TGCAN')
     }.group_by(&:itself).map{|context, mutations| [context, mutations.size] }.sort_by{|k,v| v }.reverse.to_h
 

@@ -50,7 +50,7 @@ mutations_by_cancer.each{|cancer_type, mutations|
     mutations
       .select(&:snv?)
       .map{|mutation|
-        snv_info = mutation.to_snv_info(GENOME_FOLDER, 
+        snv_info = mutation.to_snv_info(GENOME_READER,
           cancer_type: cancer_type,
           variant_id: "#{mutation.sample_id}_chr#{mutation.chromosome}:#{mutation.position_start}/#{mutation.after_substitution}",
           flank_length: 50)

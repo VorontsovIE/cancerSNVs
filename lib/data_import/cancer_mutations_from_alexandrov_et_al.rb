@@ -36,13 +36,10 @@ MutationInfo = Struct.new(:sample_id, :mutation_type, :chromosome, :position_sta
       quality ].join("\t")
   end
 
-  def to_snv_info(genome_folder, cancer_type: nil, variant_id: nil, mutation_region_types: RegionType.new, flank_length: 25)
+  def to_snv_info(genome_reader, cancer_type: nil, variant_id: nil, mutation_region_types: RegionType.new, flank_length: 25)
     raise 'Can\'t convert non-SNV into SNVInfo'  unless snv?
     position = position_start
-    seq = File.open( File.join(genome_folder, "chr#{chromosome}.plain") ){|f|
-      f.seek(position - flank_length - 1)
-      f.read(2*flank_length + 1).upcase
-    }
+    seq = genome_reader.read_sequence(chromosome, ONE_BASED_INCLUSIVE, position - flank_length, position + flank_length).upcase
     unless seq[flank_length] == before_substitution.to_s
       raise "Base before substitution `#{before_substitution}` is not consistent with reference genome `#{seq[flank_length]}`"
     end
