@@ -11,7 +11,7 @@ cd "$(dirname "$0")"
 # wget http://opera.autosome.ru/downloads/ape.jar -O ape.jar
 
 # Genome assembly (strictly hg19)
-GENOME_FOLDER='/home/ilya/iogen/genome/Ensembl-GRCh37.p13'
+GENOME_FOLDER='/home/ilya/genomes/Ensembl-GRCh37.p13'
 # mkdir -p ${GENOME_FOLDER}
 # wget --directory-prefix=${GENOME_FOLDER} ftp://ftp.ensembl.org/pub/release-75/fasta/homo_sapiens/dna/README
 # wget --directory-prefix=${GENOME_FOLDER} ftp://ftp.ensembl.org/pub/release-75/fasta/homo_sapiens/dna/Homo_sapiens.GRCh37.75.dna_sm.chromosome.*.fa.gz
