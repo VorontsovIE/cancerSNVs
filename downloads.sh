@@ -22,6 +22,10 @@ wget --recursive --directory-prefix='./source_data/AlexandrovEtAl' ftp://ftp.san
 mv ./source_data/AlexandrovEtAl/ftp.sanger.ac.uk/pub/cancer/AlexandrovEtAl/* ./source_data/AlexandrovEtAl/
 rm -r ./source_data/AlexandrovEtAl/ftp.sanger.ac.uk/
 
+# Kataegis regions
+wget -O ./source_data/coordinates_of_kataegis.xls  http://www.nature.com/nature/journal/v500/n7463/extref/nature12477-s2.xls
+ruby ./bin/preparations/extract_kataegis_regions.rb  ./source_data/coordinates_of_kataegis.xls > ./source_data/AlexandrovEtAl/coordinates_of_kataegis.csv
+rm ./source_data/coordinates_of_kataegis.xls
 
 ##### Supplementary data:
 # PerfectosAPE package
