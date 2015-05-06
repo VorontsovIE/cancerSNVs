@@ -4,21 +4,28 @@
 
 cd "$(dirname "$0")"
 
-# Cancer somatic mutation SNVs from "Mutational Processes Molding the Genomes of 21 Breast Cancers. Nik-Zainal et.al."
-# wget ftp://ftp.sanger.ac.uk/pub/cancer/Nik-ZainalEtAl/SUBSTITUTIONS_13Apr2012_snz.txt -O ./source_data/SNV_infos_original.txt
+# Cancer somatic SNVs from "Mutational Processes Molding the Genomes of 21 Breast Cancers. Nik-Zainal et.al."
+wget ftp://ftp.sanger.ac.uk/pub/cancer/Nik-ZainalEtAl/SUBSTITUTIONS_13Apr2012_snz.txt -O ./source_data/SNV_infos_original.txt
+
+# Cancer somatic SNVs from "Signatures of mutational processes in human cancer. Alexandrov et al."
+wget --recursive --directory-prefix='./source_data/AlexandrovEtAl' ftp://ftp.sanger.ac.uk/pub/cancer/AlexandrovEtAl/
+mv ./source_data/AlexandrovEtAl/ftp.sanger.ac.uk/pub/cancer/AlexandrovEtAl/* ./source_data/AlexandrovEtAl/
+rm -r ./source_data/AlexandrovEtAl/ftp.sanger.ac.uk/
 
 # PerfectosAPE package
-# wget http://opera.autosome.ru/downloads/ape.jar -O ape.jar
+wget http://opera.autosome.ru/downloads/ape.jar -O ape.jar
 
 # Genome assembly (strictly hg19)
 GENOME_FOLDER='/home/ilya/genomes/Ensembl-GRCh37.p13'
-# mkdir -p ${GENOME_FOLDER}
-# wget --directory-prefix=${GENOME_FOLDER} ftp://ftp.ensembl.org/pub/release-75/fasta/homo_sapiens/dna/README
-# wget --directory-prefix=${GENOME_FOLDER} ftp://ftp.ensembl.org/pub/release-75/fasta/homo_sapiens/dna/Homo_sapiens.GRCh37.75.dna_sm.chromosome.*.fa.gz
-# gzip -d ${GENOME_FOLDER}/*.fa.gz
-# ruby bin/preparations/convert_fasta_to_plain.rb ${GENOME_FOLDER}
+mkdir -p ${GENOME_FOLDER}
+wget --directory-prefix=${GENOME_FOLDER} ftp://ftp.ensembl.org/pub/release-75/fasta/homo_sapiens/dna/README
+wget --directory-prefix=${GENOME_FOLDER} ftp://ftp.ensembl.org/pub/release-75/fasta/homo_sapiens/dna/Homo_sapiens.GRCh37.75.dna_sm.chromosome.*.fa.gz
+gzip -d ${GENOME_FOLDER}/*.fa.gz
+ruby bin/preparations/convert_fasta_to_plain.rb ${GENOME_FOLDER}
+rm ${GENOME_FOLDER}/*.fa
 
-# Ensembl exons from (also hg19 version)
+# Download ensembl exons from link below (also hg19 version) into /home/ilya/iogen/genome/hg19_exons\(ensembl\,GRCh37.p13\).txt
+# Unfortunately it should be done by hands.
 # # http://feb2014.archive.ensembl.org/biomart/martview/b139ef98cf27cbd5649f7c5f6d3e2c0c?VIRTUALSCHEMANAME=default&ATTRIBUTES=hsapiens_gene_ensembl.default.structure.ensembl_gene_id|hsapiens_gene_ensembl.default.structure.ensembl_transcript_id|hsapiens_gene_ensembl.default.structure.exon_chrom_start|hsapiens_gene_ensembl.default.structure.exon_chrom_end|hsapiens_gene_ensembl.default.structure.is_constitutive|hsapiens_gene_ensembl.default.structure.rank|hsapiens_gene_ensembl.default.structure.phase|hsapiens_gene_ensembl.default.structure.cdna_coding_start|hsapiens_gene_ensembl.default.structure.cdna_coding_end|hsapiens_gene_ensembl.default.structure.genomic_coding_start|hsapiens_gene_ensembl.default.structure.genomic_coding_end|hsapiens_gene_ensembl.default.structure.ensembl_exon_id|hsapiens_gene_ensembl.default.structure.cds_start|hsapiens_gene_ensembl.default.structure.cds_end|hsapiens_gene_ensembl.default.structure.ensembl_peptide_id|hsapiens_gene_ensembl.default.structure.chromosome_name|hsapiens_gene_ensembl.default.structure.start_position|hsapiens_gene_ensembl.default.structure.end_position|hsapiens_gene_ensembl.default.structure.transcript_start|hsapiens_gene_ensembl.default.structure.transcript_end|hsapiens_gene_ensembl.default.structure.strand|hsapiens_gene_ensembl.default.structure.external_gene_id|hsapiens_gene_ensembl.default.structure.external_gene_db|hsapiens_gene_ensembl.default.structure.5_utr_start|hsapiens_gene_ensembl.default.structure.5_utr_end|hsapiens_gene_ensembl.default.structure.3_utr_start|hsapiens_gene_ensembl.default.structure.3_utr_end|hsapiens_gene_ensembl.default.structure.cds_length|hsapiens_gene_ensembl.default.structure.transcript_count|hsapiens_gene_ensembl.default.structure.description|hsapiens_gene_ensembl.default.structure.gene_biotype&FILTERS=
 
 ln -sf  ${GENOME_FOLDER}  ./source_data/genome

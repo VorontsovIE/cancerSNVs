@@ -34,6 +34,7 @@ Workflow is carried out by `make_all.sh` script in a folder root. Before running
 ### Source files:
 * ./source_data/SNV_infos_original.txt -- Breast cancer SNVs from Mutational processes molding the genomes of 21 breast cancers. Cell, 149(5):979–993. Nik-Zainal, et al. (2012). 
 Source file available on ftp (ftp://ftp.sanger.ac.uk/pub/cancer/Nik-ZainalEtAl/SUBSTITUTIONS_13Apr2012_snz.txt)
+* Alexandrov et al.(2013) on ftp (ftp://ftp.sanger.ac.uk/pub/cancer/AlexandrovEtAl/)
 
 These data use hg19 assembly, so one need to download other data (such as genome itself or exon markup) related to hg19.
 File is already included in a repository.
