@@ -1,6 +1,5 @@
 require 'interval_notation'
 require_relative 'cage_peak'
-require_relative 'repeat_masker_info'
 require_relative 'ensembl_exon'
 
 # /home/ilya/iogen/genome/hg19_exons(ensembl,GRCh37.p13).txt
@@ -30,22 +29,6 @@ def load_cage_peaks_by_chromosome(filename, length_5_prime: 2000, length_3_prime
             expanded_peak_regions = peaks.map{|peak| peak.region_expanded(length_5_prime: length_5_prime, length_3_prime: length_3_prime) }
             [chromosome, IntervalNotation::Operations.union(expanded_peak_regions)]
           }.to_h
-end
-
-# Attention! Chromosome names are in UCSC `chrNN` format not an Ensembl `NN` format. Possible incompatibility
-def read_repeats_by_chromosome(genome_repeat_masker_folder, ignore_repeat_types: [], expand_length: 0)
-  result = {}
-  Dir.glob("#{genome_repeat_masker_folder}/*/*.fa.out") do |filename|
-    chromosome_name = File.basename(filename, '.fa.out')
-    repeats = RepeatMaskerInfo.each_in_file(filename).reject{|info|
-      ignore_repeat_types.include?(info.repeat_type)
-    }.map{|info|
-      IntervalNotation::Syntax::Long.closed_closed(info.match_start - expand_length, info.match_end + expand_length)
-    }.to_a # lazy iterator needs to be forced
-
-    result[chromosome_name.to_sym] = IntervalNotation::Operations.union(repeats)
-  end
-  result
 end
 
 # /home/ilya/iogen/genome/hg19_exons(ensembl,GRCh37.p13).txt
