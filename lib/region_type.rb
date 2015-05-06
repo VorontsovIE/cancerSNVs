@@ -1,7 +1,7 @@
 require 'set'
 
 class RegionType
-  FEATURES = [:promoter, :intronic, :kataegis, :cage_peak]
+  FEATURES = [:promoter, :intronic, :kataegis]
   CALCULATED_FEATURES = [:regulatory]
   FEATURE_INQUIRIES = (FEATURES + CALCULATED_FEATURES).map{|feature| "#{feature}?".to_sym }
 

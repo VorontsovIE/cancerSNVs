@@ -1,5 +1,4 @@
 require 'interval_notation'
-require_relative 'cage_peak'
 require_relative 'ensembl_exon'
 
 # /home/ilya/iogen/genome/hg19_exons(ensembl,GRCh37.p13).txt
@@ -20,15 +19,6 @@ def load_promoters_by_chromosome(filename, length_5_prime: 5000, length_3_prime:
             }.to_h
   result.default = IntervalNotation::Syntax::Long::Empty
   result
-end
-
-def load_cage_peaks_by_chromosome(filename, length_5_prime: 2000, length_3_prime: 500)
-  CagePeak.each_in_file(filename)
-          .group_by(&:chromosome)
-          .map{|chromosome, peaks|
-            expanded_peak_regions = peaks.map{|peak| peak.region_expanded(length_5_prime: length_5_prime, length_3_prime: length_3_prime) }
-            [chromosome, IntervalNotation::Operations.union(expanded_peak_regions)]
-          }.to_h
 end
 
 # /home/ilya/iogen/genome/hg19_exons(ensembl,GRCh37.p13).txt
