@@ -6,7 +6,7 @@ cd "$(dirname "$0")"
 
 mkdir -p  $SEQ_FOLDER  $SNV_FOLDER  $CHUNK_FOLDER
 
-ruby bin/preparations/load_cancer_mutations_sequences.rb --promoter-upstream 5000 --promoter-downstream 500 --kataegis-expansion 1000
+ruby bin/preparations/load_cancer_mutations_sequences.rb  ./results/snv_infos/  --promoter-upstream 5000 --promoter-downstream 500 --kataegis-expansion 1000
 
 # Markup SNVs and filter regulatory only, non-duplicated SNVs
 ruby bin/preparations/snv_markup.rb  ./source_data/SNV_infos_original.txt  >  ${RESULTS_FOLDER}/SNV_infos_marked_up.txt

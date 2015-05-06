@@ -5,14 +5,12 @@ require 'experiment_configuration'
 require 'fileutils'
 require 'optparse'
 
-output_folder = './results/snv_infos/'
-
 promoter_length_5_prime = 5000
 promoter_length_3_prime = 500
 kataegis_expansion_length = 1000
 
 OptionParser.new do |opts|
-  opts.banner = "Usage: #{opts.program_name} [options]"
+  opts.banner = "Usage: #{opts.program_name} <output folder> [options]"
   opts.on('--promoter-upstream LENGTH', "Promoter's length upstream of TSS") {|value|
     promoter_length_5_prime = Integer(value)
   }
@@ -23,6 +21,8 @@ OptionParser.new do |opts|
     kataegis_expansion_length = Integer(value)
   }
 end.parse!(ARGV)
+
+raise 'Specify output folder'  unless output_folder = ARGV[0] # './results/snv_infos/'
 
 introns_by_chromosome = read_introns_by_chromosome(EXONS_FILENAME)
 promoters_by_chromosome = load_promoters_by_chromosome(EXONS_FILENAME,
