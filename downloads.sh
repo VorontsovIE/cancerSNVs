@@ -21,6 +21,8 @@ wget ftp://ftp.sanger.ac.uk/pub/cancer/Nik-ZainalEtAl/SUBSTITUTIONS_13Apr2012_sn
 wget --recursive --directory-prefix='./source_data/AlexandrovEtAl' ftp://ftp.sanger.ac.uk/pub/cancer/AlexandrovEtAl/
 mv ./source_data/AlexandrovEtAl/ftp.sanger.ac.uk/pub/cancer/AlexandrovEtAl/* ./source_data/AlexandrovEtAl/
 rm -r ./source_data/AlexandrovEtAl/ftp.sanger.ac.uk/
+ruby -e 'puts File.read("./source_data/AlexandrovEtAl/samples_summary.txt").gsub("\r","\n")' > ./source_data/AlexandrovEtAl/samples_summary.tmp
+mv ./source_data/AlexandrovEtAl/samples_summary.tmp ./source_data/AlexandrovEtAl/samples_summary.txt
 
 # Kataegis regions
 wget -O ./source_data/coordinates_of_kataegis.xls  http://www.nature.com/nature/journal/v500/n7463/extref/nature12477-s2.xls
