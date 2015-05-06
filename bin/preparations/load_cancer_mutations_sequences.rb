@@ -50,7 +50,7 @@ mutations_by_cancer.each{|cancer_type, mutations|
       .map{|mutation|
         snv_info = mutation.to_snv_info(GENOME_READER,
           cancer_type: cancer_type,
-          variant_id: "#{mutation.sample_id}_chr#{mutation.chromosome}:#{mutation.position_start}/#{mutation.after_substitution}",
+          variant_id: "#{mutation.sample_id};#{mutation.chromosome}:#{mutation.position_start}/#{mutation.after_substitution}",
           flank_length: 50)
         snv_info.mutation_region_types << :promoter  if is_promoter.call(snv_info.chromosome, snv_info.position)
         snv_info.mutation_region_types << :intronic  if is_intronic.call(snv_info.chromosome, snv_info.position)
