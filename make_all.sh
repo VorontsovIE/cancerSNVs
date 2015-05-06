@@ -3,6 +3,9 @@ cd "$(dirname "$0")"
 
 source ./load_configuration.sh
 
+# Download source files (somatic mutations), genome assembly, motif collection etc
+./downloads.sh
+
 # Prepare marked up SNVs and sequences.
 # Generate random sequences.
 # Split files into chunks for running computations in parallel.
