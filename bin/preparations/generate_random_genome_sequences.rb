@@ -75,14 +75,12 @@ end.parse!(ARGV)
 
 raise 'Specify SNV infos'  unless site_infos_filename = ARGV[0] # 'source_data/SNV_infos.txt'
 
-introns_by_chromosome = read_introns_by_chromosome(EXONS_FILENAME, convert_chromosome_names: true)
+introns_by_chromosome = read_introns_by_chromosome(EXONS_FILENAME)
 promoters_by_chromosome = load_promoters_by_chromosome(EXONS_FILENAME,
                                                        length_5_prime: promoter_length_5_prime,
-                                                       length_3_prime: promoter_length_3_prime,
-                                                       convert_chromosome_names: true)
+                                                       length_3_prime: promoter_length_3_prime)
 kataegis_regions_by_chromosome = load_kataegis_regions_by_chromosome(KATAEGIS_COORDINATES_FILENAME,
-                                                                    expansion_length: kataegis_expansion_length,
-                                                                    convert_chromosome_names: true)
+                                                                    expansion_length: kataegis_expansion_length)
 
 is_promoter = ->(chr, pos) { promoters_by_chromosome[chr].include_position?(pos) }
 is_intronic = ->(chr, pos) { introns_by_chromosome[chr].include_position?(pos) }
@@ -119,11 +117,12 @@ SNVInfo.each_in_file(site_infos_filename).map{|snv|
 # snv_context_content = {"AGG"=>2615, "AGC"=>1782, "ACG"=>1718, "GTC"=>687, "AAT"=>2015, "CCG"=>1247, "CGT"=>1813, "GGC"=>1480, "AAA"=>2013, "CGG"=>1248, "CCT"=>2629, "GCT"=>1804, "TGC"=>1858, "GAT"=>1052, "ACT"=>2362, "AAG"=>1642, "GGG"=>1814, "TCA"=>21019, "TGT"=>2930, "ATC"=>963, "ACA"=>2960, "ATG"=>1510, "TGG"=>2677, "CTC"=>1271, "CTT"=>1740, "ATA"=>1699, "TCC"=>6312, "GGT"=>1859, "TTT"=>2002, "CAT"=>1500, "GGA"=>6274, "TAG"=>1003, "AGA"=>17869, "GAG"=>1264, "GCA"=>1894, "CCA"=>2559, "CAA"=>930, "TAC"=>919, "GCC"=>1416, "GCG"=>1180, "AAC"=>1207, "GTT"=>1229, "CCC"=>1757, "CGC"=>1243, "TAT"=>1745, "TTA"=>1544, "AGT"=>2392, "TCG"=>2236, "CGA"=>2281, "ACC"=>1839, "TCT"=>17944, "GTA"=>908, "CAG"=>1305, "TGA"=>21125, "ATT"=>1988, "GTG"=>991, "CAC"=>1013, "CTA"=>970, "TAA"=>1487, "TTG"=>1010, "CTG"=>1316, "GAC"=>724, "TTC"=>1042, "GAA"=>1091}
 
 
-snv_positions = Hash.new {|hash, key| hash[key] = [] }
+known_snv_positions = Hash.new {|hsh, key| hsh[key] = Set.new }
 SNVInfo.each_in_file(site_infos_filename).each{|snv|
-  snv_positions[snv.chromosome] << snv.position
+  known_snv_positions[snv.chromosome] << snv.position
 }
-snv_positions = snv_positions.map{|k,v| ["chr#{k}".to_sym, v.to_set] }.to_h
+
+is_known_snv = ->(chr, pos) { known_snv_positions[chr].include?(pos) }
 
 
 rates = {}
@@ -165,7 +164,7 @@ GENOME_READER.chromosome_names.sort.select{|chromosome|
       .select{|pos| is_regulatory.(chromosome, pos) }
       .map{|pos| [pos, sequence[pos - flank_length, 2*flank_length + 1]] }
       .reject{|pos,seq| seq.match(/N/) }
-      .reject{|pos,seq| snv_positions[chromosome] && snv_positions[chromosome].include?(pos) }
+      .reject{|pos,seq| is_known_snv.(chromosome, pos) }
       .each do |pos,seq|
 
       mut = necessary_seqs_mut[context].select{|k,v| v > 0 }.keys.sample

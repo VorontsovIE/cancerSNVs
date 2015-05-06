@@ -24,14 +24,12 @@ OptionParser.new do |opts|
   }
 end.parse!(ARGV)
 
-introns_by_chromosome = read_introns_by_chromosome(EXONS_FILENAME, convert_chromosome_names: false)
+introns_by_chromosome = read_introns_by_chromosome(EXONS_FILENAME)
 promoters_by_chromosome = load_promoters_by_chromosome(EXONS_FILENAME,
                                                       length_5_prime: promoter_length_5_prime,
-                                                      length_3_prime: promoter_length_3_prime,
-                                                      convert_chromosome_names: false)
+                                                      length_3_prime: promoter_length_3_prime)
 kataegis_regions_by_chromosome = load_kataegis_regions_by_chromosome(KATAEGIS_COORDINATES_FILENAME,
-                                                                    expansion_length: kataegis_expansion_length,
-                                                                    convert_chromosome_names: false)
+                                                                    expansion_length: kataegis_expansion_length)
 
 is_promoter = ->(chr, pos) { promoters_by_chromosome[chr].include_position?(pos) }
 is_intronic = ->(chr, pos) { introns_by_chromosome[chr].include_position?(pos) }

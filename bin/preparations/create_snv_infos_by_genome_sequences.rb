@@ -10,7 +10,6 @@ File.readlines(sequences_filename).each.lazy.map {|line|
   full_pos, mutated_to = full_name.split("/")
   chromosome, position = full_pos.split(':')
   position = position.to_i
-  chromosome = chromosome.sub(/\Achr/, '')
 
   seq_w_snv = SequenceWithSNV.from_string(seq)
   strand = seq_w_snv.in_pyrimidine_context?  ?  :+  :  :-

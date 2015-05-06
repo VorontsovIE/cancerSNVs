@@ -13,7 +13,9 @@ raise 'Specify file with sites, SNV infos and folder with repeat masker infos'  
 
 snvs = SNVInfo.each_in_file(snvs_filename).map{|snv| [snv.variant_id, snv] }.to_h
 repeats_by_chromosome = read_repeats_by_chromosome(genome_repeat_masker_folder, ignore_repeat_types: [:Simple_repeat, :Low_complexity], expand_length: 25)
-                        .map{|chromosome_name, repeats| [chromosome_name.to_s.sub(/\Achr/,'').to_sym, repeats] }.to_h
+                        .map{|chromosome_name, repeats|
+                          [chromosome_name.to_s.sub(/\Achr/,'').to_sym, repeats]  # convert UCSC --> Ensembl chromosome names
+                        }.to_h
 
 PerfectosAPE::ResultShort.each_in_file(sites_filename).with_index.reject{|site, index|
   $stderr.puts "#{index} sites processed"  if index % 100000 == 0
