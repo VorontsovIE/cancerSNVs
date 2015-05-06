@@ -32,15 +32,6 @@ def load_cage_peaks_by_chromosome(filename, length_5_prime: 2000, length_3_prime
 end
 
 # /home/ilya/iogen/genome/hg19_exons(ensembl,GRCh37.p13).txt
-def read_coding_exons_by_chromosome(filename)
-  EnsemblExon.each_in_file(filename)
-            .group_by(&:chromosome)
-            .map{|chromosome, exons|
-              [chromosome, IntervalNotation::Operations.union(exons.map(&:coding_part_region))]
-            }.to_h
-end
-
-# /home/ilya/iogen/genome/hg19_exons(ensembl,GRCh37.p13).txt
 def read_introns_by_chromosome(filename)
   result = EnsemblExon.each_in_file(filename)
             .group_by(&:chromosome)
