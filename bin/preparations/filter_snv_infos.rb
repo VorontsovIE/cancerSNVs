@@ -12,8 +12,8 @@ raise 'Specify file with SNV infos'  unless snvs_filename = ARGV[0] # './source_
 puts SNVInfo::HEADER
 SNVInfo.each_in_file(snvs_filename).select{|snv|
   snv.regulatory?
-}.to_a.uniq{|snv| # remove duplicates
-  snv.in_pyrimidine_context.snv_sequence
+}.to_a.uniq{|snv| # remove duplicates (in each sample separately)
+  [snv.sample_id, snv.in_pyrimidine_context.snv_sequence]
 }.each{|snv|
   puts snv
 }

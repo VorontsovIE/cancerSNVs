@@ -2,7 +2,7 @@
 Workflow is following:
 * Get cancer SNVs.
 * Remove location type markup from original Nik-Zainal source data (it is not full and correct, it doesn't have promoter markup and doesn't include all introns). Recreate location type markup: markup promoter and intronic regions according to information in Ensembl exons table.
-* Remove duplicated SNVs, leave only one of each group of equal SNVs. (Also, we aren't sure that all SNVs are correctly annotated in source data: we have several hundreds of SNVs which have exactly the same 25bp flanks and the same mutation as some other SNVs)
+* Remove duplicated SNVs, leave only one of each group of equal SNVs. (Also, we aren't sure that all SNVs are correctly annotated in source data: we have several hundreds of SNVs which have exactly the same 25bp flanks and the same mutation as some other SNVs). But we leave duplicated SNVs located in different samples.
 * Filter SNVs to obtain regulatory SNVs only (located either in promoter or in intronic regions). This SNV collection is used for the rest of computations. We don't use non-regulatory SNVs anymore.
 * Generate sequences with substitutions for site extraction:
     * Extract sequences around cancer SNVs (regulatory, you remember) from genome.
