@@ -28,17 +28,14 @@ introns_by_chromosome = read_introns_by_chromosome(EXONS_FILENAME)
 promoters_by_chromosome = load_promoters_by_chromosome(EXONS_FILENAME,
                                                       length_5_prime: promoter_length_5_prime,
                                                       length_3_prime: promoter_length_3_prime)
-kataegis_regions_by_chromosome = load_kataegis_regions_by_chromosome(KATAEGIS_COORDINATES_FILENAME,
+kataegis_regions_by_chromosome = load_kataegis_regions_by_chromosome(LocalPaths::Secondary::CoordinatesOfKataegis,
                                                                     expansion_length: kataegis_expansion_length)
 
 is_promoter = ->(chr, pos) { promoters_by_chromosome[chr].include_position?(pos) }
 is_intronic = ->(chr, pos) { introns_by_chromosome[chr].include_position?(pos) }
 is_kataegis = ->(chr, pos) { kataegis_regions_by_chromosome[chr].include_position?(pos) }
 
-
-whole_genome_samples = whole_genome_samples_by_cancer(SAMPLE_INFOS_FILENAME)
-mutations_by_cancer = load_cancer_mutations_by_cancer_type(SOMATIC_MUTATIONS_FOLDER, whole_genome_samples)
-
+mutations_by_cancer_type = ALEXANDROV_MUTATIONS_LOADER.load
   
 FileUtils.mkdir_p(output_folder)  unless Dir.exist?(output_folder)
 

@@ -11,6 +11,14 @@ class RegionType
     @features = features
   end
 
+  def self.by_feature_status(promoter: false, intronic: false, kataegis: false)
+    result = self.new.tap{|r|
+      r << :kataegis  if kataegis
+      r << :promoter  if promoter
+      r << :intronic  if intronic
+    }
+  end
+
   def self.from_string(str)
     # # Optimized version of:
     # new( str.split(',').lazy.map(&:downcase).map(&:to_sym).to_set )
@@ -31,9 +39,26 @@ class RegionType
     (intronic? || promoter?) && ! kataegis?
   end
 
+  def ==(other)
+    features == other.features
+  end
+
+  def equals?(other)
+    other.is_a?(RegionType) &&features == other.features
+  end
+
+  def hash
+    features.hash
+  end
 
   def to_s
     @features.map(&:to_s).map(&:capitalize).join(',')
+  end
+
+  def description
+    FEATURES.map{|feature|
+      "#{feature}:#{features.include?(feature)}"
+    }.join(' ')
   end
 
   def <<(feature)
@@ -42,5 +67,12 @@ class RegionType
 
   def discard_types!
     @features.clear
+  end
+
+  def self.each_possible
+    return enum_for(:each_possible)  unless block_given?
+    [true, false].repeated_permutation(3) do |promoter, intronic, kataegis|
+      yield self.by_feature_status(promoter: promoter, intronic: intronic, kataegis: kataegis)
+    end
   end
 end

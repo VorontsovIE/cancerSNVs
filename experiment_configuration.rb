@@ -34,7 +34,19 @@ module LocalPaths
     Fitting               = File.absolute_path('./results/fitted_sites')
     MotifStatistics       = File.absolute_path('./results/motif_statistics')
 
+    module Alexandrov
+      Mutations           = File.join(AlexandrovData, 'somatic_mutation_data', __dir__)
+      SamplesSummary      = File.join(AlexandrovData, 'samples_summary.txt', __dir__)
+    end
+
     NikZainalSNVs         = File.join(SNVs, 'SNV_infos_cancer.txt')
+  end
+
+  module Results
+    module Alexandrov
+      MutationTypesStatistics = File.join(Root, 'results/AlexandrovEtAl/mutation_types_statistics.txt')
+      ContextStatistics       = File.join(Root, 'results/AlexandrovEtAl/mutation_contexts.txt')
+    end
   end
 end
 
@@ -44,10 +56,6 @@ EXONS_FILENAME = LocalPaths::ExonicMarkup
 MOTIF_NAMES_FILE = LocalPaths::Secondary::MotifNames
 GENE_INFOS = LocalPaths::Secondary::GeneInfos
 MOTIF_COLLECTION_FOLDER = LocalPaths::MotifCollection
-
-KATAEGIS_COORDINATES_FILENAME = LocalPaths::Secondary::CoordinatesOfKataegis
-SOMATIC_MUTATIONS_FOLDER = File.absolute_path('./source_data/AlexandrovEtAl/somatic_mutation_data', __dir__)
-SAMPLE_INFOS_FILENAME = File.absolute_path('./source_data/AlexandrovEtAl/samples_summary.txt', __dir__)
 
 ONE_BASED_INCLUSIVE = GenomeReader::CoordinateSystem::ONE_BASED_INCLUSIVE
 ZERO_BASED_EXCLUSIVE = GenomeReader::CoordinateSystem::ZERO_BASED_EXCLUSIVE
@@ -71,3 +79,8 @@ GENOME_MARKUP_LOADER = GenomeMarkupLoader.create(
   promoter_length_3_prime: 500,
   kataegis_expansion_length: 1000
 )
+
+ALEXANDROV_MUTATIONS_LOADER = MutationsByCancerTypeLoader.new(
+                                mutations_folder: LocalPaths::Secondary::Alexandrov::Mutations,
+                                samples_summary_filename: LocalPaths::Secondary::Alexandrov::SamplesSummary
+                              )

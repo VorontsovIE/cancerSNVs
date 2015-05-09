@@ -14,15 +14,36 @@ class GenomeMarkup
   end
 
   def promoter?(chromosome, position)
-    promoters_by_chromosome[chromosome].include_position?(position)
+    case position
+    when Integer
+      promoters_by_chromosome[chromosome].include_position?(position)
+    when IntervalNotation::IntervalSet # position is an interval
+      promoters_by_chromosome[chromosome].intersect?(position)
+    else
+      raise TypeError, 'Position should be either integer or interval set'
+    end
   end
 
   def intronic?(chromosome, position)
-    introns_by_chromosome[chromosome].include_position?(position)
+    case position
+    when Integer
+      introns_by_chromosome[chromosome].include_position?(position)
+    when IntervalNotation::IntervalSet # position is an interval
+      introns_by_chromosome[chromosome].intersect?(position)
+    else
+      raise TypeError, 'Position should be either integer or interval set'
+    end
   end
 
   def kataegis?(chromosome, position)
-    kataegis_regions_by_chromosome[chromosome].include_position?(position)
+    case position
+    when Integer
+      kataegis_regions_by_chromosome[chromosome].include_position?(position)
+    when IntervalNotation::IntervalSet # position is an interval
+      kataegis_regions_by_chromosome[chromosome].interval?(position)
+    else
+      raise TypeError, 'Position should be either integer or interval set'
+    end
   end
 
   def regulatory?(chromosome, position)
