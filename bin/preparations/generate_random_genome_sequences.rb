@@ -51,41 +51,17 @@ end
 flank_length = 25
 fold = 10 # how many times we should multiply original distribution
 
-promoter_length_5_prime = 5000
-promoter_length_3_prime = 500
-kataegis_expansion_length = 1000
-
 OptionParser.new do |opts|
   opts.banner = 'Usage: #{program_name} <SNVs file> [options]'
   opts.separator 'Options:'
   opts.on('--flank-length LENGTH', 'Length of substitution sequence flanks') {|value| flank_length = value.to_i }
   opts.on('--fold FOLD', 'Multiply original context distribution FOLD times') {|value| fold = value.to_i }
   opts.on('--random-seed SEED', 'Seed for random generator') {|value| srand(Integer(value)) }
-
-  opts.on('--promoter-upstream LENGTH', "Promoter's length upstream of TSS") {|value|
-    promoter_length_5_prime = Integer(value)
-  }
-  opts.on('--promoter-downstream LENGTH', "Promoter's length downstream of TSS") {|value|
-    promoter_length_3_prime = Integer(value)
-  }
-  opts.on('--kataegis-expansion LENGTH', "Kataegis region expansion radius") {|value|
-    kataegis_expansion_length = Integer(value)
-  }
 end.parse!(ARGV)
 
 raise 'Specify SNV infos'  unless site_infos_filename = ARGV[0] # 'source_data/SNV_infos.txt'
 
-introns_by_chromosome = read_introns_by_chromosome(EXONS_FILENAME)
-promoters_by_chromosome = load_promoters_by_chromosome(EXONS_FILENAME,
-                                                       length_5_prime: promoter_length_5_prime,
-                                                       length_3_prime: promoter_length_3_prime)
-kataegis_regions_by_chromosome = load_kataegis_regions_by_chromosome(KATAEGIS_COORDINATES_FILENAME,
-                                                                    expansion_length: kataegis_expansion_length)
-
-is_promoter = ->(chr, pos) { promoters_by_chromosome[chr].include_position?(pos) }
-is_intronic = ->(chr, pos) { introns_by_chromosome[chr].include_position?(pos) }
-is_kataegis = ->(chr, pos) { kataegis_regions_by_chromosome[chr].include_position?(pos) }
-is_regulatory = ->(chr, pos) { (is_intronic.(chr, pos) || is_promoter.(chr, pos)) && !is_kataegis.(chr, pos) }
+GENOME_MARKUP = GENOME_MARKUP_LOADER.load_markup
 
 encoder = SequenceEncoder.default_encoder
 
@@ -149,7 +125,7 @@ sequence_hashes = Set.new
 miss = 0
 
 GENOME_READER.chromosome_names.sort.select{|chromosome|
-  promoters_by_chromosome.has_key?(chromosome) || introns_by_chromosome.has_key?(chromosome)
+  GENOME_MARKUP.chromosome_marked_up?(chromosome)
 }.each do |chromosome|
   sequence = GENOME_READER.read_sequence(chromosome, ZeroBasedExclusive, 0, Float::INFINITY).upcase
 
@@ -161,7 +137,7 @@ GENOME_READER.chromosome_names.sort.select{|chromosome|
     end_pos = sequence.length - flank_length  # chromosome end (with padding)
     (start_pos...end_pos).random_step(1, 2*step - 1) ### .select{ rand <= 1.0/rate  } instead of using step is too slow
       .select{|pos| sequence[pos-1, 3] == context }
-      .select{|pos| is_regulatory.(chromosome, pos) }
+      .select{|pos| GENOME_MARKUP.regulatory?(chromosome, pos) }
       .map{|pos| [pos, sequence[pos - flank_length, 2*flank_length + 1]] }
       .reject{|pos,seq| seq.match(/N/) }
       .reject{|pos,seq| is_known_snv.(chromosome, pos) }

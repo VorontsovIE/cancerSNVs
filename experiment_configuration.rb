@@ -1,4 +1,5 @@
 require_relative 'lib/genome_reader'
+require_relative 'lib/genome_markup'
 
 # These can be safely redefined
 module SystemPaths
@@ -61,4 +62,12 @@ GENOME_READER = GenomeReader::DiskReader.new(
   LocalPaths::Genome,
   chromosome_file_by_name: ->(chr){ "Homo_sapiens.GRCh37.75.dna_sm.chromosome.#{chr}.plain" },
   chromosome_name_matcher: /^Homo_sapiens\.GRCh37.75\.dna_sm\.chromosome\.(?<chromosome>\w+)\.plain$/
+)
+
+GENOME_MARKUP_LOADER = GenomeMarkupLoader.create(
+  exonic_markup_filename: LocalPaths::ExonicMarkup,
+  kataegis_coordinates_filename: LocalPaths::Secondary::CoordinatesOfKataegis,
+  promoter_length_5_prime: 5000,
+  promoter_length_3_prime: 500,
+  kataegis_expansion_length: 1000
 )
