@@ -35,6 +35,13 @@ SNVInfo = Struct.new(:variant_id, :snv_sequence,
     SNVInfo::COLUMN_ORDER.map{|column| send(column) }.join("\t")
   end
 
+  def marked_up(genome_markup)
+    new_mutation_region_types = genome_markup.get_region_type(chromosome, position)
+    SNVInfo.new(variant_id, snv_sequence,
+                cancer_type, sample_id, chromosome, position, strand,
+                new_mutation_region_types)
+  end
+
   def context_before
     snv_sequence.context(before: 1, after: 1, allele_variant_number: 0)
   end
