@@ -41,6 +41,6 @@ class RegionType
   end
 
   def discard_types!
-    @features = []
+    @features.clear
   end
 end
