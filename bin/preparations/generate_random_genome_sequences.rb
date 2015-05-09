@@ -1,5 +1,5 @@
 $:.unshift File.absolute_path('../../lib', __dir__)
-require 'experiment_configuration'
+require_relative '../../experiment_configuration'
 require 'snv_info'
 require 'sequence_encoding'
 require 'load_genome_structure'

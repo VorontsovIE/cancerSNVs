@@ -1,7 +1,7 @@
-$:.unshift File.absolute_path('./../../lib', __dir__)
+$:.unshift File.absolute_path('../../lib', __dir__)
 require 'data_import/breast_cancer_snv'
 require 'snv_info'
-require 'experiment_configuration'
+require_relative '../../experiment_configuration'
 
 raise 'Specify filename'  unless filename = ARGV.first
 

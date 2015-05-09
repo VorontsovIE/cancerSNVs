@@ -1,7 +1,7 @@
 $:.unshift File.absolute_path('lib', __dir__)
 require 'rate_comparison_infos'
 require 'statistics/statistics'
-require 'experiment_configuration'
+require_relative 'experiment_configuration'
 
 random_variants = ARGV
 motif_names = File.readlines(MOTIF_NAMES_FILE).map(&:chomp)

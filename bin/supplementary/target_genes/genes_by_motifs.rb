@@ -1,5 +1,5 @@
 $:.unshift File.absolute_path('../../../lib', __dir__)
-require 'experiment_configuration'
+require_relative '../../../experiment_configuration'
 
 genes_by_motif = File.readlines(GENE_INFOS).drop(1)
                       .map{|line| line.chomp.split("\t").first(2) }

@@ -1,6 +1,6 @@
 # Attention! This file relies on experiment configuration!
 # (because it loads motifs from collection folder which is set by relative path)
-require_relative '../experiment_configuration'
+require_relative '../../experiment_configuration'
 require 'set'
 require 'bioinform'
 

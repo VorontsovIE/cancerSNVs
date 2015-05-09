@@ -3,7 +3,7 @@ $:.unshift File.absolute_path('../../lib', __dir__)
 require 'optparse'
 require 'snv_info'
 require 'perfectosape/results'
-require 'experiment_configuration'
+require_relative '../../experiment_configuration'
 
 mode = :words
 flank_length = nil

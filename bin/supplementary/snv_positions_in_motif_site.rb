@@ -1,7 +1,7 @@
 $:.unshift File.absolute_path('../../lib', __dir__)
 require 'perfectosape/results_short'
 require 'measurement_vector'
-require 'experiment_configuration'
+require_relative '../../experiment_configuration'
 require 'bioinform'
 require 'shellwords'
 require 'optparse'

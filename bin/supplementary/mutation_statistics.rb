@@ -5,7 +5,7 @@ require 'load_genome_structure'
 require 'data_import/cancer_mutations_loading'
 require 'region_type'
 require 'data_import/cancer_mutations_from_alexandrov_et_al'
-require 'experiment_configuration'
+require_relative '../../experiment_configuration'
 require 'optparse'
 
 promoter_length_5_prime = 5000
