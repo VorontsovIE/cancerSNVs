@@ -49,7 +49,7 @@ namespace 'preparations' do
       mutations_by_cancer = ALEXANDROV_MUTATIONS_LOADER.load
 
       mutations_by_cancer.each do |cancer_type, mutations|
-        folder = File.join(LocalPaths::Secondary::SNVs, 'Alexandrov', cancer_type)
+        folder = File.join(LocalPaths::Secondary::SNVs, 'Alexandrov', cancer_type.to_s)
         mkdir_p folder
 
         snv_infos_stream = mutations

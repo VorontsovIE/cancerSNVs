@@ -36,18 +36,18 @@ namespace 'preparations' do
     desc 'Generate random SNVs from genome, mimic context distribution of original SNVs.'
     task :genome
     AlexandrovCancerTypes.each do |cancer_type|
-      shuffle_snvs_filename = File.join(LocalPaths::Secondary::SNVs, cancer_type, 'random_shuffle.txt')
-      random_genome_snvs_filename = File.join(LocalPaths::Secondary::SNVs, cancer_type, 'random_genome.txt')
+      shuffle_snvs_filename = File.join(LocalPaths::Secondary::SNVs, cancer_type.to_s, 'random_shuffle.txt')
+      random_genome_snvs_filename = File.join(LocalPaths::Secondary::SNVs, cancer_type.to_s, 'random_genome.txt')
       
       task shuffle: [shuffle_snvs_filename]
-      file shuffle_snvs_filename => File.join(LocalPaths::Secondary::SNVs, cancer_type, "#{cancer_type}.txt") do |t|
+      file shuffle_snvs_filename => File.join(LocalPaths::Secondary::SNVs, cancer_type.to_s, "#{cancer_type}.txt") do |t|
         Configuration::RandomShuffleSeeds.each do |seed|
           shuffle_snvs(from_filename: t.prerequisites.first, to_filename: t.name, seed: seed, fold: Configuration::RandomShuffleFold)
         end
       end
 
       task genome: [random_genome_snvs_filename]
-      file random_genome_snvs_filename => File.join(LocalPaths::Secondary::SNVs, cancer_type, "#{cancer_type}.txt") do |t|
+      file random_genome_snvs_filename => File.join(LocalPaths::Secondary::SNVs, cancer_type.to_s, "#{cancer_type}.txt") do |t|
         Configuration::RandomGenomeSeeds.each do |seed|
           ruby 'bin/preparations/generate_random_genome_sequences.rb',
                 t.prerequisites.first,

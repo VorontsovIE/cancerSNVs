@@ -131,13 +131,13 @@ namespace :preparations do
     task 'Alexandrov' do
       AlexandrovCancerTypes.each do |cancer_type|
         prepare_chunks_for_sites(
-          File.join(LocalPaths::Secondary::SNVs, 'Alexandrov', cancer_type),
-          File.join(LocalPaths::Secondary::Chunks, 'Alexandrov', cancer_type)
+          File.join(LocalPaths::Secondary::SNVs, 'Alexandrov', cancer_type.to_s),
+          File.join(LocalPaths::Secondary::Chunks, 'Alexandrov', cancer_type.to_s)
         )
       end
       File.open(File.join(LocalPaths::Secondary::Chunks, 'Alexandrov', 'run_all.sh'), 'w') do |fw|
         AlexandrovCancerTypes.each do |cancer_type|
-          fw.puts  File.join(LocalPaths::Secondary::Chunks, 'Alexandrov', cancer_type, 'run_perfectosape_multithread.sh')
+          fw.puts  File.join(LocalPaths::Secondary::Chunks, 'Alexandrov', cancer_type.to_s, 'run_perfectosape_multithread.sh')
         end
       end
     end
