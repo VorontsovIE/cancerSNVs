@@ -99,7 +99,7 @@ GENOME_MARKUP_LOADER = GenomeMarkupLoader.create(
   kataegis_expansion_length: 1000
 )
 
-ALEXANDROV_MUTATIONS_LOADER = MutationsByCancerTypeLoader.new(
+ALEXANDROV_MUTATIONS_LOADER = MutationsByCancerTypeLoader.create(
                                 mutations_folder: LocalPaths::Secondary::Alexandrov::Mutations,
                                 samples_summary_filename: LocalPaths::Secondary::Alexandrov::SamplesSummary
                               )
