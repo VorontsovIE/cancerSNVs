@@ -14,8 +14,8 @@ end
 namespace :statistics do
   namespace :Alexandrov do
     desc 'Statistics of mutation types(SNV,DNV,TNV,indel) in different region types of different cancer types'
-    task mutation_types: [LocalPaths::Results::Alexandrov::MutationTypes]
-    file LocalPaths::Results::Alexandrov::MutationTypes do
+    task mutation_types: [LocalPaths::Results::Alexandrov::MutationTypesStatistics]
+    file LocalPaths::Results::Alexandrov::MutationTypesStatistics do
       mutations_by_cancer_type = ALEXANDROV_MUTATIONS_LOADER.load
       File.open(LocalPaths::Results::Alexandrov::MutationTypesStatistics, 'w') do |fw|
         mutations_by_cancer_type.each do |cancer_type, mutations|

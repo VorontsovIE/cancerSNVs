@@ -2,6 +2,14 @@ require_relative 'lib/genome_reader'
 require_relative 'lib/genome_markup'
 require_relative 'lib/data_import/cancer_mutations_loading'
 
+# Genome assembly, list of all exons and motif collection are huge
+# thus it's possible to download them into any common place to be
+# reusable across different projects.
+# You can specify paths to common resources in corresponding files
+
+# In project we use filesystem links to common resources so 
+# one don't need to know system paths
+
 # These can be safely redefined
 module SystemPaths
   MotifCollection = File.absolute_path('./source_data/hocomoco', __dir__)

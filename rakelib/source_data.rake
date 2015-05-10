@@ -1,4 +1,4 @@
-Dir.glob(File.absolute_path('source_data', __dir__), '*.rake') do |fn|
+Dir.glob(File.join(File.absolute_path('source_data', __dir__), '*.rake')) do |fn|
   import fn
 end
 

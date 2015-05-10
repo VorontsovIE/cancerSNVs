@@ -53,7 +53,7 @@ def split_file(filename, chunks_folder)
                 File.join(chunks_folder, "#{basename}_chunk_")
     
     each_suffix_common_length(Configuration::NumberOfCores) do |suffix|
-      folder = File.join(chunks_folder, "core_#{suffix}"
+      folder = File.join(chunks_folder, "core_#{suffix}")
       mkdir_p folder
       mv File.join(chunks_folder, "#{basename}_chunk_#{suffix}.txt"), 
          File.join(chunks_folder, "core_#{suffix}", "#{basename}.txt")
@@ -115,6 +115,7 @@ def prepare_chunks_for_sites(input_folder, output_folder)
 end
 
 namespace :preparations do
+  desc 'Split sequences into equal chunks in order to run chunks in parallel'
   task generate_chunks: ['generate_chunks:Alexandrov', 'generate_chunks:NikZainal'] do
     File.open(File.join(LocalPaths::Secondary::Chunks, 'run_all.sh'), 'w') do |fw|
       fw.puts  File.join(LocalPaths::Secondary::Chunks, 'Alexandrov', 'run_all.sh')
