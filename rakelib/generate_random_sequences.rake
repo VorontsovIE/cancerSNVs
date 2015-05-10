@@ -35,7 +35,7 @@ namespace 'preparations' do
 
     desc 'Generate random SNVs from genome, mimic context distribution of original SNVs.'
     task :genome
-    AlexandrovCancerTypes.each do |cancer_type|
+    AlexandrovWholeGenomeCancers.each do |cancer_type|
       shuffle_snvs_filename = File.join(LocalPaths::Secondary::SNVs, 'Alexandrov', cancer_type.to_s, 'random_shuffle.txt')
       random_genome_snvs_filename = File.join(LocalPaths::Secondary::SNVs, 'Alexandrov', cancer_type.to_s, 'random_genome.txt')
       
