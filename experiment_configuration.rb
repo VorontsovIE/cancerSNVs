@@ -1,5 +1,6 @@
 require_relative 'lib/genome_reader'
 require_relative 'lib/genome_markup'
+require_relative 'lib/data_import/cancer_mutations_loading'
 
 # These can be safely redefined
 module SystemPaths
@@ -35,8 +36,8 @@ module LocalPaths
     MotifStatistics       = File.absolute_path('./results/motif_statistics')
 
     module Alexandrov
-      Mutations           = File.join(AlexandrovData, 'somatic_mutation_data', __dir__)
-      SamplesSummary      = File.join(AlexandrovData, 'samples_summary.txt', __dir__)
+      Mutations           = File.join(AlexandrovData, 'somatic_mutation_data')
+      SamplesSummary      = File.join(AlexandrovData, 'samples_summary.txt')
     end
 
     NikZainalSNVs         = File.join(SNVs, 'SNV_infos_cancer.txt')
@@ -49,6 +50,19 @@ module LocalPaths
     end
   end
 end
+
+module Configuration
+  RandomGenomeFold = 100
+  RandomShuffleFold = 100
+  RandomGenomeSeeds = [13]
+  RandomShuffleSeeds = [31]
+end
+
+AlexandrovCancerTypes = FileList[File.join(LocalPaths::Secondary::Alexandrov::Mutations,'*')]
+                          .select{|x| File.directory?(x) }
+                          .pathmap('%f')
+                          .to_a
+
 
 ONE_BASED_INCLUSIVE = GenomeReader::CoordinateSystem::ONE_BASED_INCLUSIVE
 ZERO_BASED_EXCLUSIVE = GenomeReader::CoordinateSystem::ZERO_BASED_EXCLUSIVE

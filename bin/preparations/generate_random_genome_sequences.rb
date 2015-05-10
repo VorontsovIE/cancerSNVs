@@ -124,6 +124,8 @@ sequence_hashes = Set.new
 
 miss = 0
 
+puts SNVInfo::HEADER
+
 GENOME_READER.chromosome_names.sort.select{|chromosome|
   GENOME_MARKUP.chromosome_marked_up?(chromosome)
 }.each do |chromosome|
@@ -149,13 +151,20 @@ GENOME_READER.chromosome_names.sort.select{|chromosome|
         next
       end
 
-      synthetic_snv_name = "#{chromosome}:#{pos + 1}/#{mut}"
+      position = pos + 1
+      synthetic_snv_name = "#{chromosome}:#{position}/#{mut}"
       seq_w_snv = SequenceWithSNV.new(seq[0, flank_length], [seq[flank_length], mut], seq[flank_length + 1, flank_length])
 
       next  if sequence_hashes.include?(seq_w_snv.in_pyrimidine_context.hash) # possibly duplicate
       sequence_hashes << seq_w_snv.in_pyrimidine_context.hash
 
-      puts [synthetic_snv_name, seq_w_snv].join("\t")
+      snv_info = SNVInfo.new(synthetic_snv_name, seq_w_snv,
+                            'random genome mutations', 'random genome mutations',
+                            chromosome, position, :+,
+                            GENOME_MARKUP.get_region_type(chromosome, position)
+              ).in_pyrimidine_context
+
+      puts snv_info
       necessary_seqs[context] -= 1
       necessary_seqs_mut[context][mut] -= 1
     end
