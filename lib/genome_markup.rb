@@ -58,9 +58,9 @@ class GenomeMarkup
 
   def get_region_type(chromosome, position)
     result = RegionType.new
-    result << :intronic  if genome_markup.intronic?(chromosome, position)
-    result << :promoter  if genome_markup.promoter?(chromosome, position)
-    result << :kataegis  if genome_markup.kataegis?(chromosome, position)
+    result << :intronic  if intronic?(chromosome, position)
+    result << :promoter  if promoter?(chromosome, position)
+    result << :kataegis  if kataegis?(chromosome, position)
     result
   end
 end
