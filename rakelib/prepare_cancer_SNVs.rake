@@ -62,7 +62,6 @@ namespace 'preparations' do
           }
         markup_and_filter_SNVInfos_to_file(snv_infos_stream, GENOME_MARKUP, output_file: File.join(folder, "#{cancer_type}.txt"))
       end
-
     end
   end
 end
