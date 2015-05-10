@@ -29,8 +29,8 @@ namespace 'source_data' do
     file SystemPaths::Genome do
       mkdir_p SystemPaths::Genome
       ftp_folder = 'ftp://ftp.ensembl.org/pub/release-75/fasta/homo_sapiens/dna'
-      sh 'wget', '--directory-prefix=#{SystemPaths::Genome}', '#{ftp_folder}/README'
-      sh 'wget', '--directory-prefix=#{SystemPaths::Genome}', "#{ftp_folder}/Homo_sapiens.GRCh37.75.dna_sm.chromosome.*.fa.gz"
+      sh 'wget', "--directory-prefix=#{SystemPaths::Genome}", "#{ftp_folder}/README"
+      sh 'wget', "--directory-prefix=#{SystemPaths::Genome}", "#{ftp_folder}/Homo_sapiens.GRCh37.75.dna_sm.chromosome.*.fa.gz"
       sh 'gzip', '-d', *Dir.glob(File.join(SystemPaths::Genome, '*.fa.gz'))
       convert_fasta_to_plain(SystemPaths::Genome)
       rm_f Dir.glob(File.join(SystemPaths::Genome,'*.fa'))
