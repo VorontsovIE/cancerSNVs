@@ -43,14 +43,11 @@ end
 
 namespace 'preparations' do
   namespace 'extractSNVs' do
-    desc 'Load markup in memory'
-    task :load_markup do
-      GENOME_MARKUP = GENOME_MARKUP_LOADER.load_markup
-    end
 
     desc 'Convert Nik-Zainal\'s mutations to a common format. Convert format, filter regulatory only SNVs, remove duplicates.'
     task :NikZainalEtAl => [LocalPaths::Secondary::NikZainalSNVs]
-    file LocalPaths::Secondary::NikZainalSNVs => [:load_markup, LocalPaths::Secondary::NikZainalSNVsOriginal] do
+    file LocalPaths::Secondary::NikZainalSNVs => [LocalPaths::Secondary::NikZainalSNVsOriginal] do
+      GENOME_MARKUP = GENOME_MARKUP_LOADER.load_markup
       snv_infos_stream = BreastCancerSNV \
         .each_in_file(LocalPaths::Secondary::NikZainalSNVsOriginal) \
         .map{|snv| snv.to_snv_info(GENOME_READER, flank_length: 50) }
@@ -58,7 +55,8 @@ namespace 'preparations' do
     end
 
     desc 'Convert Alexandrov\'s mutations to a common format. Convert format, filter regulatory only SNVs, remove duplicates.'
-    task :Alexandrov => [:load_markup] do
+    task :Alexandrov do
+      GENOME_MARKUP = GENOME_MARKUP_LOADER.load_markup
       mutations_by_cancer = ALEXANDROV_MUTATIONS_LOADER.load
 
       mutations_by_cancer.each do |cancer_type, mutations|
