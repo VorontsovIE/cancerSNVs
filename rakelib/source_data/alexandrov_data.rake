@@ -22,6 +22,7 @@ namespace 'source_data' do
   namespace 'Alexandrov' do
     desc 'Download somatic mutations data (for several cancer types) from Alexandrov et al.'
     task :prepare do
+      rm_rf LocalPaths::Secondary::AlexandrovData
       coordinates_of_kataegis_xls = File.join(LocalPaths::Secondary::AlexandrovData, 'coordinates_of_kataegis.xls')
       sh 'wget', '--recursive', "--directory-prefix=#{LocalPaths::Secondary::AlexandrovData}", 'ftp://ftp.sanger.ac.uk/pub/cancer/AlexandrovEtAl/'
       sh 'wget', '-O', coordinates_of_kataegis_xls, 'http://www.nature.com/nature/journal/v500/n7463/extref/nature12477-s2.xls'
