@@ -9,7 +9,7 @@ def shuffle_snvs(from_filename:, to_filename:, seed: nil, fold: 1)
     fw.puts SNVInfo::HEADER
     SNVInfo.each_in_file(from_filename) do |snv_info|
       fold.times do |suffix|
-        name_of_shuffled = "#{name}_#{suffix}"
+        name_of_shuffled = "#{snv_info.variant_id}_#{suffix}"
 
         seq_w_snv = snv_info.snv_sequence
         shuffled_seq = seq_w_snv.with_flanks_shuffled
