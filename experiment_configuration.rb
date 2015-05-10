@@ -50,13 +50,6 @@ module LocalPaths
   end
 end
 
-
-GENOME_FOLDER = LocalPaths::Genome
-EXONS_FILENAME = LocalPaths::ExonicMarkup
-MOTIF_NAMES_FILE = LocalPaths::Secondary::MotifNames
-GENE_INFOS = LocalPaths::Secondary::GeneInfos
-MOTIF_COLLECTION_FOLDER = LocalPaths::MotifCollection
-
 ONE_BASED_INCLUSIVE = GenomeReader::CoordinateSystem::ONE_BASED_INCLUSIVE
 ZERO_BASED_EXCLUSIVE = GenomeReader::CoordinateSystem::ZERO_BASED_EXCLUSIVE
 

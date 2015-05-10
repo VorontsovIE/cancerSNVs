@@ -17,7 +17,7 @@ module PerfectosAPE
       attr_reader :motif_lengths
     end
     @motif_lengths = {}
-    Dir.glob(File.join(MOTIF_COLLECTION_FOLDER, '*.pwm')) do |motif_filename|
+    Dir.glob(File.join(LocalPaths::MotifCollection, '*.pwm')) do |motif_filename|
       motif = Bioinform::MotifModel::PWM.from_file(motif_filename)
       @motif_lengths[motif.name.to_sym] ||= motif.length
     end

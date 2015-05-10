@@ -36,7 +36,7 @@ all_genome_motif_infos = filelist.flat_map do |filename|
   MotifCollectionStatistics.each_in_file(filename).to_a#.map{|info| [info.motif, info] }.to_h
 end.group_by(&:motif)
 
-motif_names = File.readlines(MOTIF_NAMES_FILE).map(&:chomp)
+motif_names = File.readlines(LocalPaths::Secondary::MotifNames).map(&:chomp)
 
 # motif_names.each do |motif|
 #   disruption_rates = all_genome_motif_infos[motif].select{|infos|

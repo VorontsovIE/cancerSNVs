@@ -4,7 +4,7 @@ require 'statistics/statistics'
 require_relative 'experiment_configuration'
 
 random_variants = ARGV
-motif_names = File.readlines(MOTIF_NAMES_FILE).map(&:chomp)
+motif_names = File.readlines(LocalPaths::Secondary::MotifNames).map(&:chomp)
 sample_names = Dir.glob('./results/motif_statistics/full/any/samples/*').select{|fn| 
   File.directory?(fn) 
 }.map{|fn|

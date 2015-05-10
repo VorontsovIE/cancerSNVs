@@ -29,7 +29,7 @@ ignore_underfitting = false
 fitting_log_filename = nil
 
 OptionParser.new do |opts|
-  opts.banner = "Usage: #{opts.program_name} <cancer statistics folder> <random stats folder> <motif names> <hocomoco gene infos> <fitting_log> [options]"
+  opts.banner = "Usage: #{opts.program_name} <cancer statistics folder> <random stats folder> --fitting-log <fitting_log> [options]"
   opts.separator('Options:')
   opts.on('--correction METHOD', 'P-value correction method (holm/fdr/hochberg/hommel/bonferroni/BH/BY/none -- it\'s processed by R). Default is fdr.') {|value|
     pvalue_correction_method = value
@@ -47,11 +47,9 @@ end.parse!(ARGV)
 
 raise 'Specify folder for cancer statistics'  unless cancer_dirname = ARGV[0] # './results/motif_statistics/cpg/cancer'
 raise 'Specify folder for random statistics'  unless random_dirname = ARGV[1] # './results/motif_statistics/cpg/random'
-raise 'Specify file with motif names'  unless motif_names_filename = ARGV[2] # './source_data/motif_names.txt'
-raise 'Specify file with motif collection infos'  unless hocomoco_motifs_filename = ARGV[3] # './source_data/hocomoco_genes_infos.csv'
 
-motif_names = File.readlines(motif_names_filename).map(&:strip)
-motif_collection_infos = load_motif_infos(hocomoco_motifs_filename)
+motif_names = File.readlines(LocalPaths::Secondary::MotifNames).map(&:strip)
+motif_collection_infos = load_motif_infos(LocalPaths::Secondary::GeneInfos)
 fitting_logs = load_motif_underfitting_rates(fitting_log_filename)
 
 motif_infos = {

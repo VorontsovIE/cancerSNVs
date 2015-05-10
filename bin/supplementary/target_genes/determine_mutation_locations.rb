@@ -1,14 +1,14 @@
 require 'interval_notation'
 $:.unshift File.absolute_path('../../../lib', __dir__)
+require_relative '../../../experiment_configuration'
 require 'mutation_context'
 require 'import_information'
 require 'snv_info'
 require 'perfectosape/results_short'
 
-snv_infos_filename = './source_data/SNV_infos.txt'
+snv_infos_filename = LocalPaths::Secondary::NikZainalSNVsOriginal
 snv_sequences_filename = './results/intermediate/SNV_sequences.txt'
 sites_filename = './source_data/sites_cancer.txt'
-motif_names_filename = './source_data/motif_names.txt'
 ensg_hgnc_conversion_filename = './unnecessary/source_data_unnecessary/mart_export_ensg_hgnc.txt'
 gene_tss_filename = './source_data/deprecated/gene_tss_hg19.txt'
 
@@ -69,7 +69,7 @@ disrupting_mutations = PerfectosAPE::ResultShort.each_in_file(sites_filename).se
 
 $stderr.puts "Sites that were around SNVs loaded"
 
-motif_for_analysis = File.readlines(motif_names_filename).map(&:strip)
+motif_for_analysis = File.readlines(LocalPaths::Secondary::MotifNames).map(&:strip)
 
 puts ['motif','mut_name','chr','pos','mut_type','context','ensg','ensg_to_hgnc[ensg]','fold_change','pvalue_1','pvalue_2'].join("\t")
 motif_for_analysis.each do |motif|

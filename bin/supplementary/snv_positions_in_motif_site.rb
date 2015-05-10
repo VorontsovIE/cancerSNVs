@@ -16,7 +16,7 @@ def stddev(values)
   (values.map{|x| (x - m) ** 2 }.inject(&:+) / (values.size.to_f - 1.0)) ** 0.5
 end
 
-motifs = Dir.glob(File.join(MOTIF_COLLECTION_FOLDER, '*.pwm')).map{|fn| Bioinform::MotifModel::PWM.from_file(fn) }
+motifs = Dir.glob(File.join(LocalPaths::MotifCollection, '*.pwm')).map{|fn| Bioinform::MotifModel::PWM.from_file(fn) }
 motif_names = motifs.map(&:name).map(&:to_sym)
 
 requested_motifs = motif_names

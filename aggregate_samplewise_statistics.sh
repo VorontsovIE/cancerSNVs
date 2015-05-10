@@ -13,7 +13,6 @@ mkdir -p  ${MOTIF_STATISTICS_FOLDER}/full/${CONTEXT}/samples/${CANCER_TYPE}
 for RANDOM_VARIANT  in  ${RANDOM_VARIANTS}; do
   ruby summary.rb   ${MOTIF_STATISTICS_FOLDER}/slices/${CONTEXT}/samples/${CANCER_TYPE}/cancer  \
                     ${MOTIF_STATISTICS_FOLDER}/slices/${CONTEXT}/samples/${CANCER_TYPE}/${RANDOM_VARIANT}  \
-                    ${MOTIF_NAMES}  ${GENE_INFOS}  \
                     --fitting-log ${MOTIF_STATISTICS_FOLDER}/fitting_log/${CONTEXT}/samples/${CANCER_TYPE}/${RANDOM_VARIANT}.log  \
                     --correction ${CORRECTION_METHOD}  \
                     --expand-control-set ${EXPAND_CONTROL_SET_FOLD} \
