@@ -28,8 +28,8 @@ module LocalPaths
     GeneInfos             = File.absolute_path('./source_data/hocomoco_genes_infos.csv', __dir__)
     MotifNames            = File.absolute_path('./source_data/motif_names.txt', __dir__) # To be removed
 
-    SNVs                  = File.absolute_path('./results/SNVs', __dir__) # To be removed
-    Sequences             = File.absolute_path('./results/sequences', __dir__)
+    SNVs                  = File.absolute_path('./results/SNVs', __dir__)
+    Sequences             = File.absolute_path('./results/sequences', __dir__) # To be removed
     Chunks                = File.absolute_path('./results/sequence_chunks', __dir__)
     Sites                 = File.absolute_path('./results/sites')
     Fitting               = File.absolute_path('./results/fitted_sites')
@@ -56,6 +56,10 @@ module Configuration
   RandomShuffleFold = 100
   RandomGenomeSeeds = [13]
   RandomShuffleSeeds = [31]
+
+  NumberOfCores = 8
+  MemoryLimitOption = '' #'-Xmx512M'
+  ExpandFlanksLength = 11
 end
 
 AlexandrovCancerTypes = FileList[File.join(LocalPaths::Secondary::Alexandrov::Mutations,'*')]

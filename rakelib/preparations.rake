@@ -42,6 +42,11 @@ end
 
 
 namespace 'preparations' do
+  desc 'Split sequences into equal chunks in order to run chunks in parallel'
+  task 'split_into_chunks' do
+    sh({'NUMBER_OF_CORES' => '8'}, 'prepare_sequences_for_perfectosape_run.sh')
+  end
+
   namespace 'extractSNVs' do
 
     desc 'Convert Nik-Zainal\'s mutations to a common format. Convert format, filter regulatory only SNVs, remove duplicates.'
@@ -60,7 +65,7 @@ namespace 'preparations' do
       mutations_by_cancer = ALEXANDROV_MUTATIONS_LOADER.load
 
       mutations_by_cancer.each do |cancer_type, mutations|
-        folder = File.join(LocalPaths::Secondary::SNVs, cancer_type)
+        folder = File.join(LocalPaths::Secondary::SNVs, 'Alexandrov', cancer_type)
         mkdir_p folder
 
         snv_infos_stream = mutations
