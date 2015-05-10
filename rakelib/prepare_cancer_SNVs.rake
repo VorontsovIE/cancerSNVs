@@ -21,6 +21,7 @@ def markup_and_filter_SNVInfos(snv_infos_stream, genome_markup)
 end
 
 def markup_and_filter_SNVInfos_to_file(snv_infos_stream, genome_markup, output_file:)
+  mkdir_p File.dirname(output_file)
   File.open(output_file, 'w') do |output_stream|
     output_stream.puts(SNVInfo::HEADER)
     markup_and_filter_SNVInfos(snv_infos_stream, GENOME_MARKUP).each{|snv_info|

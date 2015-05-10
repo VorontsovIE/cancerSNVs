@@ -17,6 +17,7 @@ end
 
 # Put links to neccessary resources into folder, generate script to run perfectosape on all files in dir
 def prepare_core_folder(core_folder)
+  mkdir_p core_folder
   ln_f LocalPaths::PerfectosAPE, File.join(core_folder, 'ape.jar')
   ln_f LocalPaths::MotifCollection, File.join(core_folder, 'motif_collection')
   ln_f LocalPaths::MotifThresholds,  File.join(core_folder, 'motif_thresholds')
@@ -62,6 +63,7 @@ end
 
 # Generate scripts for concatenating results of parallel invocations
 def create_concatenation_script(output_file, variants)
+  mkdir_p File.dirname(output_file)
   File.open(output_file, 'w') do |fw|
     fw.puts '#!/bin/bash'
     fw.puts 'cd "$(dirname "$0")"'
@@ -84,6 +86,7 @@ def create_concatenation_script(output_file, variants)
 end
 
 def create_script_for_multiple_invocation(output_file)
+  mkdir_p File.dirname(output_file)
   # Prepare file to run all sequence chunks in parallel
   File.open(output_file, 'w') do |fw|
     fw.puts '#!/bin/bash'
@@ -100,6 +103,7 @@ def create_script_for_multiple_invocation(output_file)
 end
 
 def prepare_chunks_for_sites(input_folder, output_folder)
+  mkdir_p output_folder
   variants = File.join(input_folder, '*.txt').map{|fn| File.basename(fn, '.txt') }
 
   variants.each do |variant|
