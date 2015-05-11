@@ -17,7 +17,7 @@ def shuffle_snvs(from_filename:, to_filename:, seed: nil, fold: 1)
         sequence_hashes << shuffled_seq.hash
 
         shuffled_snv = SNVInfo.new(name_of_shuffled, shuffled_seq,
-            "Shuffled #{snv_info.cancer_type}", "Shuffled #{snv_info.sample_id}",
+            '', '', # appropriate sample/cancer type names will be too long (smth like "Shuffled Lung Adeno" which is repeated each line)
             snv_info.chromosome, snv_info.position, snv_info.strand,
             snv_info.mutation_region_types)
         fw.puts shuffled_snv

@@ -159,7 +159,7 @@ marked_up_chromosomes.each do |chromosome|
 
 
       snv_info = SNVInfo.new(synthetic_snv_name, seq_w_snv,
-                            'random genome mutations', 'random genome mutations',
+                            '', '', # Random genome (but it's too large and expands file to enormous size)
                             chromosome, position, :+,
                             GENOME_MARKUP.get_region_type(chromosome, position)
               ).in_pyrimidine_context # BUG: why resulting strands are all :+ ?!?!?!
@@ -167,9 +167,8 @@ marked_up_chromosomes.each do |chromosome|
       hash = snv_info.snv_sequence.hash
       next  if sequence_hashes.include?(hash) # possibly duplicate
       sequence_hashes << hash
-
-      puts snv_info
       necessary_context_distribution[context][mut] -= 1
+      puts snv_info
     end
   end
 end
