@@ -32,16 +32,17 @@ class RandomGenomeGenerator
     @miss = 0
   end
 
-  def random_regulatory_positions(sequence, context:, position_generator:)
+  def random_regulatory_positions(sequence, context:, position_generator:, chromosome_name:)
     unless block_given?
       return enum_for(:random_regulatory_positions, sequence,
                                                     context: context,
-                                                    position_generator: position_generator)
+                                                    position_generator: position_generator,
+                                                    chromosome_name: chromosome_name)
     end
 
     position_generator
-      .select{|pos| GENOME_MARKUP.regulatory?(chromosome, pos) }
-      .reject{|pos| is_known_snv.(chromosome, pos) }
+      .select{|pos| GENOME_MARKUP.regulatory?(chromosome_name, pos) }
+      .reject{|pos| is_known_snv.(chromosome_name, pos) }
       .select{|pos| sequence[pos-1, 3] == context } # we need take each context separately because of different step sizes
       .each{|pos|
         yield pos
@@ -69,8 +70,8 @@ class RandomGenomeGenerator
     )
   end
 
-  def yield_uniq_mutations(sequence, position_generator:)
-    random_regulatory_positions(sequence, context: context, position_generator: position_generator) do |pos|
+  def yield_uniq_mutations(sequence, position_generator:, context:, chromosome_name:)
+    random_regulatory_positions(sequence, context: context, position_generator: position_generator, chromosome_name: chromosome_name) do |pos|
       # .map{|pos| [pos, sequence[pos - flank_length, 2*flank_length + 1]] }
       # .reject{|pos,seq| seq.match(/N/) }
       mutation_to = choose_mutation(context)
@@ -81,7 +82,7 @@ class RandomGenomeGenerator
 
       snv_info = snv_around_position(
         chromosome_sequence: sequence,
-        chromosome_name: chromosome,
+        chromosome_name: chromosome_name,
         position: pos,
         mutation_to: mutation_to
       ).in_pyrimidine_context # BUG: why resulting strands are all :+ ?!?!?!
@@ -162,7 +163,7 @@ def multiply_context_distribution(context_distribution, fold)
   extended_context_distribution
 end
 
-def generate_random_genome_according_to_snvs(snvs_filename, genome_reader:, genomic_content:, seed: nil, fold:, stream: $stdout)
+def generate_random_genome_according_to_snvs(snvs_filename, genome_reader:, genomic_content:, fold:, seed: nil, flank_length:, stream: $stdout)
   srand(seed)  if seed
   known_snv_positions_by_chromosome = Hash.new {|hsh, key| hsh[key] = Set.new }
   snv_context_distribution = calculate_SNV_context_distribution(SNVInfo.each_in_file(snvs_filename), 
@@ -195,7 +196,7 @@ def generate_random_genome_according_to_snvs(snvs_filename, genome_reader:, geno
       end_pos = sequence.length - flank_length  # chromosome end (with padding)
       random_positions = (start_pos...end_pos).random_step(1, 2*step - 1)
 
-      random_genome_generator.yield_uniq_mutations(sequence, position_generator: random_positions) do |snv_info|
+      random_genome_generator.yield_uniq_mutations(sequence, position_generator: random_positions, context: context, chromosome_name: chromosome) do |snv_info|
         stream.puts snv_info
       end
     end
