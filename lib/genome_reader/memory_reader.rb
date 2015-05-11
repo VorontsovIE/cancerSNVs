@@ -34,15 +34,15 @@ module GenomeReader
       len = coordinate_system.length(from, to)
 
       if len.is_a?(Integer) || len.to_f.finite? # finite length
-        chromosome_sequences[chromosome][pos, len]
+        @chromosome_sequences[chromosome][pos, len]
       else
-        chromosome_sequences[chromosome][pos..-1]
+        @chromosome_sequences[chromosome][pos..-1]
       end
     end
 
     def to_s
       chromosomes_text = chromosome_names.sort.first(5).join(', ') + (chromosome_names.size > 5 ? ', ...' : '')
-      "GenomeReader::MemoryReader<#{chromosome_sequences.size} chromosomes: #{chromosomes_text}>"
+      "GenomeReader::MemoryReader<#{@chromosome_sequences.size} chromosomes: #{chromosomes_text}>"
     end
 
     def inspect
