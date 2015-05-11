@@ -34,9 +34,9 @@ module GenomeReader
       len = coordinate_system.length(from, to)
 
       if len.is_a?(Integer) || len.to_f.finite? # finite length
-        chromosome[pos, len]
+        chromosome_sequences[chromosome][pos, len]
       else
-        chromosome[pos..-1]
+        chromosome_sequences[chromosome][pos..-1]
       end
     end
 
