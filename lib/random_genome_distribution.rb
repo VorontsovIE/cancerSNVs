@@ -162,7 +162,7 @@ def multiply_context_distribution(context_distribution, fold)
   extended_context_distribution
 end
 
-def generate_random_genome_according_to_snvs(snvs_filename, genome_reader:, genomic_content:, seed: nil, stream: $stdout)
+def generate_random_genome_according_to_snvs(snvs_filename, genome_reader:, genomic_content:, seed: nil, fold:, stream: $stdout)
   srand(seed)  if seed
   known_snv_positions_by_chromosome = Hash.new {|hsh, key| hsh[key] = Set.new }
   snv_context_distribution = calculate_SNV_context_distribution(SNVInfo.each_in_file(snvs_filename), 
