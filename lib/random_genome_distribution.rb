@@ -172,7 +172,7 @@ def generate_random_genome_according_to_snvs(snvs_filename, genome_reader:, geno
 
   rates = {}
   necessary_context_distribution.each_key {|context|
-    rates[context] = genomic_content[context] / necessary_context_distribution[context].inject(0, &:+)
+    rates[context] = genomic_content[context] / necessary_context_distribution[context].each_value.inject(0, &:+)
   }
   contexts = rates.keys
 
