@@ -59,17 +59,17 @@ namespace 'preparations' do
           require 'random_genome_distribution'
           GENOME_MARKUP ||= GENOME_MARKUP_LOADER.load_markup
 
-          GENOME_READER_IN_MEMORY ||= GenomeReader::MemoryReader.load_from_disk(
-            LocalPaths::Genome,
-            chromosome_name_matcher: /^Homo_sapiens\.GRCh37.75\.dna_sm\.chromosome\.(?<chromosome>\w+)\.plain$/
-          )
+          # GENOME_READER_IN_MEMORY ||= GenomeReader::MemoryReader.load_from_disk(
+          #   LocalPaths::Genome,
+          #   chromosome_name_matcher: /^Homo_sapiens\.GRCh37.75\.dna_sm\.chromosome\.(?<chromosome>\w+)\.plain$/
+          # )
 
-          GENOMIC_CONTENT ||= calculate_genomic_context_distribution(GENOME_READER_IN_MEMORY,
+          GENOMIC_CONTENT ||= calculate_genomic_context_distribution(GENOME_READER,
                                                                   exclude_N: true,
                                                                   exclude_chromosome: ->(chr){ chr == :MT })
 
           File.open(t.name, 'w') do |fw|
-            generate_random_genome_according_to_snvs(t.prerequisites.first, genomic_content: GENOMIC_CONTENT, seed: seed, stream: fw)
+            generate_random_genome_according_to_snvs(t.prerequisites.first, genome_reader: GENOME_READER, genomic_content: GENOMIC_CONTENT, seed: seed, stream: fw)
           end
         end
       end

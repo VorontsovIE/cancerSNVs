@@ -160,7 +160,7 @@ def multiply_context_distribution(context_distribution, fold)
   extended_context_distribution
 end
 
-def generate_random_genome_according_to_snvs(snvs_filename, genomic_content:, seed: nil, stream: $stdout)
+def generate_random_genome_according_to_snvs(snvs_filename, genome_reader:, genomic_content:, seed: nil, stream: $stdout)
   srand(seed)  if seed
   known_snv_positions_by_chromosome = Hash.new {|hsh, key| hsh[key] = Set.new }
   snv_context_distribution = calculate_SNV_context_distribution(SNVInfo.each_in_file(snvs_filename), 
@@ -174,7 +174,7 @@ def generate_random_genome_according_to_snvs(snvs_filename, genomic_content:, se
   }
   contexts = rates.keys
 
-  marked_up_chromosomes = GENOME_READER_IN_MEMORY.chromosome_names.sort.select{|chromosome|
+  marked_up_chromosomes = genome_reader.chromosome_names.sort.select{|chromosome|
     GENOME_MARKUP.chromosome_marked_up?(chromosome)
   }.reject{|chr| chr == :MT }
 
@@ -183,7 +183,7 @@ def generate_random_genome_according_to_snvs(snvs_filename, genomic_content:, se
   
   stream.puts SNVInfo::HEADER
   marked_up_chromosomes.each do |chromosome|
-    sequence = GENOME_READER_IN_MEMORY.read_sequence(chromosome, ZERO_BASED_EXCLUSIVE, 0, Float::INFINITY).upcase
+    sequence = genome_reader.read_sequence(chromosome, ZERO_BASED_EXCLUSIVE, 0, Float::INFINITY).upcase
 
     contexts.each do |context|
       rate = rates[context]

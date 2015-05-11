@@ -24,13 +24,8 @@ raise 'Specify SNV infos'  unless snvs_filename = ARGV[0] # 'source_data/SNV_inf
 
 GENOME_MARKUP = GENOME_MARKUP_LOADER.load_markup
 
-GENOME_READER_IN_MEMORY = GenomeReader::MemoryReader.load_from_disk(
-  LocalPaths::Genome,
-  chromosome_name_matcher: /^Homo_sapiens\.GRCh37.75\.dna_sm\.chromosome\.(?<chromosome>\w+)\.plain$/
-)
-
-genomic_content = calculate_genomic_context_distribution(GENOME_READER_IN_MEMORY,
+genomic_content = calculate_genomic_context_distribution(GENOME_READER,
                                                         exclude_N: true,
                                                         exclude_chromosome: ->(chr){ chr == :MT })
 
-generate_random_genome_according_to_snvs(snvs_filename, genomic_content: genomic_content, seed: , stream: $stdout)
+generate_random_genome_according_to_snvs(snvs_filename, genome_reader: GENOME_READER, genomic_content: genomic_content, seed: , stream: $stdout)
