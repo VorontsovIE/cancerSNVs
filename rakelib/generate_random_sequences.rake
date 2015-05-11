@@ -63,6 +63,7 @@ namespace 'preparations' do
           #   LocalPaths::Genome,
           #   chromosome_name_matcher: /^Homo_sapiens\.GRCh37.75\.dna_sm\.chromosome\.(?<chromosome>\w+)\.plain$/
           # )
+          $stderr.puts "Genome markup loaded"
 
           GENOMIC_CONTENT ||= calculate_genomic_context_distribution(
                                 GENOME_READER,
@@ -71,6 +72,7 @@ namespace 'preparations' do
                                   chr_name = chr.to_s
                                   chr_name == 'MT' || chr_name.start_with?('HG') || chr_name.start_with?('HS')
                                 })
+          $stderr.puts "Genomic content loaded"
 
           File.open(t.name, 'w') do |fw|
             generate_random_genome_according_to_snvs(t.prerequisites.first, genome_reader: GENOME_READER, genomic_content: GENOMIC_CONTENT, seed: seed, stream: fw)

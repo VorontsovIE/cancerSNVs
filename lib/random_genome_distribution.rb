@@ -124,6 +124,8 @@ def calculate_genomic_context_distribution(genome_reader, exclude_N: true, exclu
   genomic_content = nil
   encoder = SequenceEncoder.default_encoder
   genome_reader.chromosome_names.reject(&exclude_chromosome).each do |chromosome|
+    $stderr.puts "Start loading chromosome #{chromosome}"
+
     sequence = genome_reader.read_sequence(chromosome, ZERO_BASED_EXCLUSIVE, 0, Float::INFINITY).upcase
     sequence_code = encoder.encode_sequence(sequence)
     genomic_content = calculate_context_distribution(sequence_code,
