@@ -49,12 +49,28 @@ namespace 'preparations' do
       task genome: [random_genome_snvs_filename]
       file random_genome_snvs_filename => File.join(LocalPaths::Secondary::SNVs, 'Alexandrov', cancer_type.to_s, "#{cancer_type}.txt") do |t|
         Configuration::RandomGenomeSeeds.each do |seed|
-          ruby 'bin/preparations/generate_random_genome_sequences.rb',
-                t.prerequisites.first,
-                "--fold=#{Configuration::RandomGenomeFold}",
-                "--random-seed=#{seed}",
-                '--flank-length=50',
-                {out: t.name}, {}
+          # ruby 'bin/preparations/generate_random_genome_sequences.rb',
+          #       t.prerequisites.first,
+          #       "--fold=#{Configuration::RandomGenomeFold}",
+          #       "--random-seed=#{seed}",
+          #       '--flank-length=50',
+          #       {out: t.name}, {}
+
+          require 'random_genome_distribution'
+          GENOME_MARKUP ||= GENOME_MARKUP_LOADER.load_markup
+
+          GENOME_READER_IN_MEMORY ||= GenomeReader::MemoryReader.load_from_disk(
+            LocalPaths::Genome,
+            chromosome_name_matcher: /^Homo_sapiens\.GRCh37.75\.dna_sm\.chromosome\.(?<chromosome>\w+)\.plain$/
+          )
+
+          GENOMIC_CONTENT ||= calculate_genomic_context_distribution(GENOME_READER_IN_MEMORY,
+                                                                  exclude_N: true,
+                                                                  exclude_chromosome: ->(chr){ chr == :MT })
+
+          File.open(t.name, 'w') do |fw|
+            generate_random_genome_according_to_snvs(t.prerequisites.first, genomic_content: GENOMIC_CONTENT, seed: seed, stream: fw)
+          end
         end
       end
     end

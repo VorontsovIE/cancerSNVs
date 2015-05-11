@@ -97,6 +97,7 @@ GENOME_READER = GenomeReader::DiskReader.new(
   chromosome_name_matcher: /^Homo_sapiens\.GRCh37.75\.dna_sm\.chromosome\.(?<chromosome>\w+)\.plain$/
 )
 
+# One-based, inclusive
 GENOME_MARKUP_LOADER = GenomeMarkupLoader.create(
   exonic_markup_filename: LocalPaths::ExonicMarkup,
   kataegis_coordinates_filename: LocalPaths::Secondary::CoordinatesOfKataegis,
