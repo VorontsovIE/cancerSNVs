@@ -6,6 +6,10 @@ module GenomeReader
                             chromosome_name_matcher: /^(?<chromosome>\w+)\.plain$/)
       chromosome_sequences = Dir.glob(File.join(genome_folder, '*')).map{|filename|
         chromosome_name = File.basename(filename)[ chromosome_name_matcher, :chromosome ]
+        [filename, chromosome_name]
+      }.select{|filename, chromosome_name|
+        chromosome_name
+      }.map{|filename, chromosome_name|
         [chromosome_name.to_sym, File.read(filename)]
       }.to_h
 
