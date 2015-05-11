@@ -74,7 +74,7 @@ namespace 'preparations' do
                                 })
           $stderr.puts "Genomic content loaded"
           $stderr.puts GENOMIC_CONTENT
-          File.write('./genomic_content_distribution.txt','w'){|fw| fw.puts GENOMIC_CONTENT }
+          File.write('./genomic_content_distribution.txt', GENOMIC_CONTENT.to_s)
 
           File.open(t.name, 'w') do |fw|
             generate_random_genome_according_to_snvs(t.prerequisites.first, genome_reader: GENOME_READER, genomic_content: GENOMIC_CONTENT, fold: Configuration::RandomGenomeFold, seed: seed, stream: fw)
