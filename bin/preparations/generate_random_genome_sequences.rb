@@ -26,7 +26,7 @@ class Range
 end
 
 # chromosome should be encoded in numeric code with range of 0...alphabet_length
-def calculate_context_content(chromosome, context_length:, alphabet_length:, initial_content: nil)
+def calculate_context_distribution(chromosome, context_length:, alphabet_length:, initial_content: nil)
   raise 'Context length should be a positive number'  unless context_length >= 1
   raise 'Sequence is shorter than context length'  unless chromosome.length >= context_length
   content = initial_content || Hash.new(0)
@@ -63,61 +63,62 @@ raise 'Specify SNV infos'  unless site_infos_filename = ARGV[0] # 'source_data/S
 
 GENOME_MARKUP = GENOME_MARKUP_LOADER.load_markup
 
-encoder = SequenceEncoder.default_encoder
-
-genomic_content = nil
-GENOME_READER.chromosome_names.each do |chromosome|
-  sequence = GENOME_READER.read_sequence(chromosome, ZERO_BASED_EXCLUSIVE, 0, Float::INFINITY).upcase
-  sequence_code = encoder.encode_sequence(sequence)
-  genomic_content = calculate_context_content(sequence_code,
-                                              context_length: 3,
-                                              alphabet_length: encoder.alphabet_length,
-                                              initial_content: genomic_content)
+def calculate_genomic_context_distribution(genome_reader, exclude_N: true, exclude_chromosome: ->(chr){ false })
+  genomic_content = nil
+  encoder = SequenceEncoder.default_encoder
+  genome_reader.chromosome_names.reject(&exclude_chromosome).each do |chromosome|
+    sequence = genome_reader.read_sequence(chromosome, ZERO_BASED_EXCLUSIVE, 0, Float::INFINITY).upcase
+    sequence_code = encoder.encode_sequence(sequence)
+    genomic_content = calculate_context_distribution(sequence_code,
+                                                context_length: 3,
+                                                alphabet_length: encoder.alphabet_length,
+                                                initial_content: genomic_content)
+  end
+  # genomic_content = {0=>110995028, 1=>42125960, 8=>46557445, 43=>57819574, 91=>57133135, 80=>56717307, 27=>58762946, 12=>51523761, 61=>34547919, 58=>40536627, 41=>48861274, 83=>64119652, 42=>58800571, 88=>58497976, 66=>27417189, 85=>56740626, 53=>38691998, 18=>72131745, 40=>37300780, 77=>37346116, 13=>46615697, 67=>43640460, 86=>41753576, 92=>54944630, 68=>42283909, 90=>60157436, 78=>59611666, 93=>111360191, 81=>44797566, 30=>53461290, 26=>43541886, 6=>33722474, 28=>53159342, 15=>59562478, 16=>38646516, 55=>41724811, 76=>32820831, 33=>51568473, 5=>58303460, 10=>64039825, 50=>57071784, 2=>57725267, 87=>53554990, 63=>33755618, 31=>38200529, 52=>48868606, 62=>38247266, 60=>44823835, 3=>72039236, 75=>60075904, 25=>54742690, 17=>53161506, 56=>34556602, 57=>6940766, 35=>6411783, 11=>40523652, 32=>8046785, 38=>7306090, 51=>27383861, 65=>32833817, 7=>7289162, 37=>8048543, 82=>6423366, 36=>6933663, 4=>33, 24=>46, 124=>239849850, 123=>33, 115=>12, 29=>13, 122=>283, 110=>183, 84=>177, 49=>285, 120=>47, 100=>25, 14=>14, 74=>41, 89=>12, 44=>14, 99=>47, 94=>32, 64=>19, 121=>33, 108=>18, 107=>5, 34=>102, 112=>98, 79=>6, 118=>5, 39=>5, 102=>14, 69=>10, 98=>6, 117=>14, 106=>13, 19=>7, 95=>5, 71=>4, 105=>10, 116=>11, 103=>11, 101=>10, 45=>5, 9=>7, 59=>6, 72=>3, 20=>2, 113=>5, 21=>4, 73=>2, 119=>2, 22=>1, 70=>1, 111=>3, 54=>3, 96=>5, 23=>2, 97=>2, 114=>1, 109=>1, 47=>1, 46=>1, 48=>1}
+  genomic_content = genomic_content.map{|k,v| [encoder.decode_sequence(k, code_length: 3), v] }.to_h
+  genomic_content = genomic_content.reject{|k,v| k.match(/N/i) }  if exclude_N
+  genomic_content
 end
-# genomic_content = {0=>110995028, 1=>42125960, 8=>46557445, 43=>57819574, 91=>57133135, 80=>56717307, 27=>58762946, 12=>51523761, 61=>34547919, 58=>40536627, 41=>48861274, 83=>64119652, 42=>58800571, 88=>58497976, 66=>27417189, 85=>56740626, 53=>38691998, 18=>72131745, 40=>37300780, 77=>37346116, 13=>46615697, 67=>43640460, 86=>41753576, 92=>54944630, 68=>42283909, 90=>60157436, 78=>59611666, 93=>111360191, 81=>44797566, 30=>53461290, 26=>43541886, 6=>33722474, 28=>53159342, 15=>59562478, 16=>38646516, 55=>41724811, 76=>32820831, 33=>51568473, 5=>58303460, 10=>64039825, 50=>57071784, 2=>57725267, 87=>53554990, 63=>33755618, 31=>38200529, 52=>48868606, 62=>38247266, 60=>44823835, 3=>72039236, 75=>60075904, 25=>54742690, 17=>53161506, 56=>34556602, 57=>6940766, 35=>6411783, 11=>40523652, 32=>8046785, 38=>7306090, 51=>27383861, 65=>32833817, 7=>7289162, 37=>8048543, 82=>6423366, 36=>6933663, 4=>33, 24=>46, 124=>239849850, 123=>33, 115=>12, 29=>13, 122=>283, 110=>183, 84=>177, 49=>285, 120=>47, 100=>25, 14=>14, 74=>41, 89=>12, 44=>14, 99=>47, 94=>32, 64=>19, 121=>33, 108=>18, 107=>5, 34=>102, 112=>98, 79=>6, 118=>5, 39=>5, 102=>14, 69=>10, 98=>6, 117=>14, 106=>13, 19=>7, 95=>5, 71=>4, 105=>10, 116=>11, 103=>11, 101=>10, 45=>5, 9=>7, 59=>6, 72=>3, 20=>2, 113=>5, 21=>4, 73=>2, 119=>2, 22=>1, 70=>1, 111=>3, 54=>3, 96=>5, 23=>2, 97=>2, 114=>1, 109=>1, 47=>1, 46=>1, 48=>1}
-genomic_content = genomic_content.map{|k,v| [encoder.decode_sequence(k, code_length: 3), v] }.to_h
-genomic_content = genomic_content.reject{|k,v| k.match(/N/i) }
 
-##################
-snv_context_content = Hash.new(0)
-snv_context_content_mut = Hash.new{|hsh, mutation_to| hsh[mutation_to] = Hash.new(0) }
+# fills `known_snv_positions_by_chromosome` and returns extended fold times SNV context distribution
+def calculate_SNV_context_distribution_from_stream(snv_stream, known_snv_positions_by_chromosome:)
+  snv_context_distribution = Hash.new{|hsh, context| hsh[context] = Hash.new(0) }
+  snv_stream.each{|snv|
+    known_snv_positions_by_chromosome[snv.chromosome] << snv.position
 
-SNVInfo.each_in_file(site_infos_filename).map{|snv|
-  [snv.context_before, snv.mutant_base]
-}.each{|context, mut|
-  snv_context_content[context] += 1
-  snv_context_content_mut[context][mut] += 1
-}
+    context = snv.context_before
+    mutation_to = snv.mutant_base
+    snv_context_distribution[context][mutation_to] += 1
+  }
+  snv_context_distribution
+end
 
-# snv_context_content = {"AGG"=>2615, "AGC"=>1782, "ACG"=>1718, "GTC"=>687, "AAT"=>2015, "CCG"=>1247, "CGT"=>1813, "GGC"=>1480, "AAA"=>2013, "CGG"=>1248, "CCT"=>2629, "GCT"=>1804, "TGC"=>1858, "GAT"=>1052, "ACT"=>2362, "AAG"=>1642, "GGG"=>1814, "TCA"=>21019, "TGT"=>2930, "ATC"=>963, "ACA"=>2960, "ATG"=>1510, "TGG"=>2677, "CTC"=>1271, "CTT"=>1740, "ATA"=>1699, "TCC"=>6312, "GGT"=>1859, "TTT"=>2002, "CAT"=>1500, "GGA"=>6274, "TAG"=>1003, "AGA"=>17869, "GAG"=>1264, "GCA"=>1894, "CCA"=>2559, "CAA"=>930, "TAC"=>919, "GCC"=>1416, "GCG"=>1180, "AAC"=>1207, "GTT"=>1229, "CCC"=>1757, "CGC"=>1243, "TAT"=>1745, "TTA"=>1544, "AGT"=>2392, "TCG"=>2236, "CGA"=>2281, "ACC"=>1839, "TCT"=>17944, "GTA"=>908, "CAG"=>1305, "TGA"=>21125, "ATT"=>1988, "GTG"=>991, "CAC"=>1013, "CTA"=>970, "TAA"=>1487, "TTG"=>1010, "CTG"=>1316, "GAC"=>724, "TTC"=>1042, "GAA"=>1091}
+def multiply_context_distribution(context_distribution, fold)
+  extended_context_distribution = Hash.new{|hsh, context| hsh[context] = Hash.new(0) }
+  context_distribution.each_key do |context|
+    context_distribution[context].each do |mutation_to, goal|
+      extended_context_distribution[context][mutation_to] = fold * goal
+    end
+  end
+  extended_context_distribution
+end
 
+genomic_content = calculate_genomic_context_distribution(GENOME_READER, exclude_N: true, exclude_chromosome: ->(chr){ chr == :MT })
 
-known_snv_positions = Hash.new {|hsh, key| hsh[key] = Set.new }
-SNVInfo.each_in_file(site_infos_filename).each{|snv|
-  known_snv_positions[snv.chromosome] << snv.position
-}
+known_snv_positions_by_chromosome = Hash.new {|hsh, key| hsh[key] = Set.new }
+snv_context_distribution = calculate_SNV_context_distribution_from_stream(
+  SNVInfo.each_in_file(site_infos_filename),
+  known_snv_positions_by_chromosome: known_snv_positions_by_chromosome
+)
+necessary_context_distribution = multiply_context_distribution(snv_context_distribution, fold)
 
-is_known_snv = ->(chr, pos) { known_snv_positions[chr].include?(pos) }
-
+is_known_snv = ->(chr, pos) { known_snv_positions_by_chromosome[chr].include?(pos) }
 
 rates = {}
-snv_context_content.each_key {|context|
-  rates[context] = genomic_content[context] / snv_context_content[context]
+necessary_context_distribution.each_key {|context|
+  rates[context] = genomic_content[context] / necessary_context_distribution[context].inject(0, &:+)
 }
 contexts = rates.keys
-
-necessary_seqs = {}
-snv_context_content.each do |context, goal|
-  necessary_seqs[context] = fold * goal
-end
-
-necessary_seqs_mut = Hash.new { |hash, key| hash[key] = {} }
-snv_context_content_mut.each_key do |context|
-  snv_context_content_mut[context].each do |mut,goal|
-    necessary_seqs_mut[context][mut] = fold * goal
-  end
-end
-
 
 sequence_hashes = Set.new
 
@@ -125,26 +126,28 @@ miss = 0
 
 puts SNVInfo::HEADER
 
-GENOME_READER.chromosome_names.sort.select{|chromosome|
+marked_up_chromosomes = GENOME_READER.chromosome_names.sort.select{|chromosome|
   GENOME_MARKUP.chromosome_marked_up?(chromosome)
-}.each do |chromosome|
+}.reject{|chr| chr == :MT }
+
+marked_up_chromosomes.each do |chromosome|
   sequence = GENOME_READER.read_sequence(chromosome, ZERO_BASED_EXCLUSIVE, 0, Float::INFINITY).upcase
 
   contexts.each do |context|
     rate = rates[context]
-    step = (rate / (fold * 1.95)).to_i
+    step = (rate / 1.95).to_i # heuristic
     # $stderr.puts "context: #{context}; step: #{step}"
     start_pos = flank_length + rand(step) # chromosome start (with padding)
     end_pos = sequence.length - flank_length  # chromosome end (with padding)
-    (start_pos...end_pos).random_step(1, 2*step - 1) ### .select{ rand <= 1.0/rate  } instead of using step is too slow
-      .select{|pos| sequence[pos-1, 3] == context }
+    (start_pos...end_pos).random_step(1, 2*step - 1) ### .select{ rand <= 1.0/rate  } shouldn't be used instead of .step: it is too slow
       .select{|pos| GENOME_MARKUP.regulatory?(chromosome, pos) }
+      .reject{|pos| is_known_snv.(chromosome, pos) }
+      .select{|pos| sequence[pos-1, 3] == context }
       .map{|pos| [pos, sequence[pos - flank_length, 2*flank_length + 1]] }
       .reject{|pos,seq| seq.match(/N/) }
-      .reject{|pos,seq| is_known_snv.(chromosome, pos) }
       .each do |pos,seq|
 
-      mut = necessary_seqs_mut[context].select{|k,v| v > 0 }.keys.sample
+      mut = necessary_context_distribution[context].select{|k,v| v > 0 }.keys.sample
       if !mut
         miss += 1
         next
@@ -154,18 +157,19 @@ GENOME_READER.chromosome_names.sort.select{|chromosome|
       synthetic_snv_name = "#{chromosome}:#{position}/#{mut}"
       seq_w_snv = SequenceWithSNV.new(seq[0, flank_length], [seq[flank_length], mut], seq[flank_length + 1, flank_length])
 
-      next  if sequence_hashes.include?(seq_w_snv.in_pyrimidine_context.hash) # possibly duplicate
-      sequence_hashes << seq_w_snv.in_pyrimidine_context.hash
 
       snv_info = SNVInfo.new(synthetic_snv_name, seq_w_snv,
                             'random genome mutations', 'random genome mutations',
                             chromosome, position, :+,
                             GENOME_MARKUP.get_region_type(chromosome, position)
-              ).in_pyrimidine_context
+              ).in_pyrimidine_context # BUG: why resulting strands are all :+ ?!?!?!
+
+      hash = snv_info.snv_sequence.hash
+      next  if sequence_hashes.include?(hash) # possibly duplicate
+      sequence_hashes << hash
 
       puts snv_info
-      necessary_seqs[context] -= 1
-      necessary_seqs_mut[context][mut] -= 1
+      necessary_context_distribution[context][mut] -= 1
     end
   end
 end
@@ -173,9 +177,9 @@ end
 $stderr.puts "\n================================\n"
 $stderr.puts "Missed (skipped due to overfill): #{miss}"
 $stderr.puts "\n--------------------------------\n"
-$stderr.puts necessary_seqs_mut.select{|k,hsh| hsh.any?{|k2,v| v > 0} }
+$stderr.puts necessary_context_distribution.select{|k,hsh| hsh.any?{|k2,v| v > 0} }
 $stderr.puts "\n================================\n"
-if necessary_seqs_mut.select{|k,hsh| hsh.any?{|k2,v| v > 0} }.empty?
+if necessary_context_distribution.select{|k,hsh| hsh.any?{|k2,v| v > 0} }.empty?
   $stderr.puts "OK"
 else
   $stderr.puts "Not enough sequences"
