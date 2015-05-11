@@ -1,3 +1,4 @@
+require 'rake'
 require_relative 'lib/genome_reader'
 require_relative 'lib/genome_markup'
 require_relative 'lib/data_import/cancer_mutations_loading'
