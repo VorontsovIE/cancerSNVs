@@ -129,7 +129,7 @@ puts SNVInfo::HEADER
 GENOME_READER.chromosome_names.sort.select{|chromosome|
   GENOME_MARKUP.chromosome_marked_up?(chromosome)
 }.each do |chromosome|
-  sequence = GENOME_READER.read_sequence(chromosome, ZeroBasedExclusive, 0, Float::INFINITY).upcase
+  sequence = GENOME_READER.read_sequence(chromosome, ZERO_BASED_EXCLUSIVE, 0, Float::INFINITY).upcase
 
   contexts.each do |context|
     rate = rates[context]
