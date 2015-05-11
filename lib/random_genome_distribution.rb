@@ -24,12 +24,13 @@ class Range
 end
 
 class RandomGenomeGenerator
-  attr_reader :necessary_context_distribution, :flank_length, :sequence_hashes, :miss
-  def initialize(necessary_context_distribution:, flank_length:)
+  attr_reader :necessary_context_distribution, :flank_length, :sequence_hashes, :miss, :is_known_snv
+  def initialize(necessary_context_distribution:, flank_length:, is_known_snv:)
     @necessary_context_distribution = necessary_context_distribution
     @flank_length = flank_length
     @sequence_hashes = Set.new
     @miss = 0
+    @is_known_snv = is_known_snv
   end
 
   def random_regulatory_positions(sequence, context:, position_generator:, chromosome_name:)
@@ -182,7 +183,8 @@ def generate_random_genome_according_to_snvs(snvs_filename, genome_reader:, geno
   }.reject{|chr| chr == :MT }
 
   random_genome_generator = RandomGenomeGenerator.new(necessary_context_distribution: necessary_context_distribution,
-                                                      flank_length: flank_length)
+                                                      flank_length: flank_length,
+                                                      is_known_snv: is_known_snv)
   
   stream.puts SNVInfo::HEADER
   marked_up_chromosomes.each do |chromosome|
