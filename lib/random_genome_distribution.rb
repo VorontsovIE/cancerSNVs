@@ -188,7 +188,7 @@ def generate_random_genome_according_to_snvs(snvs_filename, genome_reader:, geno
                                                       flank_length: flank_length,
                                                       is_known_snv: is_known_snv)
 
-  rate = rates.min
+  rate = rates.each_value.min
   step = (rate / 1.95).to_i # heuristic
 
   stream.puts SNVInfo::HEADER
