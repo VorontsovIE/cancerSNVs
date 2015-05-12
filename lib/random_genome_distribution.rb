@@ -142,7 +142,7 @@ def calculate_genomic_context_distribution(genome_reader, exclude_N: true, exclu
 end
 
 # fills `known_snv_positions_by_chromosome` and returns extended fold times SNV context distribution
-def calculate_SNV_context_distribution(snv_stream, known_snv_positions_by_chromosome:)
+def calculate_SNV_context_distribution(snv_stream, known_snv_positions_by_chromosome:, exclude_N: true)
   snv_context_distribution = Hash.new{|hsh, context| hsh[context] = Hash.new(0) }
   snv_stream.each{|snv|
     known_snv_positions_by_chromosome[snv.chromosome] << snv.position
@@ -151,6 +151,8 @@ def calculate_SNV_context_distribution(snv_stream, known_snv_positions_by_chromo
     mutation_to = snv.mutant_base
     snv_context_distribution[context][mutation_to] += 1
   }
+
+  snv_context_distribution = snv_context_distribution.reject{|k,v| k.match(/N/i) }  if exclude_N
   snv_context_distribution
 end
 
@@ -168,7 +170,8 @@ def generate_random_genome_according_to_snvs(snvs_filename, genome_reader:, geno
   srand(seed)  if seed
   known_snv_positions_by_chromosome = Hash.new {|hsh, key| hsh[key] = Set.new }
   snv_context_distribution = calculate_SNV_context_distribution(SNVInfo.each_in_file(snvs_filename), 
-                                                                known_snv_positions_by_chromosome: known_snv_positions_by_chromosome)
+                                                                known_snv_positions_by_chromosome: known_snv_positions_by_chromosome,
+                                                                exclude_N: true)
   is_known_snv = ->(chr, pos) { known_snv_positions_by_chromosome[chr].include?(pos) }
   necessary_context_distribution = multiply_context_distribution(snv_context_distribution, fold)
 
