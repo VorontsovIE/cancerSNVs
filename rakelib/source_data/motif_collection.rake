@@ -9,13 +9,14 @@ namespace 'source_data' do
     file LocalPaths::MotifCollection => [SystemPaths::MotifCollection] do
       rm_rf LocalPaths::MotifCollection # not to put a link into folder in already created folder
       ln_sf SystemPaths::MotifCollection, LocalPaths::MotifCollection
-
+    end
+    file LocalPaths::Secondary::MotifNames => [LocalPaths::MotifCollection] do
       motif_names = Dir.glob(File.join(LocalPaths::MotifCollection, '*.pwm')).map{|fn| File.basename(fn, '.pwm') }.sort
       File.write(LocalPaths::Secondary::MotifNames, motif_names.join("\n"))
     end
 
     file SystemPaths::MotifCollection do
-      sh 'wget', '-O', LocalPaths::GeneInfos, 'http://opera.autosome.ru/downloads/motif_collections/hocomoco_genes_infos.csv'
+      sh 'wget', '-O', LocalPaths::Secondary::GeneInfos, 'http://opera.autosome.ru/downloads/motif_collections/hocomoco_genes_infos.csv'
 
       sh 'wget', '-O', hocomoco_archive_file, 'http://opera.autosome.ru/downloads/motif_collections/hocomoco_v9_pwm.tar.gz'
       mkdir_p  SystemPaths::MotifCollection
