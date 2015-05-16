@@ -69,7 +69,7 @@ def create_concatenation_script(output_file, variants)
     fw.puts '#!/bin/bash'
     fw.puts 'cd "$(dirname "$0")"'
     variants.each do |variant|
-      fw.puts "cat /dev/null > #{filename}"
+      fw.puts "cat /dev/null > ./sites_#{variant}.txt"
       # header
       sample_core_index = common_length_number(1, Configuration::NumberOfCores)
       fw.puts "grep -P ^# ./core_#{sample_core_index}/sites_#{variant}.txt  >>  ./sites_#{variant}.txt"
