@@ -18,9 +18,9 @@ end
 # Put links to neccessary resources into folder, generate script to run perfectosape on all files in dir
 def prepare_core_folder(core_folder)
   mkdir_p core_folder
-  ln_f LocalPaths::PerfectosAPE, File.join(core_folder, 'ape.jar')
-  ln_f LocalPaths::MotifCollection, File.join(core_folder, 'motif_collection')
-  ln_f LocalPaths::MotifThresholds,  File.join(core_folder, 'motif_thresholds')
+  ln LocalPaths::PerfectosAPE, File.join(core_folder, 'ape.jar'), force: true
+  ln LocalPaths::MotifCollection, File.join(core_folder, 'motif_collection'), force: true
+  ln LocalPaths::MotifThresholds,  File.join(core_folder, 'motif_thresholds'), force: true
 
   # create script from scratch
   File.open(File.join(core_folder, 'run_perfectosape.sh'), 'w') do |fw|
