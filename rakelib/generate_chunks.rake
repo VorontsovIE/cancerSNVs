@@ -75,10 +75,10 @@ def create_concatenation_script(output_file, variants)
       fw.puts "grep -P ^# ./core_#{sample_core_index}/sites_#{variant}.txt  >>  ./sites_#{variant}.txt"
 
       # body
-      each_suffix_common_length do |suffix|
+      each_suffix_common_length(Configuration::NumberOfCores) do |suffix|
         fw.puts "grep --invert-match -P ^# ./core_${suffix}/sites_#{variant}.txt  >>  ./sites_#{variant}.txt"
       end
-      each_suffix_common_length do |suffix|
+      each_suffix_common_length(Configuration::NumberOfCores) do |suffix|
         fw.puts "rm ./core_#{suffix}/sites_#{variant}.txt"
       end
     end
