@@ -46,19 +46,20 @@ end
 def split_file(filename, chunks_folder)
   mkdir_p chunks_folder
   basename = File.basename(filename, '.txt')
-    sh 'split', "--number=l/#{Configuration::NumberOfCores}",
-                '--numeric-suffixes=1',
-                '--suffix-length=#{ number_length(Configuration::NumberOfCores) }',
-                '--additional-suffix=.txt',
-                filename,
-                File.join(chunks_folder, "#{basename}_chunk_")
+  suffix_length = number_length(Configuration::NumberOfCores)
+  sh 'split', "--number=l/#{Configuration::NumberOfCores}",
+              '--numeric-suffixes=1',
+              "--suffix-length=#{suffix_length}",
+              '--additional-suffix=.txt',
+              filename,
+              File.join(chunks_folder, "#{basename}_chunk_")
     
-    each_suffix_common_length(Configuration::NumberOfCores) do |suffix|
-      folder = File.join(chunks_folder, "core_#{suffix}")
-      mkdir_p folder
-      mv File.join(chunks_folder, "#{basename}_chunk_#{suffix}.txt"), 
-         File.join(chunks_folder, "core_#{suffix}", "#{basename}.txt")
-    end
+  each_suffix_common_length(Configuration::NumberOfCores) do |suffix|
+    folder = File.join(chunks_folder, "core_#{suffix}")
+    mkdir_p folder
+    mv File.join(chunks_folder, "#{basename}_chunk_#{suffix}.txt"), 
+       File.join(chunks_folder, "core_#{suffix}", "#{basename}.txt")
+  end
 end
 
 # Generate scripts for concatenating results of parallel invocations
