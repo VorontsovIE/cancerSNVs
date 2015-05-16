@@ -91,6 +91,7 @@ def create_script_for_multiple_invocation(output_file)
   # Prepare file to run all sequence chunks in parallel
   File.open(output_file, 'w') do |fw|
     fw.puts '#!/bin/bash'
+    fw.puts 'cd "$(dirname "$0")"'
     fw.puts "export EXPAND_FLANKS=\"--expand-region #{Configuration::ExpandFlanksLength}\""
     fw.puts "export MEMORY_LIMIT=\"#{Configuration::MemoryLimitOption}\""
 
@@ -123,9 +124,12 @@ namespace :preparations do
   desc 'Split sequences into equal chunks in order to run chunks in parallel'
   task generate_chunks: ['generate_chunks:Alexandrov', 'generate_chunks:NikZainal'] do
     File.open(File.join(LocalPaths::Secondary::Chunks, 'run_all.sh'), 'w') do |fw|
+      fw.puts '#!/bin/bash'
+      fw.puts 'cd "$(dirname "$0")"'
       fw.puts  File.join(LocalPaths::Secondary::Chunks, 'Alexandrov', 'run_all.sh')
       fw.puts  File.join(LocalPaths::Secondary::Chunks, 'NikZainal', 'run_perfectosape_multithread.sh')
     end
+    chmod 0755, File.join(LocalPaths::Secondary::Chunks, 'run_all.sh')
   end
 
   namespace 'generate_chunks' do
@@ -138,9 +142,12 @@ namespace :preparations do
       end
       File.open(File.join(LocalPaths::Secondary::Chunks, 'Alexandrov', 'run_all.sh'), 'w') do |fw|
         AlexandrovWholeGenomeCancers.each do |cancer_type|
+          fw.puts '#!/bin/bash'
+          fw.puts 'cd "$(dirname "$0")"'
           fw.puts  File.join(LocalPaths::Secondary::Chunks, 'Alexandrov', cancer_type.to_s, 'run_perfectosape_multithread.sh')
         end
       end
+      chmod 0755, File.join(LocalPaths::Secondary::Chunks, 'Alexandrov', 'run_all.sh')
     end
 
     task 'NikZainal' do
