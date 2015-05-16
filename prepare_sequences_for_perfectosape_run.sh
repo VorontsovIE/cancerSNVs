@@ -34,7 +34,7 @@ for SUFFIX in `seq --equal-width  1 ${NUMBER_OF_CORES}`; do
   chmod 755 ${CHUNK_FOLDER}/core_${SUFFIX}/run_perfectosape.sh
   echo 'cd "$(dirname "$0")"'  >>  ${CHUNK_FOLDER}/core_${SUFFIX}/run_perfectosape.sh
   for VARIANT  in  cancer  ${RANDOM_VARIANTS}; do
-    echo "java \${MEMORY_LIMIT} -cp ape.jar ru.autosome.perfectosape.SNPScan  ./motif_collection  ./sequences_${VARIANT}.txt  --fold-change-cutoff 1  --precalc ./motif_thresholds  \${EXPAND_FLANKS}  --short-format  >  ./sites_${VARIANT}.txt"  >>  ${CHUNK_FOLDER}/core_${SUFFIX}/run_perfectosape.sh
+    echo "java \${MEMORY_LIMIT} -cp ape.jar ru.autosome.perfectosape.SNPScan  ./motif_collection  ./sequences_${VARIANT}.txt  --fold-change-cutoff 1  --precalc ./motif_thresholds  \${EXPAND_FLANKS}  --compact  >  ./sites_${VARIANT}.txt"  >>  ${CHUNK_FOLDER}/core_${SUFFIX}/run_perfectosape.sh
   done
 
   # run on all cores in background

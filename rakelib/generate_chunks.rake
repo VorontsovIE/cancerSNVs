@@ -27,14 +27,14 @@ def prepare_core_folder(core_folder)
     fw.puts '#!/bin/bash'
   
     fw.puts 'cd "$(dirname "$0")"'
-    File.join(core_folder, '*.txt').each do |filename|
+    Dir.glob(File.join(core_folder, '*.txt')).each do |filename|
       basename = File.basename(filename, '.txt')
       sites_filename = './sites_${basename}.txt'.shellescape
       fw.puts ['java', '${MEMORY_LIMIT}',
               '-cp ape.jar', 'ru.autosome.perfectosape.SNPScan',
               './motif_collection', filename.shellescape,
               '--fold-change-cutoff 1', '--precalc ./motif_thresholds', 
-              '${EXPAND_FLANKS}', '--short-format',
+              '${EXPAND_FLANKS}', '--compact',
               "> #{sites_filename}"].join(" ")
     end
   end
@@ -104,7 +104,7 @@ end
 
 def prepare_chunks_for_sites(input_folder, output_folder)
   mkdir_p output_folder
-  variants = File.join(input_folder, '*.txt').map{|fn| File.basename(fn, '.txt') }
+  variants = Dir.glob(File.join(input_folder, '*.txt')).map{|fn| File.basename(fn, '.txt') }
 
   variants.each do |variant|
     split_file( File.join(input_folder, "#{variant}.txt"), File.join(output_folder) )
