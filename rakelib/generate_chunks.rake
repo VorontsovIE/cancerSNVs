@@ -83,7 +83,7 @@ def create_concatenation_script(output_file, variants)
       end
     end
   end
-  chmod 0755, File.join(LocalPaths::Secondary::Chunks, 'concatenate_results.sh')
+  chmod 0755, output_file
 end
 
 def create_script_for_multiple_invocation(output_file)
@@ -100,7 +100,7 @@ def create_script_for_multiple_invocation(output_file)
     fw.puts 'wait'
     fw.puts './concatenate_results.sh'
   end
-  chmod 0755, File.join(LocalPaths::Secondary::Chunks, 'run_perfectosape_multithread.sh')
+  chmod 0755, output_file
 end
 
 def prepare_chunks_for_sites(input_folder, output_folder)
