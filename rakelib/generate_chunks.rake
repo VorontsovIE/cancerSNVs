@@ -29,7 +29,7 @@ def prepare_core_folder(core_folder)
     fw.puts 'cd "$(dirname "$0")"'
     Dir.glob(File.join(core_folder, '*.txt')).each do |filename|
       basename = File.basename(filename, '.txt')
-      sites_filename = './sites_${basename}.txt'.shellescape
+      sites_filename = "./sites_#{basename}.txt".shellescape
       fw.puts ['java', '${MEMORY_LIMIT}',
               '-cp ape.jar', 'ru.autosome.perfectosape.SNPScan',
               './motif_collection', filename.shellescape,
@@ -76,7 +76,7 @@ def create_concatenation_script(output_file, variants)
 
       # body
       each_suffix_common_length(Configuration::NumberOfCores) do |suffix|
-        fw.puts "grep --invert-match -P ^# ./core_${suffix}/sites_#{variant}.txt  >>  ./sites_#{variant}.txt"
+        fw.puts "grep --invert-match -P ^# ./core_#{suffix}/sites_#{variant}.txt  >>  ./sites_#{variant}.txt"
       end
       each_suffix_common_length(Configuration::NumberOfCores) do |suffix|
         fw.puts "rm ./core_#{suffix}/sites_#{variant}.txt"
@@ -95,7 +95,7 @@ def create_script_for_multiple_invocation(output_file)
     fw.puts "export MEMORY_LIMIT=\"#{Configuration::MemoryLimitOption}\""
 
     each_suffix_common_length(Configuration::NumberOfCores) do |suffix|
-      fw.puts "./core_${suffix}/run_perfectosape.sh &"
+      fw.puts "./core_#{suffix}/run_perfectosape.sh &"
     end
     fw.puts 'wait'
     fw.puts './concatenate_results.sh'
