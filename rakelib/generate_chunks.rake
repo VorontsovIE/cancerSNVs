@@ -69,17 +69,21 @@ def create_concatenation_script(output_file, variants)
     fw.puts '#!/bin/bash'
     fw.puts 'cd "$(dirname "$0")"'
     variants.each do |variant|
-      fw.puts "cat /dev/null > ./sites_#{variant}.txt"
+      results_filename = "./sites_#{variant}.txt".shellescape
+      fw.puts "cat /dev/null > #{results_filename}"
       # header
       sample_core_index = common_length_number(1, Configuration::NumberOfCores)
-      fw.puts "grep -P ^# ./core_#{sample_core_index}/sites_#{variant}.txt  >>  ./sites_#{variant}.txt"
+      sample_core_filename = File.join("core_#{sample_core_index}", "sites_#{variant}.txt").shellescape
+      fw.puts "grep -P ^# #{sample_core_filename}  >>  #{results_filename}"
 
       # body
       each_suffix_common_length(Configuration::NumberOfCores) do |suffix|
-        fw.puts "grep --invert-match -P ^# ./core_#{suffix}/sites_#{variant}.txt  >>  ./sites_#{variant}.txt"
+        sample_filename = File.join("core_#{suffix}", "sites_#{variant}.txt").shellescape
+        fw.puts "grep --invert-match -P ^# #{sample_filename}  >>  #{results_filename}"
       end
       each_suffix_common_length(Configuration::NumberOfCores) do |suffix|
-        fw.puts "rm ./core_#{suffix}/sites_#{variant}.txt"
+        sample_filename = File.join("core_#{suffix}", "sites_#{variant}.txt").shellescape
+        fw.puts "rm #{sample_filename}"
       end
     end
   end
