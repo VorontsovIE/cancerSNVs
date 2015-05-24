@@ -1,4 +1,5 @@
 source 'https://rubygems.org'
+gem 'rake'
 gem 'bioinform'
 gem 'interval_notation', '~>0.1.2'
 gem 'rubystats'

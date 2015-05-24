@@ -29,6 +29,7 @@ PLATFORMS
 DEPENDENCIES
   bioinform
   interval_notation (~> 0.1.2)
+  rake
   roo (~> 2.0.0)
   roo-xls
   rubystats
