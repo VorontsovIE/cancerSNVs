@@ -5,19 +5,19 @@ require_relative 'load_genome_structure'
 require 'set'
 
 class Range
-  def random_step(from, to)
-    return enum_for(:random_step, from, to)  unless block_given?
+  def random_step(from, to, random_generator: Random::DEFAULT)
+    return enum_for(:random_step, from, to, random_generator: random_generator)  unless block_given?
     pos = self.begin
     delta = to-from
     if exclude_end?
       while pos < self.end
         yield pos
-        pos += (from + (rand * delta).round)
+        pos += (from + (random_generator.rand * delta).round)
       end
     else
       while pos <= self.end
         yield pos
-        pos += (from + (rand * delta).round)
+        pos += (from + (random_generator.rand * delta).round)
       end
     end
   end
@@ -165,10 +165,9 @@ def multiply_context_distribution(context_distribution, fold)
   extended_context_distribution
 end
 
-def generate_random_genome_according_to_snvs(snvs_filename, genome_reader:, genomic_content:, fold:, seed: nil, flank_length:, stream: $stdout)
-  srand(seed)  if seed
+def generate_random_genome_according_to_snvs(from_filename:, genome_reader:, genomic_content:, fold:, random_generator: Random::DEFAULT, flank_length:, output_stream: $stdout)
   known_snv_positions_by_chromosome = Hash.new {|hsh, key| hsh[key] = Set.new }
-  snv_context_distribution = calculate_SNV_context_distribution(SNVInfo.each_in_file(snvs_filename),
+  snv_context_distribution = calculate_SNV_context_distribution(SNVInfo.each_in_file(from_filename),
                                                                 known_snv_positions_by_chromosome: known_snv_positions_by_chromosome,
                                                                 exclude_N: true)
   is_known_snv = ->(chr, pos) { known_snv_positions_by_chromosome[chr].include?(pos) }
@@ -191,16 +190,16 @@ def generate_random_genome_according_to_snvs(snvs_filename, genome_reader:, geno
   rate = rates.each_value.min
   step = (rate / 1.95).to_i # heuristic
 
-  stream.puts SNVInfo::HEADER
+  output_stream.puts SNVInfo::HEADER
   marked_up_chromosomes.each do |chromosome|
     sequence = genome_reader.read_sequence(chromosome, ZERO_BASED_EXCLUSIVE, 0, Float::INFINITY).upcase
 
-    start_pos = flank_length + rand(step) # chromosome start (with padding)
+    start_pos = flank_length + random_generator.rand(step) # chromosome start (with padding)
     end_pos = sequence.length - flank_length  # chromosome end (with padding)
-    random_positions = (start_pos...end_pos).random_step(1, 2*step - 1)
+    random_positions = (start_pos...end_pos).random_step(1, 2*step - 1, random_generator: random_generator)
 
     random_genome_generator.yield_uniq_mutations(sequence, position_generator: random_positions, chromosome_name: chromosome) do |snv_info|
-      stream.puts snv_info
+      output_stream.puts snv_info
     end
   end
 

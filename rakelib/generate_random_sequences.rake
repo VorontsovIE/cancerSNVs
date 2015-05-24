@@ -1,27 +1,53 @@
 $:.unshift File.join(LocalPaths::Root, 'lib')
 require 'set'
 require 'snv_info'
+require 'random_genome_distribution'
 
-def shuffle_snvs(from_filename:, to_filename:, seed: nil, fold: 1)
-  srand(seed)  if seed
+def shuffle_snvs(from_filename:, output_stream:, random_generator: Random::DEFAULT, fold: 1)
   sequence_hashes = Set.new
-  File.open(to_filename, 'w') do |fw|
-    fw.puts SNVInfo::HEADER
-    SNVInfo.each_in_file(from_filename) do |snv_info|
-      fold.times do |suffix|
-        name_of_shuffled = "#{snv_info.variant_id}_#{suffix}"
 
-        seq_w_snv = snv_info.snv_sequence
-        shuffled_seq = seq_w_snv.with_flanks_shuffled
-        shuffled_seq = seq_w_snv.with_flanks_shuffled  while sequence_hashes.include?(shuffled_seq.hash) # ignore possible duplicates
-        sequence_hashes << shuffled_seq.hash
+  output_stream.puts SNVInfo::HEADER
+  SNVInfo.each_in_file(from_filename) do |snv_info|
+    fold.times do |suffix|
+      name_of_shuffled = "#{snv_info.variant_id}_#{suffix}"
 
-        shuffled_snv = SNVInfo.new(name_of_shuffled, shuffled_seq,
-            '', '', # appropriate sample/cancer type names will be too long (smth like "Shuffled Lung Adeno" which is repeated each line)
-            snv_info.chromosome, snv_info.position, snv_info.strand,
-            snv_info.mutation_region_types)
-        fw.puts shuffled_snv
-      end
+      seq_w_snv = snv_info.snv_sequence
+      shuffled_seq = seq_w_snv.with_flanks_shuffled(random_generator: random_generator)
+      shuffled_seq = seq_w_snv.with_flanks_shuffled(random_generator: random_generator)  while sequence_hashes.include?(shuffled_seq.hash) # ignore possible duplicates
+      sequence_hashes << shuffled_seq.hash
+
+      shuffled_snv = SNVInfo.new(name_of_shuffled, shuffled_seq,
+          '', '', # appropriate sample/cancer type names will be too long (smth like "Shuffled Lung Adeno" which is repeated each line)
+          snv_info.chromosome, snv_info.position, snv_info.strand,
+          snv_info.mutation_region_types)
+      output_stream.puts shuffled_snv
+    end
+  end
+
+end
+
+def generate_random_shuffle_task(output_filename:, task_name:, cancer_filename:, random_generator:)
+  file output_filename => [:load_genome_markup, cancer_filename] do
+    File.open(output_filename, 'w') do |fw|
+      shuffle_snvs(from_filename: cancer_filename,
+                  output_stream: fw,
+                  fold: Configuration::RandomShuffleFold,
+                  random_generator: random_generator)
+    end
+  end
+end
+
+def generate_random_genome_task(output_filename:, task_name:, cancer_filename:, random_generator:)
+  task task_name => output_filename
+  file output_filename => [cancer_filename, :load_genomic_context, :load_genome_markup] do
+    File.open(output_filename, 'w') do |fw|
+      generate_random_genome_according_to_snvs(from_filename: cancer_filename,
+                                              output_stream: fw,
+                                              fold: Configuration::RandomGenomeFold,
+                                              flank_length: 50,
+                                              genome_reader: GENOME_READER,
+                                              genomic_content: GENOMIC_CONTENT,
+                                              random_generator: random_generator)
     end
   end
 end
@@ -54,57 +80,36 @@ namespace 'preparations' do
 
     desc 'Generate random SNVs from genome, mimic context distribution of original SNVs.'
     task :genome => ['NikZainal:genome', 'Alexandrov:genome']
-
-    namespace 'NikZainal' do
-      cancer_filename = File.join(LocalPaths::Secondary::SNVs, 'NikZainal', 'cancer.txt')
-      task :shuffle
-      Configuration::RandomShuffleSeeds.each do |seed|
-        shuffle_snvs_filename = File.join(LocalPaths::Secondary::SNVs, 'NikZainal', "random_shuffle_#{fold}.txt")
-
-        file  shuffle_snvs_filename => [:load_genome_markup, cancer_filename] do |t|
-          shuffle_snvs(from_filename: t.prerequisites.first, to_filename: t.name, seed: seed, fold: Configuration::RandomShuffleFold)
-        end
-        task :shuffle => [shuffle_snvs_filename]
-      end
-
-      task :genome
-      Configuration::RandomGenomeSeeds.each do |seed|
-        random_genome_snvs_filename = File.join(LocalPaths::Secondary::SNVs, 'NikZainal', "random_genome_#{fold}.txt")
-
-        file  random_genome_snvs_filename => [:load_genome_markup, :load_genomic_context, cancer_filename] do |t|
-          require 'random_genome_distribution'
-          File.open(t.name, 'w') do |fw|
-            generate_random_genome_according_to_snvs(t.prerequisites.first, genome_reader: GENOME_READER, genomic_content: GENOMIC_CONTENT, fold: Configuration::RandomGenomeFold, seed: seed, flank_length: 50, stream: fw)
-          end
-        end
-        task :genome => [random_genome_snvs_filename]
-      end
-    end
-
-    namespace 'Alexandrov' do
-      AlexandrovWholeGenomeCancers.each do |cancer_type|
-        cancer_filename = File.join(LocalPaths::Secondary::SNVs, 'Alexandrov', cancer_type.to_s, "#{cancer_type}.txt")
-
-        task :shuffle => [shuffle_snvs_filename]
-        shuffle_snvs_filename = File.join(LocalPaths::Secondary::SNVs, 'Alexandrov', cancer_type.to_s, 'random_shuffle.txt')
-
-        file  shuffle_snvs_filename => [:load_genome_markup, cancer_filename] do |t|
-          shuffle_snvs(from_filename: cancer_filename, to_filename: t.name, seed: Configuration::AlexandrovRandomShuffleSeeds, fold: Configuration::RandomShuffleFold)
-        end
-
-
-        task :genome => [random_genome_snvs_filename]
-        random_genome_snvs_filename = File.join(LocalPaths::Secondary::SNVs, 'Alexandrov', cancer_type.to_s, 'random_genome.txt')
-
-        file  random_genome_snvs_filename => [:load_genomic_context, :load_genome_markup, cancer_filename] do |t|
-          require 'random_genome_distribution'
-          File.open(t.name, 'w') do |fw|
-            generate_random_genome_according_to_snvs(cancer_filename, genome_reader: GENOME_READER, genomic_content: GENOMIC_CONTENT, fold: Configuration::RandomGenomeFold, seed: Configuration::AlexandrovRandomGenomeSeeds, flank_length: 50, stream: fw)
-          end
-        end
-
-      end
-    end
-
   end
+end
+
+# Alexandrov
+AlexandrovWholeGenomeCancers.each do |cancer_type|
+  cancer_filename = File.join(LocalPaths::Secondary::SNVs, 'Alexandrov', cancer_type.to_s, 'cancer.txt')
+
+  generate_random_genome_task(output_filename: File.join(LocalPaths::Secondary::SNVs, 'Alexandrov', cancer_type.to_s, 'random_genome.txt'),
+                              task_name: 'preparations:generate_random_SNVs:Alexandrov:genome',
+                              cancer_filename: cancer_filename,
+                              random_generator: Random.new(Configuration::AlexandrovRandomGenomeSeeds))
+
+  generate_random_shuffle_task(output_filename: File.join(LocalPaths::Secondary::SNVs, 'Alexandrov', cancer_type.to_s, 'random_shuffle.txt'),
+                              task_name: 'preparations:generate_random_SNVs:Alexandrov:shuffle',
+                              cancer_filename: cancer_filename,
+                              random_generator: Random.new(Configuration::AlexandrovRandomShuffleSeeds))
+end
+
+
+# Nik-Zainal
+Configuration::RandomGenomeSeeds.each do |seed|
+  generate_random_genome_task(output_filename: File.join(LocalPaths::Secondary::SNVs, 'NikZainal', "random_genome_#{seed}.txt"),
+                              task_name: 'preparations:generate_random_SNVs:NikZainal:genome',
+                              cancer_filename: File.join(LocalPaths::Secondary::SNVs, 'NikZainal', 'cancer.txt'),
+                              random_generator: Random.new(seed))
+end
+
+Configuration::RandomShuffleSeeds.each do |seed|
+  generate_random_shuffle_task(output_filename: File.join(LocalPaths::Secondary::SNVs, 'NikZainal', "random_shuffle_#{seed}.txt"),
+                              task_name: 'preparations:generate_random_SNVs:NikZainal:shuffle',
+                              cancer_filename: File.join(LocalPaths::Secondary::SNVs, 'NikZainal', 'cancer.txt'),
+                              random_generator: Random.new(seed))
 end

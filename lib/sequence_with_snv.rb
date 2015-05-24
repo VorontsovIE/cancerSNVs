@@ -65,15 +65,15 @@ class SequenceWithSNV
     "#{left}#{allele_variants[allele_variant_number]}#{right}"
   end
 
-  def shuffle_string(str)
-    str.each_char.to_a.shuffle.join
+  def shuffle_string(str, random_generator: Random::DEFAULT)
+    str.each_char.to_a.shuffle(random: random_generator).join
   end
   private :shuffle_string
 
   # shuffle flanks, but preserve 1bp-context
-  def with_flanks_shuffled
-    shuffled_left = shuffle_string(left[0..-2]) + left[-1] # preserve 1-bp context
-    shuffled_right = right[0] + shuffle_string(right[1..-1])
+  def with_flanks_shuffled(random_generator: Random::DEFAULT)
+    shuffled_left = shuffle_string(left[0..-2], random_generator: random_generator) + left[-1] # preserve 1-bp context
+    shuffled_right = right[0] + shuffle_string(right[1..-1], random_generator: random_generator)
     SequenceWithSNV.new(shuffled_left, allele_variants, shuffled_right)
   end
 

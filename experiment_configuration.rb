@@ -63,8 +63,8 @@ end
 module Configuration
   RandomGenomeFold = 100
   RandomShuffleFold = 100
-  RandomGenomeSeeds = [13]
-  RandomShuffleSeeds = [31]
+  RandomGenomeSeeds = [13,15,17]
+  RandomShuffleSeeds = [135,137,139]
 
   # Alexandrov works with the only seed
   AlexandrovRandomGenomeSeeds = 13

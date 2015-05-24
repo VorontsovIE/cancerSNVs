@@ -60,7 +60,7 @@ namespace 'preparations' do
               variant_id: "#{mutation.sample_id};#{mutation.chromosome}:#{mutation.position_start}/#{mutation.after_substitution}",
               flank_length: 50)
           }
-        markup_and_filter_SNVInfos_to_file(snv_infos_stream, GENOME_MARKUP, output_file: File.join(folder, "#{cancer_type}.txt"))
+        markup_and_filter_SNVInfos_to_file(snv_infos_stream, GENOME_MARKUP, output_file: File.join(folder, 'cancer.txt'))
       end
     end
   end
