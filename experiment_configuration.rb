@@ -8,7 +8,7 @@ require_relative 'lib/data_import/cancer_mutations_loading'
 # reusable across different projects.
 # You can specify paths to common resources in corresponding files
 
-# In project we use filesystem links to common resources so 
+# In project we use filesystem links to common resources so
 # one don't need to know system paths
 
 # These can be safely redefined
@@ -49,7 +49,7 @@ module LocalPaths
       SamplesSummary      = File.join(AlexandrovData, 'samples_summary.txt')
     end
 
-    NikZainalSNVs         = File.join(SNVs, 'SNV_infos_cancer.txt')
+    NikZainalSNVs         = File.join(SNVs, 'NikZainal/cancer.txt')
   end
 
   module Results
@@ -65,6 +65,10 @@ module Configuration
   RandomShuffleFold = 100
   RandomGenomeSeeds = [13]
   RandomShuffleSeeds = [31]
+
+  # Alexandrov works with the only seed
+  AlexandrovRandomGenomeSeeds = 13
+  AlexandrovRandomShuffleSeeds = 31
 
   NumberOfCores = 8
   MemoryLimitOption = '' #'-Xmx512M'
