@@ -7,6 +7,8 @@ def site_copy_task(file_from:, folder_to:, task_name: )
   end
 end
 
+desc 'Copy (ln -f) sites from chunks folder to sites folder'
+task 'preparations:copy_sites' => ['preparations:copy_sites:Alexandrov', 'preparations:copy_sites:NikZainal']
 task 'preparations:copy_sites:Alexandrov'
 AlexandrovWholeGenomeCancers.each do |cancer_type|
   Dir.glob(File.join(LocalPaths::Secondary::Chunks, 'Alexandrov', cancer_type.to_s, 'sites_*.txt')).each do |from|
