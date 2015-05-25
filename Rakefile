@@ -6,4 +6,8 @@ AlexandrovWholeGenomeCancers = SampleInfo.each_in_file(LocalPaths::Secondary::Al
                                 .map{|cancer_type, samples| cancer_type }
                                 .to_a.sort
 
+task :load_genome_markup do
+  GENOME_MARKUP ||= GENOME_MARKUP_LOADER.load_markup
+end
+
 import *FileList['rakelib/preparations/*.rake']
