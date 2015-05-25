@@ -51,7 +51,7 @@ AlexandrovWholeGenomeCancers.each do |cancer_type|
 
     copy_cancer_sites_as_fitted_task(folder_from: folder_from, folder_to: folder_to, task_name: 'fitting:Alexandrov')
 
-    Configuration::RandomDatasets.each do |random_dataset|
+    Configuration::Alexandrov::RandomDatasets.each do |random_dataset|
       fit_sites_task(random_dataset: random_dataset, context: context,
                     folder_from: folder_from, folder_to: folder_to,
                     snv_folder: File.join(LocalPaths::Secondary::SNVs, 'Alexandrov', cancer_type.to_s),
@@ -68,7 +68,7 @@ Configuration::NikZainalContexts.each do |context|
 
     copy_cancer_sites_as_fitted_task(folder_from: folder_from, folder_to: folder_to, task_name: 'fitting:NikZainal')
 
-    Configuration::RandomDatasets.each do |random_dataset|
+    Configuration::NikZainal::RandomDatasets.each do |random_dataset|
       fit_sites_task(random_dataset: random_dataset, context: context,
                     folder_from: folder_from, folder_to: folder_to,
                     snv_folder: File.join(LocalPaths::Secondary::SNVs, 'NikZainal'),

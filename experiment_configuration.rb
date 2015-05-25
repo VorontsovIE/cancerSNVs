@@ -67,13 +67,22 @@ module Configuration
   RandomGenomeSeeds = [13,15,17]
   RandomShuffleSeeds = [135,137,139]
 
-  RandomGenomeDatasets = RandomGenomeSeeds.map{|seed| "random_genome_#{seed}"}
-  RandomShuffleDatasets = RandomShuffleSeeds.map{|seed| "random_shuffle_#{seed}"}
-  RandomDatasets = RandomGenomeDatasets + RandomShuffleDatasets
 
   # Alexandrov works with the only seed
   AlexandrovRandomGenomeSeeds = 13
   AlexandrovRandomShuffleSeeds = 31
+
+  module NikZainal
+    RandomGenomeDatasets = RandomGenomeSeeds.map{|seed| "random_genome_#{seed}"}
+    RandomShuffleDatasets = RandomShuffleSeeds.map{|seed| "random_shuffle_#{seed}"}
+    RandomDatasets = RandomGenomeDatasets + RandomShuffleDatasets
+  end
+
+  module Alexandrov
+    RandomGenomeDatasets = ['random_genome']
+    RandomShuffleDatasets = ['random_shuffle']
+    RandomDatasets = RandomGenomeDatasets + RandomShuffleDatasets
+  end
 
   NikZainalContexts = [:any]
 
