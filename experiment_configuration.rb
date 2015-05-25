@@ -64,6 +64,10 @@ end
 module Configuration
   RandomGenomeFold = 100
   RandomShuffleFold = 100
+
+  FittingFoldGenome=35
+  FittingFoldShuffle=25
+
   RandomGenomeSeeds = [13,15,17]
   RandomShuffleSeeds = [135,137,139]
 
