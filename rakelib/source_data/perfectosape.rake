@@ -7,6 +7,6 @@ namespace 'source_data' do
   end
 
   file SystemPaths::PerfectosAPE do
-    sh 'wget', 'http://opera.autosome.ru/downloads/ape-2.0.0.jar', '-O', SystemPaths::PerfectosAPE
+    sh 'wget', 'http://opera.autosome.ru/downloads/ape-2.0.1.jar', '-O', SystemPaths::PerfectosAPE
   end
 end

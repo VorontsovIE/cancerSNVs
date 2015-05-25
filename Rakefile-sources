@@ -1,0 +1,9 @@
+require_relative 'experiment_configuration'
+
+import *FileList['rakelib/source_data/*.rake']
+
+desc 'Download and prepare all source data. This includes somatic mutations, PerfectosAPE, genome assemblies and markup, motif collection'
+task :source_data => 'source_data:all'
+namespace 'source_data' do
+  task all: ['Alexandrov:prepare', 'NikZainal:prepare', 'genome:prepare', 'exonic_markup:prepare', 'perfectosape']
+end
