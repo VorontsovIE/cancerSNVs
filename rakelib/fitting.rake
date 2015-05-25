@@ -31,7 +31,8 @@ def fit_sites_task(random_dataset:, context:, snv_folder:, folder_from:, folder_
       next
     end
 
-    ruby  sites_cancer_fn, sites_random_fn,
+    ruby  'fitting_random_sites.rb',
+          sites_cancer_fn, sites_random_fn,
           snvs_cancer_fn, snvs_random_fn,
           '--fold', fold.to_s,
           { out: output_file,
