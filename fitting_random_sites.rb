@@ -40,7 +40,7 @@ histograms = MultiHistogram.new{
 
 PerfectosAPE::ResultShort.each_in_file(mutated_site_infos_cancer_filename).each do |site|
   motif = site.motif_name
-  context = cancer_snv_contexts[ site.normalized_snv_name ]
+  context = cancer_snv_contexts[ site ]
   histograms.add_element([motif, context], site.pvalue_1)
 end
 
@@ -50,7 +50,7 @@ $stderr.puts "Loaded #{fitters.goal_total} original sites"
 
 PerfectosAPE::ResultShort.each_in_file(mutated_site_infos_random_filename).each_with_index do |site, index|
   motif = site.motif_name
-  context = random_snv_contexts[ site.normalized_snv_name ]
+  context = random_snv_contexts[ site ]
   fitters.fit_element([motif, context], site.pvalue_1) do
     puts site.line
   end
