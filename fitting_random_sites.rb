@@ -12,7 +12,7 @@ def context_by_snv_name(snv_infos_filename)
   SNVInfo
     .each_in_file(snv_infos_filename)
     .map{|snv|
-      [snv.variant_id, snv.in_pyrimidine_context.snv_sequence.context_before]
+      [snv.variant_id, snv.in_pyrimidine_context.snv_sequence.context(before: 1, after: 1, allele_variant_number: 0)]
     }.to_h
 end
 
