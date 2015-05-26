@@ -46,14 +46,14 @@ num_substitutions_in_flank = empty_motif_counter  # Emerged and became a site
 PerfectosAPE::ResultShort.each_in_file(mutated_site_infos_filename) do |site_info|
   motif_name = site_info.motif_name
 
-  if site_info.site_before_substitution?(pvalue_cutoff: pvalue_before_cutoff)
+  if site_info.site_before_substitution?(pvalue_cutoff: pvalue_cutoff)
     num_sites_before_substitution[motif_name] += 1
     if site_info.disrupted?(fold_change_cutoff: fold_change_cutoff)
       num_sites_disrupted[motif_name] += 1
     end
   end
 
-  if site_info.site_after_substitution?(pvalue_cutoff: pvalue_before_cutoff)
+  if site_info.site_after_substitution?(pvalue_cutoff: pvalue_cutoff)
     num_sites_after_substitution[motif_name] += 1
     if site_info.emerged?(fold_change_cutoff: fold_change_cutoff)
       num_sites_emerged[motif_name] += 1
