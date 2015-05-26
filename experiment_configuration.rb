@@ -43,6 +43,7 @@ module LocalPaths
     Sites                 = File.absolute_path('./results/sites')
     Fitting               = File.absolute_path('./results/fitted_sites')
     MotifStatistics       = File.absolute_path('./results/motif_statistics')
+    Slices                = File.absolute_path('./results/motif_statistics/slices')
     LogFolder             = File.absolute_path('./results/fitting_log')
 
     module Alexandrov
@@ -80,12 +81,18 @@ module Configuration
     RandomGenomeDatasets = RandomGenomeSeeds.map{|seed| "random_genome_#{seed}"}
     RandomShuffleDatasets = RandomShuffleSeeds.map{|seed| "random_shuffle_#{seed}"}
     RandomDatasets = RandomGenomeDatasets + RandomShuffleDatasets
+    Datasets = RandomDatasets + ['cancer']
   end
 
   module Alexandrov
     RandomGenomeDatasets = ['random_genome']
     RandomShuffleDatasets = ['random_shuffle']
     RandomDatasets = RandomGenomeDatasets + RandomShuffleDatasets
+    Datasets = RandomDatasets + ['cancer']
+
+    def self.contexts_by_cancer_type(cancer_type)
+      [:any]
+    end
   end
 
   NikZainalContexts = [:any]

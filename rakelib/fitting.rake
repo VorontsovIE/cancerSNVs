@@ -47,8 +47,7 @@ task 'fitting' => ['fitting:Alexandrov', 'fitting:NikZainal']
 task 'fitting:Alexandrov'
 AlexandrovWholeGenomeCancers.each do |cancer_type|
   task 'fitting:Alexandrov' => "fitting:Alexandrov:#{cancer_type}"
-  contexts = [:any]
-  contexts.each do |context|
+  Configuration::Alexandrov.contexts_by_cancer_type(cancer_type).each do |context|
     task "fitting:Alexandrov:#{cancer_type}" => "fitting:Alexandrov:#{cancer_type}:#{context}"
     folder_from = File.join(LocalPaths::Secondary::Sites, 'Alexandrov', cancer_type.to_s, context.to_s)
     folder_to = File.join(LocalPaths::Secondary::Fitting, 'Alexandrov', cancer_type.to_s, context.to_s)
