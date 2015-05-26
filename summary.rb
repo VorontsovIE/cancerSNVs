@@ -4,6 +4,7 @@ require 'rate_comparison_infos'
 require 'statistics/fisher_table'
 require 'fitting/fitting_logs'
 require 'optparse'
+require_relative 'experiment_configuration'
 
 def read_motif_counts(filename)
   motif_counts = File.readlines(filename).map{|line|
