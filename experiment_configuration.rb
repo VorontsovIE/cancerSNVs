@@ -63,6 +63,9 @@ module LocalPaths
 end
 
 module Configuration
+  FoldChangeCutoff = 4
+  PvalueCutoff = 0.0005
+
   RandomGenomeFold = 100
   RandomShuffleFold = 100
 
