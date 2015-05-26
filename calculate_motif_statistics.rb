@@ -10,11 +10,7 @@ def numbers_of_motifs_text(counters_by_motifs, motif_names)
   }.join("\n")
 end
 
-def empty_motif_counter
-  Hash.new{|hsh, motif| hsh[motif] = Hash.new(0) }
-end
-
-fold_change_cutoff = 5
+fold_change_cutoff = 4
 pvalue_cutoff = 0.0005
 
 OptionParser.new do |opts|
@@ -26,7 +22,7 @@ OptionParser.new do |opts|
   }
 
   opts.on('--fold-change-cutoff CUTOFF', 'Consider only substitutions with P-value ratio greater than cutoff as disruption/emergence',
-                                         '(default fold change cutoff = 5)') {|value|
+                                         '(default fold change cutoff = 4)') {|value|
     fold_change_cutoff = Float(value)
   }
 end.parse!(ARGV)
@@ -36,12 +32,12 @@ raise 'Specify output folder'  unless output_folder = ARGV[1] # ./results/motif_
 
 FileUtils.mkdir_p(output_folder)  unless Dir.exist?(output_folder)
 
-num_sites_before_substitution = empty_motif_counter
-num_sites_after_substitution = empty_motif_counter
-num_sites_disrupted = empty_motif_counter         # Was a site and disrupted
-num_sites_emerged = empty_motif_counter           # Emerged and became a site
-num_substitutions_in_core = empty_motif_counter   # Emerged and became a site
-num_substitutions_in_flank = empty_motif_counter  # Emerged and became a site
+num_sites_before_substitution = Hash.new(0)
+num_sites_after_substitution = Hash.new(0)
+num_sites_disrupted = Hash.new(0)         # Was a site and disrupted
+num_sites_emerged = Hash.new(0)           # Emerged and became a site
+num_substitutions_in_core = Hash.new(0)   # Emerged and became a site
+num_substitutions_in_flank = Hash.new(0)  # Emerged and became a site
 
 PerfectosAPE::ResultShort.each_in_file(mutated_site_infos_filename) do |site_info|
   motif_name = site_info.motif_name
