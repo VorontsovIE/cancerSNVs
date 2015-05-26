@@ -10,7 +10,7 @@ def make_statistics_comparison_task(cancer_slices_folder:, random_slices_folder:
                         random_slices_folder,
                         '--fitting-log', fitting_log,
                         '--correction', Configuration::CorrectionMethod,
-                        '--expand-control-set', Configuration::ExpandControlSetFold,
+                        '--expand-control-set', Configuration::ExpandControlSetFold.to_s,
                         {out: output_file}, {}
   end
 end
