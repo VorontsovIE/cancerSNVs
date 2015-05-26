@@ -2,7 +2,7 @@ $:.unshift File.absolute_path('lib', __dir__)
 require 'statistics/statistical_significance'
 require 'rate_comparison_infos'
 require 'statistics/fisher_table'
-require 'fitting_logs'
+require 'fitting/fitting_logs'
 require 'optparse'
 
 def read_motif_counts(filename)
