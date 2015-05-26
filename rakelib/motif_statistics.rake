@@ -45,7 +45,7 @@ def make_common_motifs_tasks(folder:, random_datasets:, output_folder:, output_f
       directory output_subfolder
       task task_name => output_file_fullname
       file output_file_fullname => [*input_files, output_subfolder] do
-        ruby 'common_motifs.rb', *input_files, {out: output_file}, {}
+        ruby 'common_motifs.rb', *input_files, {out: output_file_fullname}, {}
       end
     end
   end
