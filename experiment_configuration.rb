@@ -63,8 +63,11 @@ module LocalPaths
 end
 
 module Configuration
+  CorrectionMethod = 'fdr'
   FoldChangeCutoff = 4
   PvalueCutoff = 0.0005
+
+  ExpandControlSetFold = 1 # one can artificially expand control set several time to quickly check whether expansion of control set will increase significance
 
   RandomGenomeFold = 100
   RandomShuffleFold = 100
