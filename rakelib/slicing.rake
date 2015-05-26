@@ -3,8 +3,8 @@ def make_slicing_task(sites_file:, output_folder:, task_name:)
   task task_name => [output_folder, sites_file] do
     ruby 'calculate_motif_statistics.rb',
         sites_file, output_folder,
-        '--pvalue-cutoff', PvalueCutoff.to_s,
-        '--fold-change-cutoff', FoldChangeCutoff.to_s
+        '--pvalue-cutoff', Configuration::PvalueCutoff.to_s,
+        '--fold-change-cutoff', Configuration::FoldChangeCutoff.to_s
   end
 end
 

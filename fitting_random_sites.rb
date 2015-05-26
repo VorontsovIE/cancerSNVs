@@ -7,6 +7,8 @@ require 'snv_info'
 require 'fitting/multi_histogram_fitter'
 require 'optparse'
 
+
+# TODO: добавить в имя снипа информацию о контексте -- тогда не придется тащить за собой этот гигантский хэш
 def context_by_snv_name(snv_infos_filename)
   results = {}
   SNVInfo
@@ -46,7 +48,7 @@ end
 
 fitters = histograms.multiply(fitting_fold).fitter(raise_on_missing: false)
 
-$stderr.puts "Loaded #{fitters.goal_total} original sites"
+$stderr.puts "Loaded original #{fitters.goal_total / fitting_fold} sites. Now need #{fitters.goal_total} sites"
 
 PerfectosAPE::ResultShort.each_in_file(mutated_site_infos_random_filename).each_with_index do |site, index|
   motif = site.motif_name
