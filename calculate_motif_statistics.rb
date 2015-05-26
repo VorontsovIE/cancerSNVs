@@ -56,7 +56,7 @@ PerfectosAPE::ResultShort.each_in_file(mutated_site_infos_filename) do |site_inf
     end
   end
 
-  if site.substitution_in_core?
+  if site_info.substitution_in_core?
     num_substitutions_in_core[motif_name] += 1
   else
     num_substitutions_in_flank[motif_name] += 1
