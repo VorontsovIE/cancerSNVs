@@ -86,12 +86,12 @@ AlexandrovWholeGenomeCancers.each do |cancer_type|
   generate_random_genome_task(output_filename: File.join(LocalPaths::Secondary::SNVs, 'Alexandrov', cancer_type.to_s, 'random_genome.txt'),
                               task_name: 'preparations:generate_random_SNVs:Alexandrov:genome',
                               cancer_filename: cancer_filename,
-                              random_generator: Random.new(Configuration::AlexandrovRandomGenomeSeeds))
+                              random_generator: Random.new("#{Configuration::AlexandrovRandomGenomeSeeds}_#{cancer_type}".hash))
 
   generate_random_shuffle_task(output_filename: File.join(LocalPaths::Secondary::SNVs, 'Alexandrov', cancer_type.to_s, 'random_shuffle.txt'),
                               task_name: 'preparations:generate_random_SNVs:Alexandrov:shuffle',
                               cancer_filename: cancer_filename,
-                              random_generator: Random.new(Configuration::AlexandrovRandomShuffleSeeds))
+                              random_generator: Random.new("{Configuration::AlexandrovRandomShuffleSeeds}_#{cancer_type}".hash))
 end
 
 
