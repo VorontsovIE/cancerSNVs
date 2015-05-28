@@ -16,7 +16,8 @@ def shuffle_snvs(from_filename:, output_stream:, random_generator: Random::DEFAU
       shuffled_seq = seq_w_snv.with_flanks_shuffled(random_generator: random_generator)  while sequence_hashes.include?(shuffled_seq.hash) # ignore possible duplicates
       sequence_hashes << shuffled_seq.hash
 
-      shuffled_snv = SNVInfo.new(name_of_shuffled, shuffled_seq,
+      context = shuffled_seq.subsequence(before: 1, after: 1)
+      shuffled_snv = SNVInfo.new("#{name_of_shuffled}@#{context}", shuffled_seq,
           '', '', # appropriate sample/cancer type names will be too long (smth like "Shuffled Lung Adeno" which is repeated each line)
           snv_info.chromosome, snv_info.position, snv_info.strand,
           snv_info.mutation_region_types)

@@ -62,7 +62,8 @@ class RandomGenomeGenerator
                                     [chromosome_sequence[position], mutation_to],
                                     chromosome_sequence[position + 1, flank_length])
 
-    SNVInfo.new(synthetic_snv_name, seq_w_snv,
+    context = seq_w_snv.subsequence(before: 1, after: 1)
+    SNVInfo.new("#{synthetic_snv_name}@#{context}", seq_w_snv,
                 '', '', # Random genome (but it's too large and expands file to enormous size)
                 chromosome_name, position_one_based, :+,
                 GENOME_MARKUP.get_region_type(chromosome_name, position_one_based)
