@@ -104,7 +104,7 @@ module Configuration
   NikZainalContexts = [:any]
 
   NumberOfCores = 8
-  MemoryLimitOption = '' #'-Xmx512M'
+  MemoryLimitOption = '-Xmx1G' # ''
   ExpandFlanksLength = 11
 end
 

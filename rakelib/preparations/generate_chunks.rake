@@ -35,7 +35,8 @@ def prepare_core_folder(core_folder)
               './motif_collection', filename.shellescape,
               '--fold-change-cutoff 1', '--precalc ./motif_thresholds', 
               '${EXPAND_FLANKS}', '--compact',
-              "> #{sites_filename}"].join(" ")
+              "> #{sites_filename}",
+              "2>> #{sites_filename}.log"].join(" ")
     end
   end
 
@@ -83,7 +84,7 @@ def create_concatenation_script(output_file, variants)
       end
       each_suffix_common_length(Configuration::NumberOfCores) do |suffix|
         sample_filename = File.join("core_#{suffix}", "sites_#{variant}.txt").shellescape
-        fw.puts "rm #{sample_filename}"
+        fw.puts "# rm #{sample_filename}"
       end
     end
   end
