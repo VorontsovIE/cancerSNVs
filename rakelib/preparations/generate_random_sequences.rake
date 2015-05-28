@@ -9,7 +9,7 @@ def shuffle_snvs(from_filename:, output_stream:, random_generator: Random::DEFAU
   output_stream.puts SNVInfo::HEADER
   SNVInfo.each_in_file(from_filename) do |snv_info|
     fold.times do |suffix|
-      name_of_shuffled = "#{snv_info.variant_id}_#{suffix}"
+      name_of_shuffled = "#{snv_info.variant_id.split('@').first}_#{suffix}"
 
       seq_w_snv = snv_info.snv_sequence
       shuffled_seq = seq_w_snv.with_flanks_shuffled(random_generator: random_generator)
