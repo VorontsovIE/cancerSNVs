@@ -62,7 +62,7 @@ $stderr.puts "ensg-hgnc conversion loaded"
 
 
 disrupting_mutations = PerfectosAPE::ResultShort.each_in_file(sites_filename).select{|site|
-  regulatory_mutation_names.include?(site.normalized_snv_name) &&
+  regulatory_mutation_names.include?(site.variant_id) &&
   site.site_before_substitution?(pvalue_cutoff: 0.0005) &&
   site.disrupted?(fold_change_cutoff: 5)
 }.group_by(&:motif_name)
@@ -75,7 +75,7 @@ puts ['motif','mut_name','chr','pos','mut_type','context','ensg','ensg_to_hgnc[e
 motif_for_analysis.each do |motif|
   ensgs = []
   disrupting_mutations[motif].each do |mutated_site_info|
-    mut_name = mutated_site_info.normalized_snv_name
+    mut_name = mutated_site_info.variant_id
     snv = snvs[mut_name]
     chromosome = snv.chromosome
     pos = snv.position

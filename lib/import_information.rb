@@ -21,9 +21,5 @@ def matching_context_mutation_names(snv_sequences_filename, requested_mutation_c
   mutation_contexts = load_mutation_contexts(snv_sequences_filename)
   mutation_contexts.select{|variant_id, mutation_context|
     context_matches?(mutation_context, requested_mutation_contexts)
-  }.map{|variant_id, mutation_context| normalized_snv_name(variant_id) }.to_set
-end
-
-def normalized_snv_name(variant_id)
-  variant_id.split('_')[0]
+  }.map{|variant_id, mutation_context| variant_id }.to_set
 end

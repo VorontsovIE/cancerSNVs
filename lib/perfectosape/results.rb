@@ -27,10 +27,6 @@ module PerfectosAPE
       line
     end
 
-    def normalized_snv_name
-      variant_id.split("_", 2)[0]
-    end
-
     def length
       seq_1.length
     end

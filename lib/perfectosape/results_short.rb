@@ -32,10 +32,6 @@ module PerfectosAPE
                 pos_2.to_i,  (orientation_2 == '+') ? :direct : :revcomp )
     end
 
-    def normalized_snv_name
-      variant_id.split("_", 2)[0]
-    end
-
     def length
       PerfectosAPE::ResultShort.motif_lengths[motif_name]
     end
