@@ -7,11 +7,9 @@ def copy_cancer_sites_as_fitted_task(folder_from:, folder_to:, task_name:)
 end
 
 # fit random sites
-def fit_sites_task(random_dataset:, context:, snv_folder:, folder_from:, folder_to:, log_folder:, task_name:)
+def fit_sites_task(random_dataset:, context:, folder_from:, folder_to:, log_folder:, task_name:)
   sites_cancer_fn = File.join(folder_from, 'sites_cancer.txt')
   sites_random_fn = File.join(folder_from, "sites_#{random_dataset}.txt")
-  snvs_cancer_fn = File.join(snv_folder, 'cancer.txt')
-  snvs_random_fn = File.join(snv_folder, "#{random_dataset}.txt")
 
   output_file = File.join(folder_to, "sites_#{random_dataset}.txt")
   log_file = File.join(log_folder, "#{random_dataset}.log")
@@ -21,7 +19,7 @@ def fit_sites_task(random_dataset:, context:, snv_folder:, folder_from:, folder_
 
   task task_name => output_file
   # should we specify log-file as output too or it'll cause duplication of actions?
-  file output_file => [sites_cancer_fn, sites_random_fn, snvs_cancer_fn, snvs_random_fn, folder_to, log_folder] do
+  file output_file => [sites_cancer_fn, sites_random_fn, folder_to, log_folder] do
     case random_dataset
     when /genome/
       fold = Configuration::FittingFoldGenome
@@ -33,7 +31,6 @@ def fit_sites_task(random_dataset:, context:, snv_folder:, folder_from:, folder_
 
     ruby  'fitting_random_sites.rb',
           sites_cancer_fn, sites_random_fn,
-          snvs_cancer_fn, snvs_random_fn,
           '--fold', fold.to_s,
           { out: output_file,
             err: log_file },
@@ -57,7 +54,6 @@ AlexandrovWholeGenomeCancers.each do |cancer_type|
     Configuration::Alexandrov::RandomDatasets.each do |random_dataset|
       fit_sites_task(random_dataset: random_dataset, context: context,
                     folder_from: folder_from, folder_to: folder_to,
-                    snv_folder: File.join(LocalPaths::Secondary::SNVs, 'Alexandrov', cancer_type.to_s),
                     log_folder: File.join(LocalPaths::Secondary::LogFolder, 'Alexandrov', cancer_type.to_s, context.to_s),
                     task_name: "fitting:Alexandrov:#{cancer_type}:#{context}")
     end
@@ -75,7 +71,6 @@ Configuration::NikZainalContexts.each do |context|
   Configuration::NikZainal::RandomDatasets.each do |random_dataset|
     fit_sites_task(random_dataset: random_dataset, context: context,
                   folder_from: folder_from, folder_to: folder_to,
-                  snv_folder: File.join(LocalPaths::Secondary::SNVs, 'NikZainal'),
                   log_folder: File.join(LocalPaths::Secondary::LogFolder, 'NikZainal', context.to_s),
                   task_name: "fitting:NikZainal:#{context}")
   end
