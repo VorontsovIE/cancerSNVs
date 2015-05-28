@@ -57,7 +57,7 @@ class RandomGenomeGenerator
   def snv_around_position(chromosome_sequence:, chromosome_name:, position:, mutation_to:)
     sequence = chromosome_sequence[position - flank_length, 2*flank_length + 1]
     position_one_based = position + 1
-    synthetic_snv_name = "#{chromosome_name}:#{position_one_based}/#{mutation_to}"
+    synthetic_snv_name = "#{chromosome_name}:#{position_one_based}"
     seq_w_snv = SequenceWithSNV.new(chromosome_sequence[position - flank_length, flank_length],
                                     [chromosome_sequence[position], mutation_to],
                                     chromosome_sequence[position + 1, flank_length])

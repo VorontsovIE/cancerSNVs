@@ -28,6 +28,7 @@ def shuffle_snvs(from_filename:, output_stream:, random_generator: Random::DEFAU
 end
 
 def generate_random_shuffle_task(output_filename:, task_name:, cancer_filename:, random_generator:)
+  task task_name => output_filename
   file output_filename => [:load_genome_markup, cancer_filename] do
     File.open(output_filename, 'w') do |fw|
       shuffle_snvs(from_filename: cancer_filename,

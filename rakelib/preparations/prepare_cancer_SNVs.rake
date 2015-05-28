@@ -69,7 +69,7 @@ AlexandrovWholeGenomeCancers.each do |cancer_type|
       .map{|mutation|
         mutation.to_snv_info(GENOME_READER,
           cancer_type: cancer_type,
-          variant_id: "#{mutation.sample_id};#{mutation.chromosome}:#{mutation.position_start}/#{mutation.after_substitution}",
+          variant_id: "#{mutation.sample_id};#{mutation.chromosome}:#{mutation.position_start}",
           flank_length: 50)
       }
     markup_and_filter_SNVInfos_to_file(snv_infos_stream, GENOME_MARKUP, output_file: cancer_filename)
