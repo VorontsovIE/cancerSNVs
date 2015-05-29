@@ -194,6 +194,7 @@ def generate_random_genome_according_to_snvs(from_filename:, genome_reader:, gen
   contexts.each do |context|
     rate = rates[context]
     step = (rate / 1.95).to_i # heuristic
+    $stderr.puts("#{context}: step #{step}")
 
     output_stream.puts SNVInfo::HEADER
     marked_up_chromosomes.each do |chromosome|
