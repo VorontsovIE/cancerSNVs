@@ -71,7 +71,7 @@ class RandomGenomeGenerator
   end
 
   def yield_uniq_mutations(sequence, position_generator:, chromosome_name:, context:)
-    total_goal = necessary_context_distribution[context].inject(0, &:+)
+    total_goal = necessary_context_distribution[context].each_value.inject(0, &:+)
     random_regulatory_positions(sequence, position_generator: position_generator, chromosome_name: chromosome_name) do |pos|
       next  unless sequence[pos-1, 3] == context
       break  if total_goal.zero?
