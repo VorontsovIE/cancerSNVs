@@ -29,21 +29,6 @@ def markup_and_filter_SNVInfos_to_file(snv_infos_stream, genome_markup, output_f
   end
 end
 
-namespace 'preparations' do
-  task extractSNVs: ['extractSNVs:NikZainalEtAl', 'extractSNVs:Alexandrov']
-  namespace 'extractSNVs' do
-    desc 'Convert Nik-Zainal\'s mutations to a common format. Convert format, filter regulatory only SNVs, remove duplicates.'
-    task :NikZainalEtAl => [LocalPaths::Secondary::NikZainalSNVs]
-
-    desc 'Convert Alexandrov\'s mutations to a common format. Convert format, filter regulatory only SNVs, remove duplicates.'
-    task :Alexandrov
-  end
-end
-
-task :load_sample_infos => LocalPaths::Secondary::Alexandrov::SamplesSummary do
-  WHOLE_GENOME_SAMPLES_BY_CANCER ||= whole_genome_samples_by_cancer(LocalPaths::Secondary::Alexandrov::SamplesSummary)
-end
-
 # Nik-Zainal
 folder = File.join(LocalPaths::Secondary::SNVs, 'NikZainal')
 directory folder
@@ -62,7 +47,7 @@ AlexandrovWholeGenomeCancers.each do |cancer_type|
                                 cancer_type.to_s,
                                 "#{cancer_type}_clean_somatic_mutations_for_signature_analysis.txt")
 
-  task 'preparations:extractSNVs:Alexandrov' => cancer_filename
+  directory folder
   file  cancer_filename => [mutations_filename, :load_sample_infos, :load_genome_markup, folder] do
     snv_infos_stream = mutations_filered_by_sample(mutations_filename, WHOLE_GENOME_SAMPLES_BY_CANCER[cancer_type])
       .select(&:snv?)
@@ -74,5 +59,20 @@ AlexandrovWholeGenomeCancers.each do |cancer_type|
       }
     markup_and_filter_SNVInfos_to_file(snv_infos_stream, GENOME_MARKUP, output_file: cancer_filename)
   end
-  directory folder
+  task 'preparations:extractSNVs:Alexandrov' => cancer_filename
+end
+
+namespace 'preparations' do
+  task extractSNVs: ['extractSNVs:NikZainalEtAl', 'extractSNVs:Alexandrov']
+  namespace 'extractSNVs' do
+    desc 'Convert Nik-Zainal\'s mutations to a common format. Convert format, filter regulatory only SNVs, remove duplicates.'
+    task :NikZainalEtAl => [LocalPaths::Secondary::NikZainalSNVs]
+
+    desc 'Convert Alexandrov\'s mutations to a common format. Convert format, filter regulatory only SNVs, remove duplicates.'
+    task :Alexandrov
+  end
+end
+
+task :load_sample_infos => LocalPaths::Secondary::Alexandrov::SamplesSummary do
+  WHOLE_GENOME_SAMPLES_BY_CANCER ||= whole_genome_samples_by_cancer(LocalPaths::Secondary::Alexandrov::SamplesSummary)
 end
