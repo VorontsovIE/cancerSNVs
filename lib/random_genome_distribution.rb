@@ -70,9 +70,11 @@ class RandomGenomeGenerator
     )
   end
 
-  def yield_uniq_mutations(sequence, position_generator:, chromosome_name:)
+  def yield_uniq_mutations(sequence, position_generator:, chromosome_name:, context:)
+    total_goal = necessary_context_distribution[context].inject(0, &:+)
     random_regulatory_positions(sequence, position_generator: position_generator, chromosome_name: chromosome_name) do |pos|
-      context = sequence[pos-1, 3]
+      next  unless sequence[pos-1, 3] == context
+      break  if total_goal.zero?
 
       mutation_to = choose_mutation(context)
       if !mutation_to
@@ -94,6 +96,7 @@ class RandomGenomeGenerator
       sequence_hashes << hash
 
       necessary_context_distribution[context][mutation_to] -= 1
+      total_goal -= 1
       yield snv_info
     end
   end
@@ -188,19 +191,21 @@ def generate_random_genome_according_to_snvs(from_filename:, genome_reader:, gen
                                                       flank_length: flank_length,
                                                       is_known_snv: is_known_snv)
 
-  rate = rates.each_value.min
-  step = (rate / 1.95).to_i # heuristic
+  contexts.each do |context|
+    rate = rates[context]
+    step = (rate / 1.95).to_i # heuristic
 
-  output_stream.puts SNVInfo::HEADER
-  marked_up_chromosomes.each do |chromosome|
-    sequence = genome_reader.read_sequence(chromosome, ZERO_BASED_EXCLUSIVE, 0, Float::INFINITY).upcase
+    output_stream.puts SNVInfo::HEADER
+    marked_up_chromosomes.each do |chromosome|
+      sequence = genome_reader.read_sequence(chromosome, ZERO_BASED_EXCLUSIVE, 0, Float::INFINITY).upcase
 
-    start_pos = flank_length + random_generator.rand(step) # chromosome start (with padding)
-    end_pos = sequence.length - flank_length  # chromosome end (with padding)
-    random_positions = (start_pos...end_pos).random_step(1, 2*step - 1, random_generator: random_generator)
+      start_pos = flank_length + random_generator.rand(step) # chromosome start (with padding)
+      end_pos = sequence.length - flank_length  # chromosome end (with padding)
+      random_positions = (start_pos...end_pos).random_step(1, 2*step - 1, random_generator: random_generator)
 
-    random_genome_generator.yield_uniq_mutations(sequence, position_generator: random_positions, chromosome_name: chromosome) do |snv_info|
-      output_stream.puts snv_info
+      random_genome_generator.yield_uniq_mutations(sequence, position_generator: random_positions, chromosome_name: chromosome, context: context) do |snv_info|
+        output_stream.puts snv_info
+      end
     end
   end
 
