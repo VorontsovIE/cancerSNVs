@@ -5,19 +5,19 @@ require_relative 'load_genome_structure'
 require 'set'
 
 class Range
+  # go through range by steps of size from `from` to `to`
   def random_step(from, to, random_generator: Random::DEFAULT)
     return enum_for(:random_step, from, to, random_generator: random_generator)  unless block_given?
     pos = self.begin
-    delta = to-from
     if exclude_end?
       while pos < self.end
         yield pos
-        pos += (from + (random_generator.rand * delta).round)
+        pos += random_generator.rand(from..to)
       end
     else
       while pos <= self.end
         yield pos
-        pos += (from + (random_generator.rand * delta).round)
+        pos += random_generator.rand(from..to)
       end
     end
   end
