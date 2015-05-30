@@ -13,7 +13,7 @@ class GenomeMarkup
     @promoters_by_chromosome = promoters_by_chromosome
     @kataegis_regions_by_chromosome = kataegis_regions_by_chromosome
 
-    @regulatory_by_chromosome = []
+    @regulatory_by_chromosome = {}
     (@introns_by_chromosome.keys + @promoters_by_chromosome.keys + kataegis_regions_by_chromosome.keys).uniq.each do |chr|
       @regulatory_by_chromosome[chr] = (@promoters_by_chromosome[chr] | @introns_by_chromosome[chr]) - kataegis_regions_by_chromosome[chr]
     end
