@@ -9,15 +9,16 @@ class Range
   def random_step(from, to, random_generator: Random::DEFAULT)
     return enum_for(:random_step, from, to, random_generator: random_generator)  unless block_given?
     pos = self.begin
+    step_range = from .. to
     if exclude_end?
       while pos < self.end
         yield pos
-        pos += random_generator.rand(from..to)
+        pos += random_generator.rand(step_range)
       end
     else
       while pos <= self.end
         yield pos
-        pos += random_generator.rand(from..to)
+        pos += random_generator.rand(step_range)
       end
     end
   end
@@ -182,6 +183,15 @@ def generate_random_genome_according_to_snvs(from_filename:, genome_reader:, gen
     rates[context] = genomic_content[context] / necessary_context_distribution[context].each_value.inject(0, &:+)
   }
   contexts = rates.keys
+
+  $stderr.puts 'Genomic content:'
+  $stderr.puts genomic_content
+  $stderr.puts 'Original content distribution:'
+  $stderr.puts snv_context_distribution
+  $stderr.puts 'Necessary content distribution:'
+  $stderr.puts necessary_context_distribution
+  $stderr.puts 'Rates:'
+  $stderr.puts rates
 
   marked_up_chromosomes = genome_reader.chromosome_names.sort.select{|chromosome|
     GENOME_MARKUP.chromosome_marked_up?(chromosome)
