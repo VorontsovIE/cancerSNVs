@@ -5,12 +5,18 @@ class GenomeMarkup
   attr_reader :introns_by_chromosome
   attr_reader :promoters_by_chromosome
   attr_reader :kataegis_regions_by_chromosome
+  attr_reader :regulatory_by_chromosome
 
   # To load genome markup from source files, use GenomeMarkupLoader
   def initialize(introns_by_chromosome:, promoters_by_chromosome:, kataegis_regions_by_chromosome:)
     @introns_by_chromosome = introns_by_chromosome
     @promoters_by_chromosome = promoters_by_chromosome
     @kataegis_regions_by_chromosome = kataegis_regions_by_chromosome
+
+    @regulatory_by_chromosome = []
+    (@introns_by_chromosome.keys + @promoters_by_chromosome.keys + kataegis_regions_by_chromosome.keys).uniq.each do |chr|
+      @regulatory_by_chromosome[chr] = (@promoters_by_chromosome[chr] | @introns_by_chromosome[chr]) - kataegis_regions_by_chromosome[chr]
+    end
   end
 
   def promoter?(chromosome, position)
@@ -40,14 +46,23 @@ class GenomeMarkup
     when Integer
       kataegis_regions_by_chromosome[chromosome].include_position?(position)
     when IntervalNotation::IntervalSet # position is an interval
-      kataegis_regions_by_chromosome[chromosome].interval?(position)
+      kataegis_regions_by_chromosome[chromosome].intersect?(position)
     else
       raise TypeError, 'Position should be either integer or interval set'
     end
   end
 
   def regulatory?(chromosome, position)
-    get_region_type(chromosome, position).regulatory?
+    # get_region_type(chromosome, position).regulatory?
+
+    case position
+    when Integer
+      regulatory_by_chromosome[chromosome].include_position?(position)
+    when IntervalNotation::IntervalSet # position is an interval
+      regulatory_by_chromosome[chromosome].intersect?(position)
+    else
+      raise TypeError, 'Position should be either integer or interval set'
+    end
   end
 
   def chromosome_marked_up?(chromosome)
