@@ -52,17 +52,11 @@ class GenomeMarkup
     end
   end
 
+  # only singular positions
   def regulatory?(chromosome, position)
     # get_region_type(chromosome, position).regulatory?
 
-    case position
-    when Integer
-      regulatory_by_chromosome[chromosome].include_position?(position)
-    when IntervalNotation::IntervalSet # position is an interval
-      regulatory_by_chromosome[chromosome].intersect?(position)
-    else
-      raise TypeError, 'Position should be either integer or interval set'
-    end
+    regulatory_by_chromosome[chromosome].include_position?(position)
   end
 
   def chromosome_marked_up?(chromosome)
