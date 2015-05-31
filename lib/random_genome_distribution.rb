@@ -193,9 +193,9 @@ def generate_random_genome_according_to_snvs(from_filename:, genome_reader:, gen
   $stderr.puts 'Rates:'
   $stderr.puts rates
 
-  marked_up_chromosomes = genome_reader.chromosome_names.sort.select{|chromosome|
-    GENOME_MARKUP.chromosome_marked_up?(chromosome)
-  }.reject{|chr| chr == :MT }
+  main_chromosomes = genome_reader.chromosome_names.select{|chromosome|
+    chromosome.match(/^(\d+|X|Y)$/i)
+  }.sort
 
   random_genome_generator = RandomGenomeGenerator.new(necessary_context_distribution: necessary_context_distribution,
                                                       flank_length: flank_length,
@@ -207,7 +207,7 @@ def generate_random_genome_according_to_snvs(from_filename:, genome_reader:, gen
     $stderr.puts("#{context}: step #{step}")
 
     output_stream.puts SNVInfo::HEADER
-    marked_up_chromosomes.each do |chromosome|
+    main_chromosomes.each do |chromosome|
       sequence = genome_reader.read_sequence(chromosome, ZERO_BASED_EXCLUSIVE, 0, Float::INFINITY).upcase
 
       start_pos = flank_length + random_generator.rand(step) # chromosome start (with padding)
