@@ -207,6 +207,10 @@ def generate_random_genome_according_to_snvs(from_filename:, genome_markup:, gen
     rate = rates[context]
     step = (rate / 2.05).to_i # heuristic
     $stderr.puts("#{context}: step #{step}")
+    if step < 1 + 2 * flank_length
+      $stderr.puts "Calculated average step for context #{context} is too small. Trying to use #{ flank_length * 5 / 2 } (i.e. flank_length * 2.5)"
+      step = flank_length * 5 / 2
+    end
 
     output_stream.puts SNVInfo::HEADER
     main_chromosomes.each do |chromosome|
@@ -214,7 +218,9 @@ def generate_random_genome_according_to_snvs(from_filename:, genome_markup:, gen
 
       start_pos = flank_length + random_generator.rand(step) # chromosome start (with padding)
       end_pos = sequence.length - flank_length  # chromosome end (with padding)
-      random_positions = (start_pos...end_pos).random_step(1, 2*step - 1, random_generator: random_generator)
+
+
+      random_positions = (start_pos...end_pos).random_step(flank_length, 2*step - flank_length, random_generator: random_generator)
 
       random_genome_generator.yield_uniq_mutations(sequence, position_generator: random_positions, chromosome_name: chromosome, context: context) do |snv_info|
         output_stream.puts snv_info

@@ -69,8 +69,6 @@ module Configuration
 
   ExpandControlSetFold = 1 # one can artificially expand control set several time to quickly check whether expansion of control set will increase significance
 
-  RandomGenomeFold = 100
-  RandomShuffleFold = 100
 
   FittingFoldGenome = 35
   FittingFoldShuffle = 25
@@ -99,6 +97,10 @@ module Configuration
     def self.contexts_by_cancer_type(cancer_type)
       [:any]
     end
+
+    # some samples are just too big
+    RandomGenomeFold = Hash.new(100).merge({:'Lung Adeno' => 10, :Breast => 10, :Liver => 10})
+    RandomShuffleFold = Hash.new(100)
   end
 
   NikZainalContexts = [:any]
