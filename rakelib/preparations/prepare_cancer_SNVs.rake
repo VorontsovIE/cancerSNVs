@@ -48,8 +48,9 @@ AlexandrovWholeGenomeCancers.each do |cancer_type|
                                 "#{cancer_type}_clean_somatic_mutations_for_signature_analysis.txt")
 
   directory folder
-  file  cancer_filename => [mutations_filename, :load_sample_infos, folder] do
-    snv_infos_stream = mutations_filered_by_sample(mutations_filename, WHOLE_GENOME_SAMPLES_BY_CANCER[cancer_type])
+  file  cancer_filename => [mutations_filename, LocalPaths::Secondary::Alexandrov::SamplesSummary, folder] do
+    sample_infos = load_sample_infos(LocalPaths::Secondary::Alexandrov::SamplesSummary)
+    snv_infos_stream = mutations_filered_by_sample(mutations_filename, sample_infos[cancer_type])
       .select(&:snv?)
       .map{|mutation|
         mutation.to_snv_info(GENOME_READER,
@@ -73,6 +74,6 @@ namespace 'preparations' do
   end
 end
 
-task :load_sample_infos => LocalPaths::Secondary::Alexandrov::SamplesSummary do
-  WHOLE_GENOME_SAMPLES_BY_CANCER ||= whole_genome_samples_by_cancer(LocalPaths::Secondary::Alexandrov::SamplesSummary)
+def load_sample_infos(filename)
+  $whole_genome_samples_by_cancer ||= whole_genome_samples_by_cancer(filename)
 end
