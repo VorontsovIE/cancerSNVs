@@ -25,13 +25,14 @@ class Range
 end
 
 class RandomGenomeGenerator
-  attr_reader :necessary_context_distribution, :flank_length, :sequence_hashes, :miss, :is_known_snv
-  def initialize(necessary_context_distribution:, flank_length:, is_known_snv:)
+  attr_reader :necessary_context_distribution, :flank_length, :sequence_hashes, :miss, :is_known_snv, :genome_markup
+  def initialize(necessary_context_distribution:, flank_length:, is_known_snv:, genome_markup:)
     @necessary_context_distribution = necessary_context_distribution
     @flank_length = flank_length
     @sequence_hashes = Set.new
     @miss = 0
     @is_known_snv = is_known_snv
+    @genome_markup = genome_markup
   end
 
   def random_regulatory_positions(sequence, position_generator:, chromosome_name:)
@@ -42,7 +43,7 @@ class RandomGenomeGenerator
     end
 
     position_generator
-      .select{|pos| GENOME_MARKUP.regulatory?(chromosome_name, pos) }
+      .select{|pos| genome_markup.regulatory?(chromosome_name, pos) }
       .reject{|pos| is_known_snv.(chromosome_name, pos) }
       .each{|pos|
         yield pos
@@ -67,7 +68,7 @@ class RandomGenomeGenerator
     SNVInfo.new("#{synthetic_snv_name}@#{context}", seq_w_snv,
                 '', '', # Random genome (but it's too large and expands file to enormous size)
                 chromosome_name, position_one_based, :+,
-                GENOME_MARKUP.get_region_type(chromosome_name, position_one_based)
+                genome_markup.get_region_type(chromosome_name, position_one_based)
     )
   end
 
@@ -170,7 +171,7 @@ def multiply_context_distribution(context_distribution, fold)
   extended_context_distribution
 end
 
-def generate_random_genome_according_to_snvs(from_filename:, genome_reader:, genomic_content:, fold:, random_generator: Random::DEFAULT, flank_length:, output_stream: $stdout)
+def generate_random_genome_according_to_snvs(from_filename:, genome_markup:, genome_reader:, genomic_content:, fold:, random_generator: Random::DEFAULT, flank_length:, output_stream: $stdout)
   known_snv_positions_by_chromosome = Hash.new {|hsh, key| hsh[key] = Set.new }
   snv_context_distribution = calculate_SNV_context_distribution(SNVInfo.each_in_file(from_filename),
                                                                 known_snv_positions_by_chromosome: known_snv_positions_by_chromosome,
@@ -199,11 +200,12 @@ def generate_random_genome_according_to_snvs(from_filename:, genome_reader:, gen
 
   random_genome_generator = RandomGenomeGenerator.new(necessary_context_distribution: necessary_context_distribution,
                                                       flank_length: flank_length,
-                                                      is_known_snv: is_known_snv)
+                                                      is_known_snv: is_known_snv,
+                                                      genome_markup: genome_markup)
 
   contexts.each do |context|
     rate = rates[context]
-    step = (rate / 1.95).to_i # heuristic
+    step = (rate / 2.05).to_i # heuristic
     $stderr.puts("#{context}: step #{step}")
 
     output_stream.puts SNVInfo::HEADER

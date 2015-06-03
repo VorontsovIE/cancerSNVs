@@ -22,7 +22,7 @@ end.parse!(ARGV)
 
 raise 'Specify SNV infos'  unless snvs_filename = ARGV[0] # 'source_data/SNV_infos.txt'
 
-GENOME_MARKUP = GENOME_MARKUP_LOADER.load_markup
+genome_markup = GENOME_MARKUP_LOADER.load_markup
 
 genomic_content = calculate_genomic_context_distribution(
                                 GENOME_READER,
@@ -32,4 +32,4 @@ genomic_content = calculate_genomic_context_distribution(
                                   chr_name == 'MT' || chr_name.start_with?('HG') || chr_name.start_with?('HS')
                                 })
 
-generate_random_genome_according_to_snvs(from_filename: snvs_filename, genome_reader: GENOME_READER, genomic_content: genomic_content, random_generator: random_generator, stream: $stdout)
+generate_random_genome_according_to_snvs(from_filename: snvs_filename, genome_markup: genome_markup, genome_reader: GENOME_READER, genomic_content: genomic_content, random_generator: random_generator, stream: $stdout)

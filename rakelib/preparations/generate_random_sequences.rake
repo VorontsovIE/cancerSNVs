@@ -29,7 +29,7 @@ end
 
 def generate_random_shuffle_task(output_filename:, task_name:, cancer_filename:, random_generator:)
   file cancer_filename
-  file output_filename => [:load_genome_markup, cancer_filename] do
+  file output_filename => [cancer_filename] do
     File.open(output_filename, 'w') do |fw|
       shuffle_snvs(from_filename: cancer_filename,
                   output_stream: fw,
@@ -42,33 +42,34 @@ end
 
 def generate_random_genome_task(output_filename:, task_name:, cancer_filename:, random_generator:)
   file cancer_filename
-  file output_filename => [cancer_filename, :load_genomic_context, :load_genome_markup] do
+  file output_filename => [cancer_filename] do
     File.open(output_filename, 'w') do |fw|
       generate_random_genome_according_to_snvs(from_filename: cancer_filename,
+                                              genome_markup: GENOME_MARKUP_LOADER.load_markup,
                                               output_stream: fw,
                                               fold: Configuration::RandomGenomeFold,
                                               flank_length: 50,
                                               genome_reader: GENOME_READER,
-                                              genomic_content: GENOMIC_CONTENT,
+                                              genomic_content: get_genomic_content,
                                               random_generator: random_generator)
     end
   end
   task task_name => output_filename
 end
 
-task :load_genomic_context do
-  # GENOMIC_CONTENT ||= calculate_genomic_context_distribution(
+def get_genomic_content
+  # return $genomic_content  if $genomic_content
+  # $genomic_content = calculate_genomic_context_distribution(
   #                       GENOME_READER,
   #                       exclude_N: true,
   #                       exclude_chromosome: ->(chr){
   #                         chr_name = chr.to_s
-  #                         chr_name == 'MT' || chr_name.start_with?('HG') || chr_name.start_with?('HS')
+  #                         !chr_name.match(/^(\d+|X|Y)$/i)
   #                       })
   # $stderr.puts "Genomic content loaded"
-  # $stderr.puts GENOMIC_CONTENT
-  # File.write('./genomic_content_distribution.txt', GENOMIC_CONTENT.to_s)
-
-  GENOMIC_CONTENT ||= {"AAA"=>109671348, "GAA"=>56334225, "AAT"=>71230656, "ATT"=>71328720, "TTC"=>56404541, "TCT"=>63269496, "CTA"=>36843040, "TAC"=>32424799, "ACA"=>57551081, "CAT"=>52501415, "TTA"=>59519778, "TAG"=>36890662, "AGA"=>63171516, "ATA"=>58916160, "TAA"=>59429582, "AAC"=>41595681, "ACC"=>33217755, "CCA"=>52665758, "AGC"=>39955536, "GCC"=>34011113, "CCT"=>50784312, "CTC"=>48107749, "TCA"=>55986236, "ATC"=>38142449, "CAC"=>42903625, "CAG"=>57891673, "AGG"=>50728463, "GGC"=>33995097, "GCA"=>41147623, "ACT"=>45964533, "CTT"=>57103064, "CTG"=>57934337, "TGA"=>56003090, "AAG"=>56991469, "GCT"=>39969847, "TGC"=>41183604, "CAA"=>54053983, "TAT"=>58974661, "TCG"=>6310520, "CGT"=>7186417, "GTT"=>41761912, "TTT"=>110084438, "TTG"=>54269349, "ACG"=>7168287, "GTA"=>32440719, "TCC"=>44104934, "TGG"=>52767918, "GGG"=>37585305, "GGA"=>44128179, "GAG"=>48106270, "ATG"=>52502831, "GAT"=>38183425, "GGT"=>33256365, "GTG"=>43009093, "TGT"=>57760996, "GTC"=>27016608, "AGT"=>46024558, "GAC"=>26977547, "CGA"=>6298507, "CCC"=>37553264, "GCG"=>6799994, "CGC"=>6794339, "CCG"=>7883731, "CGG"=>7883270}
+  # $stderr.puts $genomic_content
+  # File.write('./genomic_content_distribution.txt', $genomic_content.to_s)
+  {"AAA"=>109671348, "GAA"=>56334225, "AAT"=>71230656, "ATT"=>71328720, "TTC"=>56404541, "TCT"=>63269496, "CTA"=>36843040, "TAC"=>32424799, "ACA"=>57551081, "CAT"=>52501415, "TTA"=>59519778, "TAG"=>36890662, "AGA"=>63171516, "ATA"=>58916160, "TAA"=>59429582, "AAC"=>41595681, "ACC"=>33217755, "CCA"=>52665758, "AGC"=>39955536, "GCC"=>34011113, "CCT"=>50784312, "CTC"=>48107749, "TCA"=>55986236, "ATC"=>38142449, "CAC"=>42903625, "CAG"=>57891673, "AGG"=>50728463, "GGC"=>33995097, "GCA"=>41147623, "ACT"=>45964533, "CTT"=>57103064, "CTG"=>57934337, "TGA"=>56003090, "AAG"=>56991469, "GCT"=>39969847, "TGC"=>41183604, "CAA"=>54053983, "TAT"=>58974661, "TCG"=>6310520, "CGT"=>7186417, "GTT"=>41761912, "TTT"=>110084438, "TTG"=>54269349, "ACG"=>7168287, "GTA"=>32440719, "TCC"=>44104934, "TGG"=>52767918, "GGG"=>37585305, "GGA"=>44128179, "GAG"=>48106270, "ATG"=>52502831, "GAT"=>38183425, "GGT"=>33256365, "GTG"=>43009093, "TGT"=>57760996, "GTC"=>27016608, "AGT"=>46024558, "GAC"=>26977547, "CGA"=>6298507, "CCC"=>37553264, "GCG"=>6799994, "CGC"=>6794339, "CCG"=>7883731, "CGG"=>7883270}
 end
 
 namespace 'preparations' do

@@ -33,3 +33,6 @@ DEPENDENCIES
   roo (~> 2.0.0)
   roo-xls
   rubystats
+
+BUNDLED WITH
+   1.10.2

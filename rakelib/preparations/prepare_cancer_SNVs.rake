@@ -32,11 +32,11 @@ end
 # Nik-Zainal
 folder = File.join(LocalPaths::Secondary::SNVs, 'NikZainal')
 directory folder
-file LocalPaths::Secondary::NikZainalSNVs => [LocalPaths::Secondary::NikZainalSNVsOriginal, :load_genome_markup, folder] do
+file LocalPaths::Secondary::NikZainalSNVs => [LocalPaths::Secondary::NikZainalSNVsOriginal, folder] do
   snv_infos_stream = BreastCancerSNV \
     .each_in_file(LocalPaths::Secondary::NikZainalSNVsOriginal) \
     .map{|snv| snv.to_snv_info(GENOME_READER, flank_length: 50) }
-  markup_and_filter_SNVInfos_to_file(snv_infos_stream, GENOME_MARKUP, output_file: LocalPaths::Secondary::NikZainalSNVs)
+  markup_and_filter_SNVInfos_to_file(snv_infos_stream, GENOME_MARKUP_LOADER.load_markup, output_file: LocalPaths::Secondary::NikZainalSNVs)
 end
 
 # Alexandrov
@@ -48,7 +48,7 @@ AlexandrovWholeGenomeCancers.each do |cancer_type|
                                 "#{cancer_type}_clean_somatic_mutations_for_signature_analysis.txt")
 
   directory folder
-  file  cancer_filename => [mutations_filename, :load_sample_infos, :load_genome_markup, folder] do
+  file  cancer_filename => [mutations_filename, :load_sample_infos, folder] do
     snv_infos_stream = mutations_filered_by_sample(mutations_filename, WHOLE_GENOME_SAMPLES_BY_CANCER[cancer_type])
       .select(&:snv?)
       .map{|mutation|
@@ -57,7 +57,7 @@ AlexandrovWholeGenomeCancers.each do |cancer_type|
           variant_id: "#{mutation.sample_id};#{mutation.chromosome}:#{mutation.position_start}",
           flank_length: 50)
       }
-    markup_and_filter_SNVInfos_to_file(snv_infos_stream, GENOME_MARKUP, output_file: cancer_filename)
+    markup_and_filter_SNVInfos_to_file(snv_infos_stream, GENOME_MARKUP_LOADER.load_markup, output_file: cancer_filename)
   end
   task 'preparations:extractSNVs:Alexandrov' => cancer_filename
 end
