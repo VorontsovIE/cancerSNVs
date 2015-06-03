@@ -203,17 +203,17 @@ def generate_random_genome_according_to_snvs(from_filename:, genome_markup:, gen
                                                       is_known_snv: is_known_snv,
                                                       genome_markup: genome_markup)
 
-  contexts.each do |context|
-    rate = rates[context]
-    step = (rate / 2.05).to_i # heuristic
-    $stderr.puts("#{context}: step #{step}")
-    if step < 1 + 2 * flank_length
-      $stderr.puts "Calculated average step for context #{context} is too small. Trying to use #{ flank_length * 5 / 2 } (i.e. flank_length * 2.5)"
-      step = flank_length * 5 / 2
-    end
+  output_stream.puts SNVInfo::HEADER
+  main_chromosomes.each do |chromosome|
+    contexts.each do |context|
+      rate = rates[context]
+      step = (rate / 2.05).to_i # heuristic
+      $stderr.puts("#{context}: step #{step}")
+      if step < 1 + 2 * flank_length
+        $stderr.puts "Calculated average step for context #{context} is too small. Trying to use #{ flank_length * 5 / 2 } (i.e. flank_length * 2.5)"
+        step = flank_length * 5 / 2
+      end
 
-    output_stream.puts SNVInfo::HEADER
-    main_chromosomes.each do |chromosome|
       sequence = genome_reader.read_sequence(chromosome, ZERO_BASED_EXCLUSIVE, 0, Float::INFINITY).upcase
 
       start_pos = flank_length + random_generator.rand(step) # chromosome start (with padding)
