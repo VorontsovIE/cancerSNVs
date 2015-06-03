@@ -82,6 +82,8 @@ module Configuration
   AlexandrovRandomShuffleSeeds = 31
 
   module NikZainal
+    RandomGenomeFold = 100
+    RandomShuffleFold = 100
     RandomGenomeDatasets = RandomGenomeSeeds.map{|seed| "random_genome_#{seed}"}
     RandomShuffleDatasets = RandomShuffleSeeds.map{|seed| "random_shuffle_#{seed}"}
     RandomDatasets = RandomGenomeDatasets + RandomShuffleDatasets
