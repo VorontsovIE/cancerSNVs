@@ -40,6 +40,10 @@ module GenomeReader
       end
     end
 
+    def read_chromosome(chromosome)
+      @chromosome_sequences[chromosome]
+    end
+
     def to_s
       chromosomes_text = chromosome_names.sort.first(5).join(', ') + (chromosome_names.size > 5 ? ', ...' : '')
       "GenomeReader::MemoryReader<#{@chromosome_sequences.size} chromosomes: #{chromosomes_text}>"

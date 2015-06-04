@@ -1,7 +1,6 @@
 $:.unshift File.join(LocalPaths::Root, 'lib')
 require 'set'
 require 'snv_info'
-require 'random_genome_distribution'
 
 def shuffle_snvs(from_filename:, output_stream:, random_generator: Random::DEFAULT, fold: 1)
   sequence_hashes = Set.new
@@ -40,19 +39,14 @@ def generate_random_shuffle_task(output_filename:, task_name:, cancer_filename:,
   task task_name => output_filename
 end
 
-def generate_random_genome_task(output_filename:, task_name:, cancer_filename:, random_generator:, fold:)
+def generate_random_genome_task(output_filename:, task_name:, cancer_filename:, random_seed:, fold:)
   file cancer_filename
   file output_filename => [cancer_filename] do
-    File.open(output_filename, 'w') do |fw|
-      generate_random_genome_according_to_snvs(from_filename: cancer_filename,
-                                              genome_markup: GENOME_MARKUP_LOADER.load_markup,
-                                              output_stream: fw,
-                                              fold: fold,
-                                              flank_length: 50,
-                                              genome_reader: GENOME_READER,
-                                              genomic_content: get_genomic_content,
-                                              random_generator: random_generator)
-    end
+    ruby 'bin/preparations/generate_random_genome_sequences.rb', cancer_filename,
+                                                              '--flank-length', '50',
+                                                              '--fold', fold.to_s,
+                                                              '--seed', random_seed.to_s,
+                                                              {out: output_filename},{}
   end
   task task_name => output_filename
 end
@@ -92,7 +86,7 @@ AlexandrovWholeGenomeCancers.each do |cancer_type|
                               task_name: 'preparations:generate_random_SNVs:Alexandrov:genome',
                               cancer_filename: cancer_filename,
                               fold: Configuration::Alexandrov::RandomGenomeFold[cancer_type],
-                              random_generator: Random.new("#{Configuration::AlexandrovRandomGenomeSeeds}_#{cancer_type}".hash))
+                              random_seed: "#{Configuration::AlexandrovRandomGenomeSeeds}_#{cancer_type}".hash)
 
   generate_random_shuffle_task(output_filename: File.join(LocalPaths::Secondary::SNVs, 'Alexandrov', cancer_type.to_s, 'random_shuffle.txt'),
                               task_name: 'preparations:generate_random_SNVs:Alexandrov:shuffle',
@@ -108,7 +102,7 @@ Configuration::RandomGenomeSeeds.each do |seed|
                               task_name: 'preparations:generate_random_SNVs:NikZainal:genome',
                               cancer_filename: File.join(LocalPaths::Secondary::SNVs, 'NikZainal', 'cancer.txt'),
                               fold: Configuration::NikZainal::RandomGenomeFold,
-                              random_generator: Random.new(seed))
+                              random_seed: seed)
 end
 
 Configuration::RandomShuffleSeeds.each do |seed|

@@ -31,11 +31,16 @@ module GenomeReader
       File.open(chromosome_filename(chromosome)){|f|
         f.seek(pos)
         if len.is_a?(Integer) || len.to_f.finite? # finite length
-          f.read(len)
+          seq = f.read(len)
         else
-          f.read
+          seq = f.read
         end
+        seq.b # ASCII is much faster than Unicode
       }
+    end
+
+    def read_chromosome(chromosome)
+      File.read(chromosome_filename(chromosome)).b # ASCII is much faster than Unicode
     end
 
     def to_s

@@ -1,3 +1,4 @@
+require 'interval_notation'
 require_relative 'load_genome_structure'
 require_relative 'region_type'
 
@@ -9,11 +10,11 @@ class GenomeMarkup
 
   # To load genome markup from source files, use GenomeMarkupLoader
   def initialize(introns_by_chromosome:, promoters_by_chromosome:, kataegis_regions_by_chromosome:)
-    @introns_by_chromosome = introns_by_chromosome
-    @promoters_by_chromosome = promoters_by_chromosome
-    @kataegis_regions_by_chromosome = kataegis_regions_by_chromosome
+    @introns_by_chromosome = Hash.new(IntervalNotation::Syntax::Long::Empty).merge(introns_by_chromosome)
+    @promoters_by_chromosome = Hash.new(IntervalNotation::Syntax::Long::Empty).merge(promoters_by_chromosome)
+    @kataegis_regions_by_chromosome = Hash.new(IntervalNotation::Syntax::Long::Empty).merge(kataegis_regions_by_chromosome)
 
-    @regulatory_by_chromosome = {}
+    @regulatory_by_chromosome = Hash.new(IntervalNotation::Syntax::Long::Empty)
     (@introns_by_chromosome.keys + @promoters_by_chromosome.keys + kataegis_regions_by_chromosome.keys).uniq.each do |chr|
       @regulatory_by_chromosome[chr] = (@promoters_by_chromosome[chr] | @introns_by_chromosome[chr]) - kataegis_regions_by_chromosome[chr]
     end

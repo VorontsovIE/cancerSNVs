@@ -13,6 +13,7 @@ def markup_and_filter_SNVInfos(snv_infos_stream, genome_markup)
       snv_info.marked_up(genome_markup)
     }
     .select(&:regulatory?)
+    .reject{|snv_info| snv_info.snv_sequence.to_s.match(/N/) }
     .to_a
     .uniq{|snv_info| # remove duplicates (in each sample separately)
       [snv_info.sample_id, snv_info.in_pyrimidine_context.snv_sequence]
