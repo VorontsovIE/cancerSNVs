@@ -101,7 +101,7 @@ module Configuration
     end
 
     # some samples are just too big
-    RandomGenomeFold = Hash.new(100).merge({:'Lung Adeno' => 10, :Breast => 10, :Liver => 10})
+    RandomGenomeFold = Hash.new(100) # .merge({:'Lung Adeno' => 10, :Breast => 10, :Liver => 10})
     RandomShuffleFold = Hash.new(100)
   end
 
