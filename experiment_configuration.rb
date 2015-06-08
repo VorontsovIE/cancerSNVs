@@ -69,10 +69,6 @@ module Configuration
 
   ExpandControlSetFold = 1 # one can artificially expand control set several time to quickly check whether expansion of control set will increase significance
 
-
-  FittingFoldGenome = 35
-  FittingFoldShuffle = 25
-
   RandomGenomeSeeds = [13,15,17]
   RandomShuffleSeeds = [135,137,139]
 
@@ -88,6 +84,9 @@ module Configuration
     RandomShuffleDatasets = RandomShuffleSeeds.map{|seed| "random_shuffle_#{seed}"}
     RandomDatasets = RandomGenomeDatasets + RandomShuffleDatasets
     Datasets = RandomDatasets + ['cancer']
+
+    FittingFoldGenome = 35
+    FittingFoldShuffle = 25
   end
 
   module Alexandrov
@@ -103,6 +102,9 @@ module Configuration
     # some samples are just too big
     RandomGenomeFold = Hash.new(100).merge({:'Lung Adeno' => 10, :Breast => 30, :Liver => 20})
     RandomShuffleFold = Hash.new(100).merge({:'Lung Adeno' => 10, :Breast => 30, :Liver => 20})
+
+    FittingFoldGenome = Hash.new(35).merge({:'Lung Adeno' => 3, :Breast => 10, :Liver => 5})
+    FittingFoldShuffle = Hash.new(25).merge({:'Lung Adeno' => 3, :Breast => 10, :Liver => 5})
   end
 
   NikZainalContexts = [:any]
