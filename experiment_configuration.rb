@@ -101,13 +101,13 @@ module Configuration
     end
 
     # some samples are just too big
-    RandomGenomeFold = Hash.new(100) # .merge({:'Lung Adeno' => 10, :Breast => 10, :Liver => 10})
-    RandomShuffleFold = Hash.new(100)
+    RandomGenomeFold = Hash.new(100).merge({:'Lung Adeno' => 10, :Breast => 30, :Liver => 20})
+    RandomShuffleFold = Hash.new(100).merge({:'Lung Adeno' => 10, :Breast => 30, :Liver => 20})
   end
 
   NikZainalContexts = [:any]
 
-  NumberOfCores = 8
+  NumberOfCores = 16
   MemoryLimitOption = '-Xmx1G' # ''
   ExpandFlanksLength = 11
 end
