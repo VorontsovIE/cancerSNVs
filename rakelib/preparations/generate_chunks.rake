@@ -146,10 +146,10 @@ namespace :preparations do
         )
       end
       File.open(File.join(LocalPaths::Secondary::Chunks, 'Alexandrov', 'run_all.sh'), 'w') do |fw|
+        fw.puts '#!/bin/bash'
+        fw.puts 'cd "$(dirname "$0")"'
         AlexandrovWholeGenomeCancers.each do |cancer_type|
-          fw.puts '#!/bin/bash'
-          fw.puts 'cd "$(dirname "$0")"'
-          fw.puts  File.join(LocalPaths::Secondary::Chunks, 'Alexandrov', cancer_type.to_s, 'run_perfectosape_multithread.sh')
+          fw.puts  File.join(LocalPaths::Secondary::Chunks, 'Alexandrov', cancer_type.to_s, 'run_perfectosape_multithread.sh').shellescape
         end
       end
       chmod 0755, File.join(LocalPaths::Secondary::Chunks, 'Alexandrov', 'run_all.sh')
@@ -157,7 +157,7 @@ namespace :preparations do
 
     task 'NikZainal' do
       prepare_chunks_for_sites(
-        File.join(LocalPaths::Secondary::NikZainalSNVs),
+        File.join(LocalPaths::Secondary::SNVs, 'NikZainal'),
         File.join(LocalPaths::Secondary::Chunks, 'NikZainal')
       )
     end
