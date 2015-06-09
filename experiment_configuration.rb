@@ -106,6 +106,21 @@ module Configuration
     FittingFoldShuffle = Hash.new(25).merge({:'Lung Adeno' => 3, :Breast => 7, :Liver => 5, :ALL => 150, :AML => 300, :'Pilocytic Astrocytoma' => 100, :CLL => 50})
   end
 
+  module YeastApobec
+    RandomShuffleFold = Hash.new(500).merge({:A1 => 5000, :A3G => 25000, :AID => 5000, :HAP_sub1 => 1000})
+    FittingFoldShuffle = Hash.new(100).merge({:A1 => 1000, :A3G => 5000, :AID => 1000, :HAP_sub1 => 200})
+    RandomShuffleSeeds = 98765
+
+    RandomGenomeDatasets = []
+    RandomShuffleDatasets = ['random_shuffle']
+    RandomDatasets = RandomGenomeDatasets + RandomShuffleDatasets
+    Datasets = RandomDatasets + ['cancer']
+
+    def self.contexts_by_cancer_type(sample) # not actually a cancer type but sample name
+      [:any]
+    end
+  end
+
   NikZainalContexts = [:any]
 
   NumberOfCores = 16

@@ -64,14 +64,29 @@ AlexandrovWholeGenomeCancers.each do |cancer_type|
   task 'preparations:extractSNVs:Alexandrov' => cancer_filename
 end
 
+directory 'results/SNVs/YeastApobec'
+YeastApobecSamples.each do |sample|
+  directory File.join('results/SNVs/YeastApobec', sample.to_s)
+  resulting_file = File.join('results/SNVs/YeastApobec', sample.to_s, 'cancer.txt')
+  source_file = File.join('source_data/YeastApobec', "#{sample}.mfa")
+  file resulting_file => [File.join('results/SNVs/YeastApobec', sample.to_s), source_file] do
+    rm resulting_file  if File.exist?(resulting_file)
+    cp source_file, resulting_file
+  end
+  task 'preparations:extractSNVs:YeastApobec' => resulting_file
+end
+
 namespace 'preparations' do
-  task extractSNVs: ['extractSNVs:NikZainalEtAl', 'extractSNVs:Alexandrov']
+  task extractSNVs: ['extractSNVs:NikZainalEtAl', 'extractSNVs:Alexandrov', 'extractSNVs:YeastApobec']
   namespace 'extractSNVs' do
     desc 'Convert Nik-Zainal\'s mutations to a common format. Convert format, filter regulatory only SNVs, remove duplicates.'
     task :NikZainalEtAl => [LocalPaths::Secondary::NikZainalSNVs]
 
     desc 'Convert Alexandrov\'s mutations to a common format. Convert format, filter regulatory only SNVs, remove duplicates.'
     task :Alexandrov
+
+    desc 'Copy APOBEC mutations in yeast in proper format to necessary place.'
+    task :YeastApobec
   end
 end
 

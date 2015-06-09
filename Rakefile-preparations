@@ -6,6 +6,8 @@ AlexandrovWholeGenomeCancers = SampleInfo.each_in_file(LocalPaths::Secondary::Al
                                 .map{|cancer_type, samples| cancer_type }
                                 .to_a.sort
 
+YeastApobecSamples = Dir.glob('source_data/YeastApobec/*.mfa').map{|fn| File.basename(fn, '.mfa').to_sym }
+
 task :load_genome_markup do
   GENOME_MARKUP ||= GENOME_MARKUP_LOADER.load_markup
 end

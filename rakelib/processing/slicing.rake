@@ -9,8 +9,9 @@ def make_slicing_task(sites_file:, output_folder:, task_name:)
 end
 
 desc 'Make slices of motif statistics'
-task 'slicing' => ['slicing:Alexandrov', 'slicing:NikZainal']
+task 'slicing' => ['slicing:Alexandrov', 'slicing:NikZainal', 'slicing:YeastApobec']
 
+desc 'Make slices of motif statistics for Alexandrov datasets'
 task 'slicing:Alexandrov'
 AlexandrovWholeGenomeCancers.each do |cancer_type|
   task 'slicing:Alexandrov' => "slicing:Alexandrov:#{cancer_type}"
@@ -27,6 +28,7 @@ AlexandrovWholeGenomeCancers.each do |cancer_type|
   end
 end
 
+desc 'Make slices of motif statistics for Nik-Zainal dataset'
 task 'slicing:NikZainal'
 Configuration::NikZainalContexts.each do |context|
   task 'slicing:NikZainal' => "slicing:NikZainal:#{context}"
@@ -36,5 +38,22 @@ Configuration::NikZainalContexts.each do |context|
     make_slicing_task(sites_file: File.join(LocalPaths::Secondary::Fitting, 'NikZainal', context.to_s, "sites_#{dataset}.txt"),
                       output_folder: File.join(LocalPaths::Secondary::Slices, 'NikZainal', context.to_s, dataset),
                       task_name: "slicing:NikZainal:#{context}:#{dataset}")
+  end
+end
+
+desc 'Make slices of motif statistics for APOBEC mutations in yeast'
+task 'slicing:YeastApobec'
+YeastApobecSamples.each do |sample|
+  task 'slicing:YeastApobec' => "slicing:YeastApobec:#{sample}"
+  Configuration::YeastApobec.contexts_by_cancer_type(sample).each do |context|
+    task "slicing:YeastApobec:#{sample}" => "slicing:YeastApobec:#{sample}:#{context}"
+
+    Configuration::YeastApobec::Datasets.each do |dataset|
+      task "slicing:YeastApobec:#{sample}:#{context}" => "slicing:YeastApobec:#{sample}:#{context}:#{dataset}"
+
+      make_slicing_task(sites_file: File.join(LocalPaths::Secondary::Fitting, 'YeastApobec', sample.to_s, context.to_s, "sites_#{dataset}.txt"),
+                        output_folder: File.join(LocalPaths::Secondary::Slices, 'YeastApobec', sample.to_s, context.to_s, dataset),
+                        task_name: "slicing:YeastApobec:#{sample}:#{context}:#{dataset}")
+    end
   end
 end

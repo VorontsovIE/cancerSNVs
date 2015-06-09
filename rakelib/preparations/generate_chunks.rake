@@ -127,11 +127,12 @@ end
 
 namespace :preparations do
   desc 'Split sequences into equal chunks in order to run chunks in parallel'
-  task generate_chunks: ['generate_chunks:Alexandrov', 'generate_chunks:NikZainal'] do
+  task generate_chunks: ['generate_chunks:Alexandrov', 'generate_chunks:NikZainal', 'generate_chunks:YeastApobec'] do
     File.open(File.join(LocalPaths::Secondary::Chunks, 'run_all.sh'), 'w') do |fw|
       fw.puts '#!/bin/bash'
       fw.puts 'cd "$(dirname "$0")"'
       fw.puts  File.join(LocalPaths::Secondary::Chunks, 'Alexandrov', 'run_all.sh')
+      fw.puts  File.join(LocalPaths::Secondary::Chunks, 'YeastApobec', 'run_all.sh')
       fw.puts  File.join(LocalPaths::Secondary::Chunks, 'NikZainal', 'run_perfectosape_multithread.sh')
     end
     chmod 0755, File.join(LocalPaths::Secondary::Chunks, 'run_all.sh')
@@ -160,6 +161,23 @@ namespace :preparations do
         File.join(LocalPaths::Secondary::SNVs, 'NikZainal'),
         File.join(LocalPaths::Secondary::Chunks, 'NikZainal')
       )
+    end
+
+    task 'YeastApobec' do
+      YeastApobecSamples.each do |sample|
+        prepare_chunks_for_sites(
+          File.join(LocalPaths::Secondary::SNVs, 'YeastApobec', sample.to_s),
+          File.join(LocalPaths::Secondary::Chunks, 'YeastApobec', sample.to_s)
+        )
+      end
+      File.open(File.join(LocalPaths::Secondary::Chunks, 'YeastApobec', 'run_all.sh'), 'w') do |fw|
+        fw.puts '#!/bin/bash'
+        fw.puts 'cd "$(dirname "$0")"'
+        YeastApobecSamples.each do |sample|
+          fw.puts  File.join(LocalPaths::Secondary::Chunks, 'YeastApobec', sample.to_s, 'run_perfectosape_multithread.sh').shellescape
+        end
+      end
+      chmod 0755, File.join(LocalPaths::Secondary::Chunks, 'YeastApobec', 'run_all.sh')
     end
   end
 end

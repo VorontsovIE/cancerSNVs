@@ -71,7 +71,7 @@ namespace 'preparations' do
   task generate_random_SNVs: ['preparations:generate_random_SNVs:shuffle', 'preparations:generate_random_SNVs:genome']
   namespace 'generate_random_SNVs' do
     desc 'Generate random SNVs with shuffled flanks.'
-    task :shuffle => ['preparations:generate_random_SNVs:NikZainal:shuffle', 'preparations:generate_random_SNVs:Alexandrov:shuffle']
+    task :shuffle => ['preparations:generate_random_SNVs:NikZainal:shuffle', 'preparations:generate_random_SNVs:Alexandrov:shuffle', 'preparations:generate_random_SNVs:YeastApobec:shuffle']
 
     desc 'Generate random SNVs from genome, mimic context distribution of original SNVs.'
     task :genome => ['preparations:generate_random_SNVs:NikZainal:genome', 'preparations:generate_random_SNVs:Alexandrov:genome']
@@ -111,4 +111,16 @@ Configuration::RandomShuffleSeeds.each do |seed|
                               cancer_filename: File.join(LocalPaths::Secondary::SNVs, 'NikZainal', 'cancer.txt'),
                               fold: Configuration::NikZainal::RandomShuffleFold,
                               random_generator: Random.new(seed))
+end
+
+# APOBEC mutations in yeast
+# We generate only shuffle control because genomic control needs different yeast genomes
+YeastApobecSamples.each do |sample|
+  sample_filename = File.join('results/SNVs/YeastApobec', sample.to_s, 'cancer.txt') # not actually a cancer
+
+  generate_random_shuffle_task(output_filename: File.join('results/SNVs/YeastApobec', sample.to_s, 'random_shuffle.txt'),
+                              task_name: 'preparations:generate_random_SNVs:YeastApobec:shuffle',
+                              cancer_filename: sample_filename,
+                              fold: Configuration::YeastApobec::RandomShuffleFold[sample],
+                              random_generator: Random.new("{Configuration::YeastApobec::RandomShuffleSeeds}_#{sample}".hash))
 end

@@ -30,7 +30,7 @@ def fit_sites_task(random_dataset:, fold:, folder_from:, folder_to:, log_folder:
 end
 
 desc 'Fit random sites to make control datasets with same site and mutation context rates as cancer ones'
-task 'fitting' => ['fitting:Alexandrov', 'fitting:NikZainal']
+task 'fitting' => ['fitting:Alexandrov', 'fitting:NikZainal', 'fitting:YeastApobec']
 
 task 'fitting:Alexandrov'
 AlexandrovWholeGenomeCancers.each do |cancer_type|
@@ -80,5 +80,24 @@ Configuration::NikZainalContexts.each do |context|
                   folder_from: folder_from, folder_to: folder_to,
                   log_folder: File.join(LocalPaths::Secondary::LogFolder, 'NikZainal', context.to_s),
                   task_name: "fitting:NikZainal:#{context}")
+  end
+end
+
+task 'fitting:YeastApobec'
+YeastApobecSamples.each do |sample|
+  task 'fitting:YeastApobec' => "fitting:YeastApobec:#{sample}"
+  Configuration::YeastApobec.contexts_by_cancer_type(sample).each do |context| # not actually a cancer type but sample name
+    task "fitting:YeastApobec:#{sample}" => "fitting:YeastApobec:#{sample}:#{context}"
+    folder_from = File.join(LocalPaths::Secondary::Sites, 'YeastApobec', sample.to_s, context.to_s)
+    folder_to = File.join(LocalPaths::Secondary::Fitting, 'YeastApobec', sample.to_s, context.to_s)
+
+    copy_cancer_sites_as_fitted_task(folder_from: folder_from, folder_to: folder_to, task_name: "fitting:YeastApobec:#{sample}:#{context}")
+
+    Configuration::YeastApobec::RandomDatasets.each do |random_dataset|
+      fit_sites_task(random_dataset: random_dataset, fold: Configuration::YeastApobec::FittingFoldShuffle[sample],
+                    folder_from: folder_from, folder_to: folder_to,
+                    log_folder: File.join(LocalPaths::Secondary::LogFolder, 'YeastApobec', sample.to_s, context.to_s),
+                    task_name: "fitting:YeastApobec:#{sample}:#{context}")
+    end
   end
 end
