@@ -99,12 +99,11 @@ module Configuration
       [:any]
     end
 
-    # some samples are just too big
-    RandomGenomeFold = Hash.new(100).merge({:'Lung Adeno' => 10, :Breast => 30, :Liver => 20})
-    RandomShuffleFold = Hash.new(100).merge({:'Lung Adeno' => 10, :Breast => 30, :Liver => 20})
+    RandomGenomeFold = Hash.new(100).merge({:'Lung Adeno' => 10, :Breast => 30, :Liver => 20, :ALL => 1500, :AML => 3000, :'Pilocytic Astrocytoma' => 1000, :CLL => 200})
+    RandomShuffleFold = Hash.new(100).merge({:'Lung Adeno' => 10, :Breast => 30, :Liver => 20, :ALL => 1500, :AML => 3000, :'Pilocytic Astrocytoma' => 1000, :CLL => 200})
 
-    FittingFoldGenome = Hash.new(35).merge({:'Lung Adeno' => 3, :Breast => 10, :Liver => 5})
-    FittingFoldShuffle = Hash.new(25).merge({:'Lung Adeno' => 3, :Breast => 10, :Liver => 5})
+    FittingFoldGenome = Hash.new(35).merge({:'Lung Adeno' => 3, :Breast => 7, :Liver => 5, :ALL => 150, :AML => 300, :'Pilocytic Astrocytoma' => 100, :CLL => 70})
+    FittingFoldShuffle = Hash.new(25).merge({:'Lung Adeno' => 3, :Breast => 7, :Liver => 5, :ALL => 150, :AML => 300, :'Pilocytic Astrocytoma' => 100, :CLL => 50})
   end
 
   NikZainalContexts = [:any]
