@@ -148,6 +148,19 @@ class Histogram
   def fitter
     HistogramFitter.new(self)
   end
+
+  def frequencies
+    elements_total = @elements_total_in_range + @less_than + @greater_than
+    if elements_total == 0
+      Array.new(@histogram_counts.size + 2, 0)
+    else
+      [@less_than, *@histogram_counts, @greater_than].map{|el| el.to_f / elements_total }
+    end
+  end
+
+  def to_s
+    [@less_than, *@histogram_counts, @greater_than].join("\t")
+  end
 end
 
 def range_formatting(range, rate: 3)

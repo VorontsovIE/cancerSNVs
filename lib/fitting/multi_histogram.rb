@@ -37,4 +37,16 @@ class MultiHistogram
     }.to_h
     MultiHistogramFitter.new(fitters, raise_on_missing: raise_on_missing)
   end
+
+  def frequencies
+    @histograms.sort.map{|index, inner_histogram| # inner_histogram can be multihistogram too
+      [index, inner_histogram.frequencies]
+    }.to_h
+  end
+
+  def to_s
+    @histograms.sort.map{|index, inner_histogram| # inner_histogram can be multihistogram too
+      [index, inner_histogram].map(&:to_s).join("\t")
+    }.join("\n")
+  end
 end
