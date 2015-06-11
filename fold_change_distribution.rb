@@ -68,12 +68,15 @@ motif_names = File.readlines(LocalPaths::Secondary::MotifNames).map(&:strip).map
 
 motif_names.each do |motif_name|
   File.open(File.join(output_folder, "#{motif_name}.csv"), 'w') do |fw|
-    fw.puts ['Filename', *bins].join("\t")
+    data = []
+    data << ['Filename', *bins]
     frequencies_by_fn.each do |filename, frequencies|
       motif_frequencies = frequencies[motif_name]
       freq_rounded = motif_frequencies ? motif_frequencies.map{|el| el.round(5)} : Array.new(bins.size, 0)
       output_filename = use_full_filename ? filename : File.basename(filename, File.extname(filename))
-      fw.puts [output_filename, *freq_rounded].join("\t")
+      data << [output_filename, *freq_rounded]
     end
+    fw.puts data.transpose.map{|l| l.join("\t") }.join("\n")
   end
 end
+
