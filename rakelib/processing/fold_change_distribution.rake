@@ -19,7 +19,7 @@ def fold_change_distribution_plot_task(input_file:, output_file:, task_name:)
   output_folder = File.dirname(output_file)
   directory output_folder
   file output_file => [output_folder, input_file] do
-    num_cols = File.readline(input_file).chomp.split("\t").size
+    num_cols = File.readlines(input_file).first.chomp.split("\t").size
     sh 'gnuplot',
       '-e', "infile='#{input_file}'; outfile='#{output_file}'; num_cols=#{num_cols};",
       'fold_change_distribution.gpl'
