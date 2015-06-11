@@ -82,7 +82,7 @@ def make_all_common_motifs_tasks(folder:, output_folder:, configuration_module:,
 end
 
 desc 'Calculate motif statistics (don\'t use in multitask mode)'
-task 'motif_statistics:Alexandrov' => ['motif_statistics:Alexandrov', 'motif_statistics:NikZainal', 'motif_statistics:YeastApobec']
+task 'motif_statistics' => ['motif_statistics:Alexandrov', 'motif_statistics:NikZainal', 'motif_statistics:YeastApobec']
 
 task 'motif_statistics:Alexandrov'
 AlexandrovWholeGenomeCancers.each do |cancer_type|
