@@ -22,10 +22,11 @@ end
 only_actual_sites = false
 pvalue_cutoff = 0.0005
 only_substitutions_in_core = false
+use_full_filename = false
 
 OptionParser.new do |opts|
-  opts.banner = "Usage: #{opts.program_name} <sites infos> <motif names> [options]\n" +
-                "Calculate motif statistics for a list of site infos affected by SNVs."
+  opts.banner = "Usage: #{opts.program_name} <output folder> <site files>... [options]\n" +
+                "Calculate fold change distribution for each motif in each of file with SNV effects"
 
   opts.on('--only-sites [CUTOFF]', 'Consider only actual sites (with P-value less than cutoff) in distribution.',
                                    'When CUTOFF not specified, cutoff of 0.0005 is taken.') {|value|
@@ -34,6 +35,9 @@ OptionParser.new do |opts|
   }
   opts.on('--only-core', 'Consider only substitutions in core.') {
     only_substitutions_in_core = true
+  }
+  opts.on('--full-filename', 'Use full filename in output') {
+    use_full_filename = true
   }
 end.parse!(ARGV)
 
@@ -68,7 +72,8 @@ motif_names.each do |motif_name|
     frequencies_by_fn.each do |filename, frequencies|
       motif_frequencies = frequencies[motif_name]
       freq_rounded = motif_frequencies ? motif_frequencies.map{|el| el.round(5)} : Array.new(bins.size, 0)
-      fw.puts [filename, *freq_rounded].join("\t")
+      output_filename = use_full_filename ? filename : File.basename(filename, File.extname(filename))
+      fw.puts [output_filename, *freq_rounded].join("\t")
     end
   end
 end
