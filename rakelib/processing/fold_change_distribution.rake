@@ -24,9 +24,9 @@ AlexandrovWholeGenomeCancers.each do |cancer_type|
   Configuration::Alexandrov.contexts_by_cancer_type(cancer_type).each do |context|
     task "fold_change_distribution:Alexandrov:#{cancer_type}" => "fold_change_distribution:Alexandrov:#{cancer_type}:#{context}"
     
-    input_folder = File.join(LocalPaths::Secondary::Sites, 'Alexandrov', cancer_type.to_s, context.to_s)
+    input_folder = File.join(LocalPaths::Secondary::Fitting, 'Alexandrov', cancer_type.to_s, context.to_s)
     input_files = Configuration::Alexandrov::Datasets.map{|dataset| File.join(input_folder, "sites_#{dataset}.txt") }
-    output_folder = File.join('motif_statistics/fold_change_distribution', 'Alexandrov', cancer_type.to_s, context.to_s)
+    output_folder = File.join('results/motif_statistics/fold_change_distribution', 'Alexandrov', cancer_type.to_s, context.to_s)
 
     fold_change_distribution_task(input_files: input_files , output_folder: output_folder , task_name: "fold_change_distribution:Alexandrov:#{cancer_type}:#{context}")
   end
@@ -36,9 +36,9 @@ task 'fold_change_distribution:NikZainal'
 Configuration::NikZainalContexts.each do |context|
   task 'fold_change_distribution:NikZainal' => "fold_change_distribution:NikZainal:#{context}"
 
-  input_folder = File.join(LocalPaths::Secondary::Sites, 'NikZainal', context.to_s)
+  input_folder = File.join(LocalPaths::Secondary::Fitting, 'NikZainal', context.to_s)
   input_files = Configuration::NikZainal::Datasets.map{|dataset| File.join(input_folder, "sites_#{dataset}.txt") }
-  output_folder = File.join('motif_statistics/fold_change_distribution', 'NikZainal', context.to_s)
+  output_folder = File.join('results/motif_statistics/fold_change_distribution', 'NikZainal', context.to_s)
 
   fold_change_distribution_task(input_files: input_files , output_folder: output_folder , task_name: "fold_change_distribution:NikZainal:#{context}")
 end
@@ -49,9 +49,9 @@ YeastApobecSamples.each do |sample|
   Configuration::YeastApobec.contexts_by_cancer_type(sample).each do |context| # not actually a cancer type but sample name
     task "fold_change_distribution:YeastApobec:#{sample}" => "fold_change_distribution:YeastApobec:#{sample}:#{context}"
     
-    input_folder = File.join(LocalPaths::Secondary::Sites, 'YeastApobec', sample.to_s, context.to_s)
+    input_folder = File.join(LocalPaths::Secondary::Fitting, 'YeastApobec', sample.to_s, context.to_s)
     input_files = Configuration::YeastApobec::Datasets.map{|dataset| File.join(input_folder, "sites_#{dataset}.txt") }
-    output_folder = File.join('motif_statistics/fold_change_distribution', 'YeastApobec', sample.to_s, context.to_s)
+    output_folder = File.join('results/motif_statistics/fold_change_distribution', 'YeastApobec', sample.to_s, context.to_s)
 
     fold_change_distribution_task(input_files: input_files , output_folder: output_folder , task_name: "fold_change_distribution:YeastApobec:#{sample}:#{context}")
   end
