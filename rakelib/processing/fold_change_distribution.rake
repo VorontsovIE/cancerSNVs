@@ -40,7 +40,7 @@ AlexandrovWholeGenomeCancers.each do |cancer_type|
       input_files: input_files,
       output_folder: File.join(output_folder, 'actual_sites'),
       only_actual_sites: true,
-      pvalue_cutoff: 0.0005,
+      pvalue_cutoff: Configuration::PvalueCutoff,
       only_substitutions_in_core: false,
       task_name: "fold_change_distribution:Alexandrov:#{cancer_type}:#{context}:actual_sites"
     )
@@ -70,7 +70,7 @@ Configuration::NikZainalContexts.each do |context|
     input_files: input_files,
     output_folder: File.join(output_folder, 'actual_sites'),
     only_actual_sites: true,
-    pvalue_cutoff: 0.0005,
+    pvalue_cutoff: Configuration::PvalueCutoff,
     only_substitutions_in_core: false,
     task_name: "fold_change_distribution:NikZainal:#{context}:actual_sites"
   )
@@ -101,7 +101,7 @@ YeastApobecSamples.each do |sample|
       input_files: input_files,
       output_folder: File.join(output_folder, 'all'),
       only_actual_sites: false,
-      pvalue_cutoff: 0.0005,
+      pvalue_cutoff: Configuration::PvalueCutoff,
       only_substitutions_in_core: false,
       task_name: "fold_change_distribution:YeastApobec:#{sample}:#{context}:actual_sites"
     )

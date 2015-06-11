@@ -23,6 +23,7 @@ def fit_sites_task(random_dataset:, fold:, folder_from:, folder_to:, log_folder:
     ruby  'fitting_random_sites.rb',
           sites_cancer_fn, sites_random_fn,
           '--fold', fold.to_s,
+          '--pvalue-cutoff', Configuration::PvalueCutoff.to_s,
           { out: output_file,
             err: log_file },
           {}

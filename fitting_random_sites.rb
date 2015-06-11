@@ -13,12 +13,16 @@ def context_by_snv_name(variant_id)
 end
 
 fitting_fold = 1
+pvalue_cutoff = Configuration::PvalueCutoff
 OptionParser.new do |opts|
   opts.banner = "Usage: #{opts.program_name} <original sites (cancer)> <sites to be fitted (random)> <SNV infos cancer> <SNV infos random> [options]\n" +
                 "Calculates P-value distribution for each site in cancer and takes a subset of random sites\n" +
                 "so that their P-value distributions fit original distributions."
   opts.on('--fold N', 'Take N times more sites (dilate histogram of distribution N times)') {|value|
-    fitting_fold = value.to_i
+    fitting_fold = Integer(value)
+  }
+  opts.on('--pvalue-cutoff CUTOFF', 'P-value of an actual site') {|value|
+    pvalue_cutoff = Float(value)
   }
 end.parse!(ARGV)
 
@@ -26,7 +30,7 @@ raise 'Specify file with mutated sites in cancer'  unless mutated_site_infos_can
 raise 'Specify file with mutated sites in control group'  unless mutated_site_infos_random_filename = ARGV[1] # './results/intermediate/site_subsets/random_cpg.txt'
 
 histograms = MultiHistogram.new{
-  Histogram.new(-2, 2, 4){|pvalue_1| pvalue_1 }
+  Histogram.new(-2, pvalue_cutoff, 3){|pvalue_1| pvalue_1 } # Take actual site with any P-value into the same bin
 }
 
 PerfectosAPE::ResultShort.each_in_file(mutated_site_infos_cancer_filename).each do |site|
