@@ -121,8 +121,8 @@ YeastApobecSamples.each do |sample|
 
     fold_change_distribution_task(
       input_files: input_files,
-      output_folder: File.join(output_folder, 'all'),
-      only_actual_sites: false,
+      output_folder: File.join(output_folder, 'actual_sites'),
+      only_actual_sites: true,
       pvalue_cutoff: Configuration::PvalueCutoff,
       only_substitutions_in_core: false,
       task_name: "fold_change_distribution:YeastApobec:#{sample}:#{context}:actual_sites"
