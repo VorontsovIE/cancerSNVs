@@ -30,7 +30,7 @@ task 'aggregate_common_motifs' => ['results/motif_statistics/aggregated/'] do
   [:protected, :subjected].each do |protected_or_subjected|
     [:disruption, :emergence].each do |disruption_or_emergence|
       prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
-      File.open("results/motif_statistics/aggregated/#{protected_or_subjected}_#{prep}_#{disruption_or_emergence}_in_any_context.txt", 'w') {|fw|
+      File.open("results/motif_statistics/aggregated/#{protected_or_subjected}_#{prep}_#{disruption_or_emergence}_in_any_context.csv", 'w') {|fw|
         collect_different_sample_statistics(sample_files('any', protected_or_subjected, disruption_or_emergence), stream: fw)
       }
     end
