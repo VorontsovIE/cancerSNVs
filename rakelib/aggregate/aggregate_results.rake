@@ -12,13 +12,13 @@ def collect_different_sample_statistics(sample_files, stream:)
   }
 end
 
-def sample_files(context, protected_or_subjected, disruption_or_emergence)
+def sample_files(folder_common_motifs, context, protected_or_subjected, disruption_or_emergence)
   ( AlexandrovWholeGenomeCancers.map{|sample|
-    [sample, File.join('results/motif_statistics/common/Alexandrov/', sample.to_s, 
+    [sample, File.join('Alexandrov', sample.to_s,
                         context.to_s, protected_or_subjected.to_s, disruption_or_emergence.to_s, 'compared_to_each.txt') ]
   } +
   YeastApobecSamples.map{|sample|
-    [sample, File.join('results/motif_statistics/common/YeastApobec/', sample.to_s, 
+    [sample, File.join(folder_common_motifs, 'YeastApobec', sample.to_s,
                         context.to_s, protected_or_subjected.to_s, disruption_or_emergence.to_s, 'compared_to_each.txt') ]
   } ).to_h
 end
@@ -31,7 +31,21 @@ task 'aggregate_common_motifs' => ['results/motif_statistics/aggregated/'] do
     [:disruption, :emergence].each do |disruption_or_emergence|
       prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
       File.open("results/motif_statistics/aggregated/#{protected_or_subjected}_#{prep}_#{disruption_or_emergence}_in_any_context.csv", 'w') {|fw|
-        collect_different_sample_statistics(sample_files('any', protected_or_subjected, disruption_or_emergence), stream: fw)
+        collect_different_sample_statistics(sample_files('results/motif_statistics/common/', 'any', protected_or_subjected, disruption_or_emergence), stream: fw)
+      }
+    end
+  end
+end
+
+directory 'results/motif_statistics/aggregated_wo_fitting/'
+
+desc 'Aggregate common motifs over samples (w/o fitting)'
+task 'aggregate_common_motifs_wo_fitting' => ['results/motif_statistics/aggregated_wo_fitting/'] do
+  [:protected, :subjected].each do |protected_or_subjected|
+    [:disruption, :emergence].each do |disruption_or_emergence|
+      prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
+      File.open("results/motif_statistics/aggregated_wo_fitting/#{protected_or_subjected}_#{prep}_#{disruption_or_emergence}_in_any_context.csv", 'w') {|fw|
+        collect_different_sample_statistics(sample_files('results/motif_statistics/common_wo_fitting/', 'any', protected_or_subjected, disruption_or_emergence), stream: fw)
       }
     end
   end
