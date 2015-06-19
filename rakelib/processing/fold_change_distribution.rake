@@ -15,26 +15,31 @@ def fold_change_distribution_task(input_files:, output_folder:, task_name:,
   task task_name => output_folder
 end
 
-def fold_change_distribution_plot_task(input_file:, output_file:, task_name:)
-  output_folder = File.dirname(output_file)
-  directory output_folder
-  file output_file => [output_folder, input_file] do
-    num_cols = File.readlines(input_file).first.chomp.split("\t").size
-    sh 'gnuplot',
-      '-e', "infile='#{input_file}'; outfile='#{output_file}'; num_cols=#{num_cols};",
-      'fold_change_distribution.gpl'
-  end
-  task task_name => output_file
+
+def plot_fold_change_distribution(input_file:, output_file:)
+  num_cols = File.readlines(input_file).first.chomp.split("\t").size
+  sh 'gnuplot',
+    '-e', "infile='#{input_file}'; outfile='#{output_file}'; num_cols=#{num_cols};",
+    'fold_change_distribution.gpl'
 end
 
 desc 'Fold change distribution plots'
-task 'fold_change_distribution_plot'
-Dir.glob('results/motif_statistics/fold_change_distribution/**/*.csv').each do |fn|
-  fold_change_distribution_plot_task(
-    input_file: fn,
-    output_file: fn.pathmap('%d/plot/%n.png'),
-    task_name: 'fold_change_distribution_plot'
-  )
+task 'fold_change_distribution_plot' do
+  plot_inputs = Dir.glob('results/motif_statistics/fold_change_distribution/**/*.csv')
+
+  plot_inputs.map{|fn|
+    File.dirname(fn.pathmap('%d/plot/%n.png'))
+  }.uniq
+  .each{|dirname|
+    mkdir_p dirname  unless Dir.exist?(dirname)
+  }
+
+  plot_inputs.each do |fn|
+    plot_fold_change_distribution(
+      input_file: fn,
+      output_file: fn.pathmap('%d/plot/%n.png')
+    )
+  end
 end
 
 desc 'Fold change distribution profiles for each motif across cancer and control datasets'
