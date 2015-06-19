@@ -103,6 +103,9 @@ task 'aggregate_common_motifs_wo_fitting' => ['results/motif_statistics/aggregat
       File.open("results/motif_statistics/aggregated_wo_fitting/#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context.csv", 'w') {|fw|
         collect_different_sample_statistics(sample_files('results/motif_statistics/common_wo_fitting/', 'any', protected_or_subjected, characteristic), stream: fw)
       }
+      File.open("results/motif_statistics/aggregated_wo_fitting/#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context_glued.csv", 'w') {|fw|
+        collect_different_sample_statistics_gluing_subfamilies(sample_files('results/motif_statistics/common_wo_fitting/', 'any', protected_or_subjected, characteristic), stream: fw)
+      }
     end
   end
 end
