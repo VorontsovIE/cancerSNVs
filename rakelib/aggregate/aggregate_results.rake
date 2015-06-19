@@ -14,7 +14,7 @@ end
 
 def sample_files(folder_common_motifs, context, protected_or_subjected, disruption_or_emergence)
   ( AlexandrovWholeGenomeCancers.map{|sample|
-    [sample, File.join('Alexandrov', sample.to_s,
+    [sample, File.join(folder_common_motifs, 'Alexandrov', sample.to_s,
                         context.to_s, protected_or_subjected.to_s, disruption_or_emergence.to_s, 'compared_to_each.txt') ]
   } +
   YeastApobecSamples.map{|sample|
