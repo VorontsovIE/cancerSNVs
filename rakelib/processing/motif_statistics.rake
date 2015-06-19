@@ -16,14 +16,12 @@ def make_statistics_comparison_task(cancer_slices_folder:, random_slices_folder:
 end
 
 def make_filtered_statistics_task(motif_statistics_file:, output_folder:, task_name:)
-  task task_name => "#{task_name}:filtered"
-  ['subjected', 'protected'].each do |subjected_or_protected|
-    ['disruption',  'emergence', 'substitution-in-core'].each do |characteristic|
-      output_subfolder = File.join(output_folder, subjected_or_protected.to_s, characteristic.to_s)
-      directory output_subfolder
-      output_filename = File.join(output_subfolder, File.basename(motif_statistics_file))
-      task "#{task_name}:filtered" => output_filename
-      file output_filename => [output_subfolder] do
+  task task_name do
+    ['subjected', 'protected'].each do |subjected_or_protected|
+      ['disruption',  'emergence', 'substitution-in-core'].each do |characteristic|
+        output_subfolder = File.join(output_folder, subjected_or_protected.to_s, characteristic.to_s)
+        mkdir_p output_subfolder
+        output_filename = File.join(output_subfolder, File.basename(motif_statistics_file))
         ruby 'filter_summary.rb', motif_statistics_file,
                                 '--motif-qualities', 'A,B,C,D',
                                 '--significance', 0.05.to_s,
@@ -36,15 +34,14 @@ def make_filtered_statistics_task(motif_statistics_file:, output_folder:, task_n
 end
 
 def make_common_motifs_tasks(folder:, random_datasets:, output_folder:, output_file:, task_name:)
-  ['subjected', 'protected'].each do |subjected_or_protected|
-    ['disruption',  'emergence', 'substitution-in-core'].each do |characteristic|
-      input_files = random_datasets.map{|dataset| File.join(folder, subjected_or_protected.to_s, characteristic.to_s, "#{dataset}.csv") }
-      output_subfolder = File.join(output_folder, subjected_or_protected.to_s, characteristic.to_s)
-      output_file_fullname = File.join(output_subfolder, output_file)
-      
-      directory output_subfolder
-      task task_name => output_file_fullname
-      file output_file_fullname => [*input_files, output_subfolder] do
+  task task_name do
+    ['subjected', 'protected'].each do |subjected_or_protected|
+      ['disruption',  'emergence', 'substitution-in-core'].each do |characteristic|
+        input_files = random_datasets.map{|dataset| File.join(folder, subjected_or_protected.to_s, characteristic.to_s, "#{dataset}.csv") }
+        output_subfolder = File.join(output_folder, subjected_or_protected.to_s, characteristic.to_s)
+        output_file_fullname = File.join(output_subfolder, output_file)
+
+        mkdir_p output_subfolder
         ruby 'common_motifs.rb', *input_files, {out: output_file_fullname}, {}
       end
     end
@@ -81,172 +78,130 @@ def make_all_common_motifs_tasks(folder:, output_folder:, configuration_module:,
   )
 end
 
-desc 'Calculate motif statistics (don\'t use in multitask mode)'
+desc 'Calculate motif statistics; 1-st stage'
 task 'motif_statistics' => ['motif_statistics:Alexandrov', 'motif_statistics:NikZainal', 'motif_statistics:YeastApobec']
-desc 'Calculate motif statistics (don\'t use in multitask mode; w/o fitting)'
+
+desc 'Calculate motif statistics (w/o fitting); 1-st stage'
 task 'motif_statistics_wo_fitting' => ['motif_statistics_wo_fitting:Alexandrov', 'motif_statistics_wo_fitting:NikZainal', 'motif_statistics_wo_fitting:YeastApobec']
 
-task 'motif_statistics:Alexandrov'
-task 'motif_statistics_wo_fitting:Alexandrov'
-AlexandrovWholeGenomeCancers.each do |cancer_type|
-  task "motif_statistics:Alexandrov" => "motif_statistics:Alexandrov:#{cancer_type}"
-  task "motif_statistics_wo_fitting:Alexandrov" => "motif_statistics_wo_fitting:Alexandrov:#{cancer_type}"
-  Configuration::Alexandrov.contexts_by_cancer_type(cancer_type).each do |context|
-    task "motif_statistics:Alexandrov:#{cancer_type}" => "motif_statistics:Alexandrov:#{cancer_type}:#{context}"
-    task "motif_statistics_wo_fitting:Alexandrov:#{cancer_type}" => "motif_statistics_wo_fitting:Alexandrov:#{cancer_type}:#{context}"
+desc 'Process motif statistics; 2-nd stage'
+task 'filtered_motif_statistics' => ['filtered_motif_statistics:Alexandrov', 'filtered_motif_statistics:NikZainal', 'filtered_motif_statistics:YeastApobec']
 
-    Configuration::Alexandrov::RandomDatasets.each do |random_dataset|
-      task "motif_statistics:Alexandrov:#{cancer_type}:#{context}" => "motif_statistics:Alexandrov:#{cancer_type}:#{context}:#{random_dataset}"
-      task "motif_statistics_wo_fitting:Alexandrov:#{cancer_type}:#{context}" => "motif_statistics_wo_fitting:Alexandrov:#{cancer_type}:#{context}:#{random_dataset}"
+desc 'Process motif statistics (w/o fitting); 2-nd stage'
+task 'filtered_motif_statistics_wo_fitting' => ['filtered_motif_statistics_wo_fitting:Alexandrov', 'filtered_motif_statistics_wo_fitting:NikZainal', 'filtered_motif_statistics_wo_fitting:YeastApobec']
 
-      make_statistics_comparison_task(
-        cancer_slices_folder: File.join(LocalPaths::Secondary::Slices, 'Alexandrov', cancer_type.to_s, context.to_s, 'cancer'),
-        random_slices_folder: File.join(LocalPaths::Secondary::Slices, 'Alexandrov', cancer_type.to_s, context.to_s, random_dataset),
-        fitting_log: File.join(LocalPaths::Secondary::LogFolder, 'Alexandrov', cancer_type.to_s, context.to_s, "#{random_dataset}.log"),
-        output_file: File.join(LocalPaths::Secondary::MotifStatistics, 'full', 'Alexandrov', cancer_type.to_s, context.to_s, "#{random_dataset}.csv"),
-        task_name: "motif_statistics:Alexandrov:#{cancer_type}:#{context}:#{random_dataset}"
-      )
+desc 'Collect common motifs from motif statistics; 3-rd stage'
+task 'common_motif_statistics' => ['common_motif_statistics:Alexandrov', 'common_motif_statistics:NikZainal', 'common_motif_statistics:YeastApobec']
 
-      make_filtered_statistics_task(motif_statistics_file: File.join(LocalPaths::Secondary::MotifStatistics, 'full', 'Alexandrov', cancer_type.to_s, context.to_s, "#{random_dataset}.csv"),
-                                    output_folder: File.join(LocalPaths::Secondary::MotifStatistics, 'filtered', 'Alexandrov', cancer_type.to_s, context.to_s),
-                                    task_name: "motif_statistics:Alexandrov:#{cancer_type}:#{context}:#{random_dataset}")
+desc 'Collect common motifs from motif statistics (w/o fitting); 3-rd stage'
+task 'common_motif_statistics_wo_fitting' => ['common_motif_statistics_wo_fitting:Alexandrov', 'common_motif_statistics_wo_fitting:NikZainal', 'common_motif_statistics_wo_fitting:YeastApobec']
 
-      ##############
-      make_statistics_comparison_task(
-        cancer_slices_folder: File.join(LocalPaths::Secondary::Sites, 'Alexandrov', cancer_type.to_s, context.to_s, 'cancer'),
-        random_slices_folder: File.join(LocalPaths::Secondary::Sites, 'Alexandrov', cancer_type.to_s, context.to_s, random_dataset),
-        fitting_log: nil,
-        output_file: File.join(LocalPaths::Secondary::MotifStatistics, 'full_wo_fitting', 'Alexandrov', cancer_type.to_s, context.to_s, "#{random_dataset}.csv"),
-        task_name: "motif_statistics_wo_fitting:Alexandrov:#{cancer_type}:#{context}:#{random_dataset}"
-      )
+def prefixed_motif_statistics_task(task, dependencies, perform_calculation: true, filtering: true, common_motifs: true)
+  task_prefixes = []
+  task_prefixes += ['motif_statistics', 'motif_statistics_wo_fitting']  if perform_calculation
+  task_prefixes += ['filtered_motif_statistics', 'filtered_motif_statistics_wo_fitting']  if filtering
+  task_prefixes += ['common_motif_statistics', 'common_motif_statistics_wo_fitting']  if common_motifs
 
-      make_filtered_statistics_task(motif_statistics_file: File.join(LocalPaths::Secondary::MotifStatistics, 'full_wo_fitting', 'Alexandrov', cancer_type.to_s, context.to_s, "#{random_dataset}.csv"),
-                                    output_folder: File.join(LocalPaths::Secondary::MotifStatistics, 'filtered_wo_fitting', 'Alexandrov', cancer_type.to_s, context.to_s),
-                                    task_name: "motif_statistics_wo_fitting:Alexandrov:#{cancer_type}:#{context}:#{random_dataset}")
-
-    end
-
-    task "motif_statistics:Alexandrov:#{cancer_type}:#{context}" => "motif_statistics:Alexandrov:#{cancer_type}:#{context}:common_motifs"
-    task "motif_statistics_wo_fitting:Alexandrov:#{cancer_type}:#{context}" => "motif_statistics_wo_fitting:Alexandrov:#{cancer_type}:#{context}:common_motifs"
-    make_all_common_motifs_tasks(
-      folder: File.join(LocalPaths::Secondary::MotifStatistics, 'filtered', 'Alexandrov', cancer_type.to_s, context.to_s),
-      output_folder: File.join(LocalPaths::Secondary::MotifStatistics, 'common', 'Alexandrov', cancer_type.to_s, context.to_s),
-      configuration_module: Configuration::Alexandrov,
-      task_name: "motif_statistics:Alexandrov:#{cancer_type}:#{context}:common_motifs"
-    )
-    make_all_common_motifs_tasks(
-      folder: File.join(LocalPaths::Secondary::MotifStatistics, 'filtered_wo_fitting', 'Alexandrov', cancer_type.to_s, context.to_s),
-      output_folder: File.join(LocalPaths::Secondary::MotifStatistics, 'common_wo_fitting', 'Alexandrov', cancer_type.to_s, context.to_s),
-      configuration_module: Configuration::Alexandrov,
-      task_name: "motif_statistics_wo_fitting:Alexandrov:#{cancer_type}:#{context}:common_motifs"
-    )
-  end
+  task_prefixes.each{|task_prefix|
+    task "#{task_prefix}:#{task}" => Array(dependencies).map{|dependency| "#{task_prefix}:#{dependency}" }
+  }
 end
 
-task 'motif_statistics:NikZainal'
-task 'motif_statistics_wo_fitting:NikZainal'
-Configuration::NikZainalContexts.each do |context|
-  task "motif_statistics:NikZainal" => "motif_statistics:NikZainal:#{context}"
-  task "motif_statistics_wo_fitting:NikZainal" => "motif_statistics_wo_fitting:NikZainal:#{context}"
+fitting_wo_fitting_settings = [
+  ['motif_statistics', LocalPaths::Secondary::Slices, LocalPaths::Secondary::LogFolder, 'full', 'filtered', 'common'],
+  ['motif_statistics_wo_fitting', 'results/motif_statistics/slices_wo_fitting', nil, 'full_wo_fitting', 'filtered_wo_fitting', 'common_wo_fitting']
+]
 
-  Configuration::NikZainal::RandomDatasets.each do |random_dataset|
-    task "motif_statistics:NikZainal:#{context}" => "motif_statistics:NikZainal:#{context}:#{random_dataset}"
-    task "motif_statistics_wo_fitting:NikZainal:#{context}" => "motif_statistics_wo_fitting:NikZainal:#{context}:#{random_dataset}"
+fitting_wo_fitting_settings.each do |task_prefix, slices_folder, log_folder, full_folder, filtered_folder, common_folder|
+  ####################################
+  prefixed_motif_statistics_task 'Alexandrov', []
+  AlexandrovWholeGenomeCancers.each do |cancer_type|
+    prefixed_motif_statistics_task 'Alexandrov', ["Alexandrov:#{cancer_type}"]
+    Configuration::Alexandrov.contexts_by_cancer_type(cancer_type).each do |context|
+      prefixed_motif_statistics_task "Alexandrov:#{cancer_type}", ["Alexandrov:#{cancer_type}:#{context}"]
 
-    make_statistics_comparison_task(
-      cancer_slices_folder: File.join(LocalPaths::Secondary::Slices, 'NikZainal', context.to_s, 'cancer'),
-      random_slices_folder: File.join(LocalPaths::Secondary::Slices, 'NikZainal', context.to_s, random_dataset),
-      fitting_log: File.join(LocalPaths::Secondary::LogFolder, 'NikZainal', context.to_s, "#{random_dataset}.log"),
-      output_file: File.join(LocalPaths::Secondary::MotifStatistics, 'full', 'NikZainal', context.to_s, "#{random_dataset}.csv"),
-      task_name: "motif_statistics:NikZainal:#{context}:#{random_dataset}"
-    )
+      Configuration::Alexandrov::RandomDatasets.each do |random_dataset|
+        prefixed_motif_statistics_task "Alexandrov:#{cancer_type}:#{context}", "Alexandrov:#{cancer_type}:#{context}:#{random_dataset}", common_motifs: false
+        make_statistics_comparison_task(
+          cancer_slices_folder: File.join(slices_folder, 'Alexandrov', cancer_type.to_s, context.to_s, 'cancer'),
+          random_slices_folder: File.join(slices_folder, 'Alexandrov', cancer_type.to_s, context.to_s, random_dataset),
+          fitting_log: log_folder && File.join(log_folder, 'Alexandrov', cancer_type.to_s, context.to_s, "#{random_dataset}.log"),
+          output_file: File.join(LocalPaths::Secondary::MotifStatistics, full_folder, 'Alexandrov', cancer_type.to_s, context.to_s, "#{random_dataset}.csv"),
+          task_name: "#{task_prefix}:Alexandrov:#{cancer_type}:#{context}:#{random_dataset}"
+        )
 
-    make_filtered_statistics_task(motif_statistics_file: File.join(LocalPaths::Secondary::MotifStatistics, 'full', 'NikZainal', context.to_s, "#{random_dataset}.csv"),
-                                  output_folder: File.join(LocalPaths::Secondary::MotifStatistics, 'filtered', 'NikZainal', context.to_s),
-                                  task_name: "motif_statistics:NikZainal:#{context}:#{random_dataset}")
+        make_filtered_statistics_task(motif_statistics_file: File.join(LocalPaths::Secondary::MotifStatistics, full_folder, 'Alexandrov', cancer_type.to_s, context.to_s, "#{random_dataset}.csv"),
+                                      output_folder: File.join(LocalPaths::Secondary::MotifStatistics, filtered_folder, 'Alexandrov', cancer_type.to_s, context.to_s),
+                                      task_name: "filtered_#{task_prefix}:Alexandrov:#{cancer_type}:#{context}:#{random_dataset}")
+      end
 
-    ########################
-    make_statistics_comparison_task(
-      cancer_slices_folder: File.join(LocalPaths::Secondary::Sites, 'NikZainal', context.to_s, 'cancer'),
-      random_slices_folder: File.join(LocalPaths::Secondary::Sites, 'NikZainal', context.to_s, random_dataset),
-      fitting_log: nil,
-      output_file: File.join(LocalPaths::Secondary::MotifStatistics, 'full_wo_fitting', 'NikZainal', context.to_s, "#{random_dataset}.csv"),
-      task_name: "motif_statistics_wo_fitting:NikZainal:#{context}:#{random_dataset}"
-    )
-
-    make_filtered_statistics_task(motif_statistics_file: File.join(LocalPaths::Secondary::MotifStatistics, 'full_wo_fitting', 'NikZainal', context.to_s, "#{random_dataset}.csv"),
-                                  output_folder: File.join(LocalPaths::Secondary::MotifStatistics, 'filtered_wo_fitting', 'NikZainal', context.to_s),
-                                  task_name: "motif_statistics_wo_fitting:NikZainal:#{context}:#{random_dataset}")
+      make_all_common_motifs_tasks(
+        folder: File.join(LocalPaths::Secondary::MotifStatistics, filtered_folder, 'Alexandrov', cancer_type.to_s, context.to_s),
+        output_folder: File.join(LocalPaths::Secondary::MotifStatistics, common_folder, 'Alexandrov', cancer_type.to_s, context.to_s),
+        configuration_module: Configuration::Alexandrov,
+        task_name: "common_#{task_prefix}:Alexandrov:#{cancer_type}:#{context}"
+      )
+    end
   end
 
-  task "motif_statistics:NikZainal:#{context}" => "motif_statistics:NikZainal:#{context}:common_motifs"
-  task "motif_statistics_wo_fitting:NikZainal:#{context}" => "motif_statistics_wo_fitting:NikZainal:#{context}:common_motifs"
-  make_all_common_motifs_tasks(
-    folder: File.join(LocalPaths::Secondary::MotifStatistics, 'filtered', 'NikZainal', context.to_s),
-    output_folder: File.join(LocalPaths::Secondary::MotifStatistics, 'common', 'NikZainal', context.to_s),
-    configuration_module: Configuration::NikZainal,
-    task_name: "motif_statistics:NikZainal:#{context}:common_motifs"
-  )
-  make_all_common_motifs_tasks(
-    folder: File.join(LocalPaths::Secondary::MotifStatistics, 'filtered_wo_fitting', 'NikZainal', context.to_s),
-    output_folder: File.join(LocalPaths::Secondary::MotifStatistics, 'common_wo_fitting', 'NikZainal', context.to_s),
-    configuration_module: Configuration::NikZainal,
-    task_name: "motif_statistics_wo_fitting:NikZainal:#{context}:common_motifs"
-  )
-end
+  ####################################
 
-task 'motif_statistics:YeastApobec'
-task 'motif_statistics_wo_fitting:YeastApobec'
-YeastApobecSamples.each do |sample|
-  task "motif_statistics:YeastApobec" => "motif_statistics:YeastApobec:#{sample}"
-  task "motif_statistics_wo_fitting:YeastApobec" => "motif_statistics_wo_fitting:YeastApobec:#{sample}"
-  Configuration::YeastApobec.contexts_by_cancer_type(sample).each do |context|
-    task "motif_statistics:YeastApobec:#{sample}" => "motif_statistics:YeastApobec:#{sample}:#{context}"
-    task "motif_statistics_wo_fitting:YeastApobec:#{sample}" => "motif_statistics_wo_fitting:YeastApobec:#{sample}:#{context}"
-
-    Configuration::YeastApobec::RandomDatasets.each do |random_dataset|
-      task "motif_statistics:YeastApobec:#{sample}:#{context}" => "motif_statistics:YeastApobec:#{sample}:#{context}:#{random_dataset}"
-      task "motif_statistics_wo_fitting:YeastApobec:#{sample}:#{context}" => "motif_statistics_wo_fitting:YeastApobec:#{sample}:#{context}:#{random_dataset}"
+  prefixed_motif_statistics_task 'NikZainal', []
+  Configuration::NikZainalContexts.each do |context|
+    prefixed_motif_statistics_task "NikZainal", ["NikZainal:#{context}"]
+    Configuration::NikZainal::RandomDatasets.each do |random_dataset|
+      prefixed_motif_statistics_task "NikZainal:#{context}", ["NikZainal:#{context}:#{random_dataset}"], common_motifs: false
 
       make_statistics_comparison_task(
-        cancer_slices_folder: File.join(LocalPaths::Secondary::Slices, 'YeastApobec', sample.to_s, context.to_s, 'cancer'),
-        random_slices_folder: File.join(LocalPaths::Secondary::Slices, 'YeastApobec', sample.to_s, context.to_s, random_dataset),
-        fitting_log: File.join(LocalPaths::Secondary::LogFolder, 'YeastApobec', sample.to_s, context.to_s, "#{random_dataset}.log"),
-        output_file: File.join(LocalPaths::Secondary::MotifStatistics, 'full', 'YeastApobec', sample.to_s, context.to_s, "#{random_dataset}.csv"),
-        task_name: "motif_statistics:YeastApobec:#{sample}:#{context}:#{random_dataset}"
+        cancer_slices_folder: File.join(slices_folder, 'NikZainal', context.to_s, 'cancer'),
+        random_slices_folder: File.join(slices_folder, 'NikZainal', context.to_s, random_dataset),
+        fitting_log: log_folder && File.join(log_folder, 'NikZainal', context.to_s, "#{random_dataset}.log"),
+        output_file: File.join(LocalPaths::Secondary::MotifStatistics, full_folder, 'NikZainal', context.to_s, "#{random_dataset}.csv"),
+        task_name: "#{task_prefix}:NikZainal:#{context}:#{random_dataset}"
       )
 
-      make_filtered_statistics_task(motif_statistics_file: File.join(LocalPaths::Secondary::MotifStatistics, 'full', 'YeastApobec', sample.to_s, context.to_s, "#{random_dataset}.csv"),
-                                    output_folder: File.join(LocalPaths::Secondary::MotifStatistics, 'filtered', 'YeastApobec', sample.to_s, context.to_s),
-                                    task_name: "motif_statistics:YeastApobec:#{sample}:#{context}:#{random_dataset}")
-
-      #######################
-      make_statistics_comparison_task(
-        cancer_slices_folder: File.join(LocalPaths::Secondary::Sites, 'YeastApobec', sample.to_s, context.to_s, 'cancer'),
-        random_slices_folder: File.join(LocalPaths::Secondary::Sites, 'YeastApobec', sample.to_s, context.to_s, random_dataset),
-        fitting_log: nil,
-        output_file: File.join(LocalPaths::Secondary::MotifStatistics, 'full_wo_fitting', 'YeastApobec', sample.to_s, context.to_s, "#{random_dataset}.csv"),
-        task_name: "motif_statistics_wo_fitting:YeastApobec:#{sample}:#{context}:#{random_dataset}"
-      )
-
-      make_filtered_statistics_task(motif_statistics_file: File.join(LocalPaths::Secondary::MotifStatistics, 'full_wo_fitting', 'YeastApobec', sample.to_s, context.to_s, "#{random_dataset}.csv"),
-                                    output_folder: File.join(LocalPaths::Secondary::MotifStatistics, 'filtered_wo_fitting', 'YeastApobec', sample.to_s, context.to_s),
-                                    task_name: "motif_statistics_wo_fitting:YeastApobec:#{sample}:#{context}:#{random_dataset}")
+      make_filtered_statistics_task(motif_statistics_file: File.join(LocalPaths::Secondary::MotifStatistics, full_folder, 'NikZainal', context.to_s, "#{random_dataset}.csv"),
+                                    output_folder: File.join(LocalPaths::Secondary::MotifStatistics, filtered_folder, 'NikZainal', context.to_s),
+                                    task_name: "filtered_#{task_prefix}:NikZainal:#{context}:#{random_dataset}")
     end
 
-    task "motif_statistics:YeastApobec:#{sample}:#{context}" => "motif_statistics:YeastApobec:#{sample}:#{context}:common_motifs"
-    task "motif_statistics_wo_fitting:YeastApobec:#{sample}:#{context}" => "motif_statistics_wo_fitting:YeastApobec:#{sample}:#{context}:common_motifs"
     make_all_common_motifs_tasks(
-      folder: File.join(LocalPaths::Secondary::MotifStatistics, 'filtered', 'YeastApobec', sample.to_s, context.to_s),
-      output_folder: File.join(LocalPaths::Secondary::MotifStatistics, 'common', 'YeastApobec', sample.to_s, context.to_s),
-      configuration_module: Configuration::YeastApobec,
-      task_name: "motif_statistics:YeastApobec:#{sample}:#{context}:common_motifs"
+      folder: File.join(LocalPaths::Secondary::MotifStatistics, filtered_folder, 'NikZainal', context.to_s),
+      output_folder: File.join(LocalPaths::Secondary::MotifStatistics, common_folder, 'NikZainal', context.to_s),
+      configuration_module: Configuration::NikZainal,
+      task_name: "common_#{task_prefix}:NikZainal:#{context}"
     )
-    make_all_common_motifs_tasks(
-      folder: File.join(LocalPaths::Secondary::MotifStatistics, 'filtered_wo_fitting', 'YeastApobec', sample.to_s, context.to_s),
-      output_folder: File.join(LocalPaths::Secondary::MotifStatistics, 'common_wo_fitting', 'YeastApobec', sample.to_s, context.to_s),
-      configuration_module: Configuration::YeastApobec,
-      task_name: "motif_statistics_wo_fitting:YeastApobec:#{sample}:#{context}:common_motifs"
-    )
+  end
+
+  ####################################
+
+  prefixed_motif_statistics_task 'YeastApobec', []
+  YeastApobecSamples.each do |sample|
+    prefixed_motif_statistics_task "YeastApobec", ["YeastApobec:#{sample}"]
+    Configuration::YeastApobec.contexts_by_cancer_type(sample).each do |context|
+      prefixed_motif_statistics_task "YeastApobec:#{sample}", ["YeastApobec:#{sample}:#{context}"]
+      Configuration::YeastApobec::RandomDatasets.each do |random_dataset|
+        prefixed_motif_statistics_task "YeastApobec:#{sample}:#{context}", ["YeastApobec:#{sample}:#{context}:#{random_dataset}"], common_motifs: false
+
+        make_statistics_comparison_task(
+          cancer_slices_folder: File.join(slices_folder, 'YeastApobec', sample.to_s, context.to_s, 'cancer'),
+          random_slices_folder: File.join(slices_folder, 'YeastApobec', sample.to_s, context.to_s, random_dataset),
+          fitting_log: log_folder && File.join(log_folder, 'YeastApobec', sample.to_s, context.to_s, "#{random_dataset}.log"),
+          output_file: File.join(LocalPaths::Secondary::MotifStatistics, full_folder, 'YeastApobec', sample.to_s, context.to_s, "#{random_dataset}.csv"),
+          task_name: "#{task_prefix}:YeastApobec:#{sample}:#{context}:#{random_dataset}"
+        )
+
+        make_filtered_statistics_task(motif_statistics_file: File.join(LocalPaths::Secondary::MotifStatistics, full_folder, 'YeastApobec', sample.to_s, context.to_s, "#{random_dataset}.csv"),
+                                      output_folder: File.join(LocalPaths::Secondary::MotifStatistics, filtered_folder, 'YeastApobec', sample.to_s, context.to_s),
+                                      task_name: "filtered_#{task_prefix}:YeastApobec:#{sample}:#{context}:#{random_dataset}")
+      end
+
+      make_all_common_motifs_tasks(
+        folder: File.join(LocalPaths::Secondary::MotifStatistics, filtered_folder, 'YeastApobec', sample.to_s, context.to_s),
+        output_folder: File.join(LocalPaths::Secondary::MotifStatistics, common_folder, 'YeastApobec', sample.to_s, context.to_s),
+        configuration_module: Configuration::YeastApobec,
+        task_name: "common_#{task_prefix}:YeastApobec:#{sample}:#{context}"
+      )
+    end
   end
 end
