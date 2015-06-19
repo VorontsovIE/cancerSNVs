@@ -35,17 +35,17 @@ def collect_different_sample_statistics_gluing_subfamilies(sample_files, stream:
   uniprot_by_motif = motif_uniprots(LocalPaths::Secondary::GeneInfos)
 
   motif_uniprot_ids_by_sample = sample_files.map{|header, filename|
-    [header, File.readlines(filename).map(&:strip).map{|motif| uniprot_by_motif[motif] }.to_set]
+    [header, File.readlines(filename).map(&:strip).map{|motif| uniprot_by_motif[motif] }.compact.to_set]
   }.to_h
 
-  motif_uniprot_ids_by_sample.map{|header, uniprot_ids|
+  motif_subfamilies_by_sample = motif_uniprot_ids_by_sample.map{|header, uniprot_ids|
     motif_subfamilies = uniprot_ids.flat_map{|uniprot_id|
-      uniprot_id_to_subtree_root[uniprot_id].map(&:to_s)
+      uniprot_id_to_subtree_root[uniprot_id].compact.map(&:to_s)
     }.to_set
     [header, motif_subfamilies]
   }.to_h
 
-  print_term_occurences(motif_uniprot_ids_by_sample, stream: stream)
+  print_term_occurences(motif_subfamilies_by_sample, stream: stream)
 end
 
 
