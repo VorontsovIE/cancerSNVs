@@ -81,7 +81,7 @@ directory 'results/motif_statistics/aggregated/'
 desc 'Aggregate common motifs over samples'
 task 'aggregate_common_motifs' => ['results/motif_statistics/aggregated/'] do
   [:protected, :subjected].each do |protected_or_subjected|
-    [:disruption, :emergence, :substitution_in_core].each do |characteristic|
+    ['disruption', 'emergence', 'substitution-in-core'].each do |characteristic|
       prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
       File.open("results/motif_statistics/aggregated/#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context.csv", 'w') {|fw|
         collect_different_sample_statistics(sample_files('results/motif_statistics/common/', 'any', protected_or_subjected, characteristic), stream: fw)
@@ -98,7 +98,7 @@ directory 'results/motif_statistics/aggregated_wo_fitting/'
 desc 'Aggregate common motifs over samples (w/o fitting)'
 task 'aggregate_common_motifs_wo_fitting' => ['results/motif_statistics/aggregated_wo_fitting/'] do
   [:protected, :subjected].each do |protected_or_subjected|
-    [:disruption, :emergence, :substitution_in_core].each do |characteristic|
+    ['disruption', 'emergence', 'substitution-in-core'].each do |characteristic|
       prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
       File.open("results/motif_statistics/aggregated_wo_fitting/#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context.csv", 'w') {|fw|
         collect_different_sample_statistics(sample_files('results/motif_statistics/common_wo_fitting/', 'any', protected_or_subjected, characteristic), stream: fw)
