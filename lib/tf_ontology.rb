@@ -132,7 +132,7 @@ class TFClassification
     end
 
     def to_s
-      "#{name}(#{id})"
+      "#{name}{#{id}}"
     end
 
     def inspect; to_s; end
