@@ -63,7 +63,8 @@ module LocalPaths
 end
 
 module Configuration
-  CorrectionMethod = 'BY' # Benjamini-Yekutieli
+  # CorrectionMethod = 'BY' # Benjamini-Yekutieli
+  CorrectionMethod = 'fdr' # FDR
   FoldChangeCutoff = 4
   PvalueCutoff = 0.0005
 
