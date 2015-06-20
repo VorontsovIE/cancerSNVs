@@ -126,6 +126,39 @@ module Configuration
   NumberOfCores = 16
   MemoryLimitOption = '-Xmx1G' # ''
   ExpandFlanksLength = 11
+
+  def self.getAlexandrovWholeGenomeCancers
+    @alexandrov_samples ||= begin
+      SampleInfo.each_in_file(LocalPaths::Secondary::Alexandrov::SamplesSummary)
+                .group_by(&:cancer_type)
+                .select{|cancer_type, samples| samples.any?(&:whole_genome?) }
+                .map{|cancer_type, samples| cancer_type }
+                .to_a.sort
+    end
+  end
+
+  def self.getYeastApobecSamples
+    @yeast_apobec_samples ||= begin
+      Dir.glob('source_data/YeastApobec/*.mfa').map{|fn| File.basename(fn, '.mfa').to_sym }
+    end
+  end
+
+  # part of pathname specifying sample with context for each cancer type for each experiment in each context
+  def self.sample_paths
+    results = []
+    results += getAlexandrovWholeGenomeCancers.flat_map{|cancer_type|
+      Alexandrov.contexts_by_cancer_type(cancer_type).map{|context|
+        ["#{cancer_type} (Alexandrov et al. sample)", File.join('Alexandrov', cancer_type.to_s, context.to_s)]
+      }
+    }
+    results += getYeastApobecSamples.flat_map{|cancer_type|
+      YeastApobec.contexts_by_cancer_type(cancer_type).map{|context|
+        ["#{cancer_type} (Yeast APOBEC samples)", File.join('YeastApobec', cancer_type.to_s, context.to_s)]
+      }
+    }
+    results += NikZainalContexts.map{|context| ["Breast (NikZainal)", File.join('NikZainal', context.to_s)] }
+    results.to_h
+  end
 end
 
 ONE_BASED_INCLUSIVE = GenomeReader::CoordinateSystem::ONE_BASED_INCLUSIVE

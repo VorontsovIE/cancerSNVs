@@ -131,3 +131,58 @@ task 'aggregate_common_motifs_wo_fitting' => ['results/motif_statistics/aggregat
     end
   end
 end
+
+directory 'results/motif_statistics/aggregated_comparison'
+
+desc 'Compare motif sets for experiment with and without fitting'
+task :compare_fitted_to_unfitted => 'results/motif_statistics/aggregated_comparison' do
+
+  [:protected, :subjected].each do |protected_or_subjected|
+    ['disruption', 'emergence', 'substitution-in-core'].each do |characteristic|
+      prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
+      filename_last_part = File.join(protected_or_subjected.to_s, characteristic.to_s, 'compared_to_each.txt')
+
+      motifs_fitted = Configuration.sample_paths.map{|sample_name, sample_path|
+        motifs = File.readlines(
+          File.join('results/motif_statistics/common/', sample_path, filename_last_part)
+        ).map(&:chomp).to_set
+        [sample_name, motifs]
+      }.to_h
+
+      motifs_nonfitted = Configuration.sample_paths.map{|sample_name, sample_path|
+        motifs = File.readlines(
+          File.join('results/motif_statistics/common_wo_fitting/', sample_path, filename_last_part)
+        ).map(&:chomp).to_set
+        [sample_name, motifs]
+      }.to_h
+
+      all_motifs = (motifs_fitted.values + motifs_nonfitted.values).inject(&:|).to_a.sort
+      all_samples = Configuration.sample_paths.keys
+      results = []
+      results << ['Motif', *all_samples]
+      all_motifs.each{|motif|
+        occurences = all_samples.map{|sample|
+          if motifs_fitted[sample].include?(motif)
+            if motifs_nonfitted[sample].include?(motif)
+              0
+            else
+              1
+            end
+          else
+            if motifs_nonfitted[sample].include?(motif)
+              -1
+            else
+              nil
+            end
+          end
+        }
+        results << [motif, *occurences]
+      }
+
+      File.open("results/motif_statistics/aggregated_comparison/#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context.csv", 'w') do |fw|
+        print_matrix(results, stream: fw)
+      end
+    end
+  end
+
+end
