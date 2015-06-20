@@ -120,12 +120,12 @@ task 'aggregate_common_motifs' => ['results/motif_statistics/aggregated/'] do
     ['disruption', 'emergence', 'substitution-in-core'].each do |characteristic|
       prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
       files = sample_files('results/motif_statistics/common/', 'any', protected_or_subjected, characteristic)
-      File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context.csv"), 'w') {|fw|
+      File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context.tsv"), 'w') {|fw|
         matrix = collect_different_sample_statistics(files)
         matrix_augmented = with_motif_info_rows(matrix, motif_family_recognizer, uniprots_by_motif, motif_qualities)
         print_matrix(matrix_augmented, stream: fw)
       }
-      File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context_glued.csv"), 'w') {|fw|
+      File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context_glued.tsv"), 'w') {|fw|
         matrix = collect_different_sample_statistics_gluing_subfamilies(files, motif_family_recognizer, uniprots_by_motif)
         print_matrix(matrix, stream: fw)
       }
@@ -146,12 +146,12 @@ task 'aggregate_common_motifs_wo_fitting' => ['results/motif_statistics/aggregat
     ['disruption', 'emergence', 'substitution-in-core'].each do |characteristic|
       prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
       files = sample_files('results/motif_statistics/common_wo_fitting/', 'any', protected_or_subjected, characteristic)
-      File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context.csv"), 'w') {|fw|
+      File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context.tsv"), 'w') {|fw|
         matrix = collect_different_sample_statistics(files)
         matrix_augmented = with_motif_info_rows(matrix, motif_family_recognizer, uniprots_by_motif, motif_qualities)
         print_matrix(matrix_augmented, stream: fw)
       }
-      File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context_glued.csv"), 'w') {|fw|
+      File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context_glued.tsv"), 'w') {|fw|
         matrix = collect_different_sample_statistics_gluing_subfamilies(files, motif_family_recognizer, uniprots_by_motif)
         print_matrix(matrix, stream: fw)
       }
@@ -186,7 +186,7 @@ task :compare_fitted_to_unfitted => 'results/motif_statistics/aggregated_compari
 
       occurence_matrix = fitted_non_fitted_occurence_matrix(motifs_fitted_by_sample, motifs_nonfitted_by_sample)
 
-      File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context.csv"), 'w') do |fw|
+      File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context.tsv"), 'w') do |fw|
         print_matrix(occurence_matrix, stream: fw)
       end
     end
@@ -220,11 +220,11 @@ end
 
 desc 'Collect sample statistics'
 task :sample_statistics do
-  results = []
-  results << ['Sample', 'Genome fitting fold', 'Random fitting fold', 'Mutations total', *possible_contexts]
+  matrix = []
+  matrix << ['Sample', 'Genome fitting fold', 'Random fitting fold', 'Mutations total', *possible_contexts]
   Configuration.getAlexandrovWholeGenomeCancers.each{|cancer_type|
     context_counts = context_counts_in_file(File.join('results/SNVs', 'Alexandrov', cancer_type.to_s, 'cancer.txt'))
-    results << ["#{cancer_type} (Alexandrov et al. sample)", 
+    matrix << ["#{cancer_type} (Alexandrov et al. sample)", 
                 Configuration::Alexandrov::FittingFoldGenome[cancer_type],
                 Configuration::Alexandrov::FittingFoldShuffle[cancer_type],
                 context_counts.each_value.inject(0, &:+),
@@ -233,7 +233,7 @@ task :sample_statistics do
 
   Configuration.getYeastApobecSamples.each{|cancer_type|
     context_counts = context_counts_in_file(File.join('results/SNVs', 'YeastApobec', cancer_type.to_s, 'cancer.txt'))
-    results << ["#{cancer_type} (Yeast APOBEC sample)",
+    matrix << ["#{cancer_type} (Yeast APOBEC sample)",
                 'N/A',
                 Configuration::YeastApobec::FittingFoldShuffle[cancer_type],
                 context_counts.each_value.inject(0, &:+),
@@ -241,13 +241,23 @@ task :sample_statistics do
   }
 
   context_counts = context_counts_in_file(File.join('results/SNVs', 'NikZainal', 'cancer.txt'))
-  results << ['Breast (NikZainal samples)',
+  matrix << ['Breast (NikZainal samples)',
               Configuration::NikZainal::FittingFoldGenome,
               Configuration::NikZainal::FittingFoldShuffle,
               context_counts.each_value.inject(0, &:+),
               *possible_contexts.map{|context| context_counts[context] }]
 
-  File.open('results/motif_statistics/sample_statistics.txt', 'w'){|fw|
-    print_matrix(results.transpose, stream: fw)
+  File.open('results/motif_statistics/sample_statistics.tsv', 'w'){|fw|
+    print_matrix(matrix.transpose, stream: fw)
+  }
+
+  rates_matrix = []
+  rates_matrix << matrix.first
+  matrix.drop(1).map{|row|
+    total_count = row[3]
+    [*row.first(3), total_count, *row.drop(4).map{|count| (count.to_f / total_count).round(5) } ]
+  }
+  File.open('results/motif_statistics/sample_statistics_rates.tsv', 'w'){|fw|
+    print_matrix(rates_matrix.transpose, stream: fw)
   }
 end
