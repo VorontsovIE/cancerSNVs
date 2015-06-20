@@ -65,7 +65,7 @@ def with_motif_info_rows(matrix, motif_family_recognizer, uniprots_by_motif, mot
   qualities = motifs.map{|motif|  motif_qualities[motif]  }
   motifs_subfamilies = motifs.map{|motif|
     uniprot_ids = uniprots_by_motif[motif]
-    motif_family_recognizer.subfamilies_by_multiple_uniprot_ids(uniprot_ids).map(&:to_s).join(',')
+    motif_family_recognizer.subfamilies_by_multiple_uniprot_ids(uniprot_ids).map(&:to_s).join('; ')
   }
 
   [['Motif', *motifs], ['Motif quality', *qualities], ['Motif families', *motifs_subfamilies], *matrix_transposed.drop(1)].transpose
@@ -91,10 +91,17 @@ def fitted_non_fitted_occurence_state(in_fitted, in_nonfitted)
 end
 
 
-def fitted_non_fitted_occurence_matrix(motifs_fitted_by_sample, motifs_nonfitted_by_sample)
+def fitted_non_fitted_occurence_matrix(motifs_fitted_by_sample, motifs_nonfitted_by_sample, motif_family_recognizer, uniprots_by_motif, motif_qualities)
   all_motifs = (motifs_fitted_by_sample.values + motifs_nonfitted_by_sample.values).inject(&:|).to_a.sort # values are sets
+  qualities = all_motifs.map{|motif|  motif_qualities[motif]  }
+  motifs_subfamilies = all_motifs.map{|motif|
+    uniprot_ids = uniprots_by_motif[motif]
+    motif_family_recognizer.subfamilies_by_multiple_uniprot_ids(uniprot_ids).map(&:to_s).join('; ')
+  }
   results = []
   results << ['Motif', *all_motifs]
+  results << ['Motif quality', *qualities]
+  results << ['Motif families', *motifs_subfamilies]
   Configuration.sample_with_context_paths.each_key{|sample_name|
     motifs_fitted = motifs_fitted_by_sample[sample_name]
     motifs_nonfitted = motifs_nonfitted_by_sample[sample_name]
@@ -164,7 +171,10 @@ directory 'results/motif_statistics/aggregated_comparison'
 desc 'Compare motif sets for experiment with and without fitting'
 task :compare_fitted_to_unfitted => 'results/motif_statistics/aggregated_comparison' do
   output_folder = 'results/motif_statistics/aggregated_comparison/'
-
+  uniprots_by_motif = motif_uniprots(LocalPaths::Secondary::GeneInfos)
+  motif_qualities = load_motif_qualities(LocalPaths::Secondary::GeneInfos)
+  motif_family_recognizer = MotifFamilyRecognizer.new(3,'source_data/human_uniprot.txt',
+                                                        'source_data/TFOntologies/TFClass_human.obo')
   [:protected, :subjected].each do |protected_or_subjected|
     ['disruption', 'emergence', 'substitution-in-core'].each do |characteristic|
       prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
@@ -184,7 +194,7 @@ task :compare_fitted_to_unfitted => 'results/motif_statistics/aggregated_compari
         [sample_name, motifs]
       }.to_h
 
-      occurence_matrix = fitted_non_fitted_occurence_matrix(motifs_fitted_by_sample, motifs_nonfitted_by_sample)
+      occurence_matrix = fitted_non_fitted_occurence_matrix(motifs_fitted_by_sample, motifs_nonfitted_by_sample, motif_family_recognizer, uniprots_by_motif, motif_qualities)
 
       File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context.tsv"), 'w') do |fw|
         print_matrix(occurence_matrix, stream: fw)
@@ -253,9 +263,9 @@ task :sample_statistics do
 
   rates_matrix = []
   rates_matrix << matrix.first
-  matrix.drop(1).map{|row|
+  matrix.drop(1).each{|row|
     total_count = row[3]
-    [*row.first(3), total_count, *row.drop(4).map{|count| (count.to_f / total_count).round(5) } ]
+    rates_matrix << [*row.first(3), total_count, *row.drop(4).map{|count| (count.to_f / total_count).round(5) } ]
   }
   File.open('results/motif_statistics/sample_statistics_rates.tsv', 'w'){|fw|
     print_matrix(rates_matrix.transpose, stream: fw)
