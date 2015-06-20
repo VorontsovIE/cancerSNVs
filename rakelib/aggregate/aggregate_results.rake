@@ -95,7 +95,7 @@ def fitted_non_fitted_occurence_matrix(motifs_fitted_by_sample, motifs_nonfitted
   all_motifs = (motifs_fitted_by_sample.values + motifs_nonfitted_by_sample.values).inject(&:|).to_a.sort # values are sets
   results = []
   results << ['Motif', *all_motifs]
-  Configuration.sample_paths.each_key{|sample_name|
+  Configuration.sample_with_context_paths.each_key{|sample_name|
     motifs_fitted = motifs_fitted_by_sample[sample_name]
     motifs_nonfitted = motifs_nonfitted_by_sample[sample_name]
     motifs_occurences = all_motifs.map{|motif|
@@ -170,14 +170,14 @@ task :compare_fitted_to_unfitted => 'results/motif_statistics/aggregated_compari
       prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
       filename_last_part = File.join(protected_or_subjected.to_s, characteristic.to_s, 'compared_to_each.txt')
 
-      motifs_fitted_by_sample = Configuration.sample_paths.map{|sample_name, sample_path|
+      motifs_fitted_by_sample = Configuration.sample_with_context_paths.map{|sample_name, sample_path|
         motifs = File.readlines(
           File.join('results/motif_statistics/common/', sample_path, filename_last_part)
         ).map(&:chomp).to_set
         [sample_name, motifs]
       }.to_h
 
-      motifs_nonfitted_by_sample = Configuration.sample_paths.map{|sample_name, sample_path|
+      motifs_nonfitted_by_sample = Configuration.sample_with_context_paths.map{|sample_name, sample_path|
         motifs = File.readlines(
           File.join('results/motif_statistics/common_wo_fitting/', sample_path, filename_last_part)
         ).map(&:chomp).to_set
@@ -191,5 +191,63 @@ task :compare_fitted_to_unfitted => 'results/motif_statistics/aggregated_compari
       end
     end
   end
+end
 
+def possible_contexts
+  @possible_contexts ||= begin
+    results = []
+    %w[A C G T].each{|five_prime|
+      %w[C T].each{|reference_allele|
+        %w[A C G T].each{|three_prime|
+          (%w[A C G T] - [reference_allele]).each{|mutated_allele|
+            results << "#{five_prime}[#{reference_allele}/#{mutated_allele}]#{three_prime}"
+          }
+        }
+      }
+    }
+    results
+  end
+end
+
+def context_counts_in_file(snvs_filename)
+  context_counts = Hash.new(0)
+  SNVInfo.each_in_file(snvs_filename){|snv|
+    expanded_context = SequenceWithSNV.from_string(snv.variant_id.split('@').last).in_pyrimidine_context.to_s
+    context_counts[expanded_context] += 1
+  }
+  context_counts
+end
+
+desc 'Collect sample statistics'
+task :sample_statistics do
+  results = []
+  results << ['Sample', 'Genome fitting fold', 'Random fitting fold', 'Mutations total', *possible_contexts]
+  Configuration.getAlexandrovWholeGenomeCancers.each{|cancer_type|
+    context_counts = context_counts_in_file(File.join('results/SNVs', 'Alexandrov', cancer_type.to_s, 'cancer.txt'))
+    results << ["#{cancer_type} (Alexandrov et al. sample)", 
+                Configuration::Alexandrov::FittingFoldGenome[cancer_type],
+                Configuration::Alexandrov::FittingFoldShuffle[cancer_type],
+                context_counts.each_value.inject(0, &:+),
+                *possible_contexts.map{|context| context_counts[context] }]
+  }
+
+  Configuration.getYeastApobecSamples.each{|cancer_type|
+    context_counts = context_counts_in_file(File.join('results/SNVs', 'YeastApobec', cancer_type.to_s, 'cancer.txt'))
+    results << ["#{cancer_type} (Yeast APOBEC sample)",
+                'N/A',
+                Configuration::YeastApobec::FittingFoldShuffle[cancer_type],
+                context_counts.each_value.inject(0, &:+),
+                *possible_contexts.map{|context| context_counts[context] }]
+  }
+
+  context_counts = context_counts_in_file(File.join('results/SNVs', 'NikZainal', 'cancer.txt'))
+  results << ['Breast (NikZainal samples)',
+              Configuration::NikZainal::FittingFoldGenome,
+              Configuration::NikZainal::FittingFoldShuffle,
+              context_counts.each_value.inject(0, &:+),
+              *possible_contexts.map{|context| context_counts[context] }]
+
+  File.open('results/motif_statistics/sample_statistics.txt', 'w'){|fw|
+    print_matrix(results.transpose, stream: fw)
+  }
 end
