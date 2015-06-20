@@ -4,19 +4,26 @@ require_relative '../../lib/motif_family_recognizer'
 def motif_uniprots(filename)
   File.readlines(filename).drop(1).map{|line|
     motif, gene, quality, weight, human_uniprot, mouse_uniprot, consensus = line.chomp.split("\t")
-    [motif, human_uniprot]
+    [motif, human_uniprot.split(',')]
   }.to_h
 end
 
-def motif_uniprots_in_file(filename, uniprot_by_motif)
-  File.readlines(filename).map(&:strip).map{|motif|
-    uniprot_by_motif[motif]
+def load_motif_qualities(filename)
+  File.readlines(filename).drop(1).map{|line|
+    motif, gene, quality, weight, human_uniprot, mouse_uniprot, consensus = line.chomp.split("\t")
+    [motif, quality]
+  }.to_h
+end
+
+def motif_uniprots_in_file(filename, uniprots_by_motif)
+  File.readlines(filename).map(&:strip).flat_map{|motif|
+    uniprots_by_motif[motif]
   }.compact.to_set
 end
 
-def collect_different_sample_statistics_gluing_subfamilies(sample_files, motif_family_recognizer, uniprot_by_motif)
+def collect_different_sample_statistics_gluing_subfamilies(sample_files, motif_family_recognizer, uniprots_by_motif)
   motif_uniprot_ids_by_sample = sample_files.map{|sample, filename|
-    [sample, motif_uniprots_in_file(filename, uniprot_by_motif)]
+    [sample, motif_uniprots_in_file(filename, uniprots_by_motif)]
   }.to_h
 
   motif_subfamilies_by_sample = motif_uniprot_ids_by_sample.map{|sample, uniprot_ids|
@@ -52,6 +59,18 @@ def term_occurences_matrix(terms_by_sample)
   matrix.transpose
 end
 
+def with_motif_info_rows(matrix, motif_family_recognizer, uniprots_by_motif, motif_qualities)
+  matrix_transposed = matrix.transpose
+  motifs = matrix_transposed.first.drop(1)
+  qualities = motifs.map{|motif|  motif_qualities[motif]  }
+  motifs_subfamilies = motifs.map{|motif|
+    uniprot_ids = uniprots_by_motif[motif]
+    motif_family_recognizer.subfamilies_by_multiple_uniprot_ids(uniprot_ids).map(&:to_s).join(',')
+  }
+
+  [['Motif', *motifs], ['Motif quality', *qualities], ['Motif families', *motifs_subfamilies], *matrix_transposed.drop(1)].transpose
+end
+
 def sample_files(folder_common_motifs, context, protected_or_subjected, characteristic)
   ( AlexandrovWholeGenomeCancers.map{|sample|
     [sample, File.join(folder_common_motifs, 'Alexandrov', sample.to_s,
@@ -67,7 +86,8 @@ directory 'results/motif_statistics/aggregated/'
 
 desc 'Aggregate common motifs over samples'
 task 'aggregate_common_motifs' => ['results/motif_statistics/aggregated/'] do
-  uniprot_by_motif = motif_uniprots(LocalPaths::Secondary::GeneInfos)
+  uniprots_by_motif = motif_uniprots(LocalPaths::Secondary::GeneInfos)
+  motif_qualities = load_motif_qualities(LocalPaths::Secondary::GeneInfos)
   motif_family_recognizer = MotifFamilyRecognizer.new(3,'source_data/human_uniprot.txt',
                                                         'source_data/TFOntologies/TFClass_human.obo')
   [:protected, :subjected].each do |protected_or_subjected|
@@ -75,10 +95,13 @@ task 'aggregate_common_motifs' => ['results/motif_statistics/aggregated/'] do
       prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
       files = sample_files('results/motif_statistics/common/', 'any', protected_or_subjected, characteristic)
       File.open("results/motif_statistics/aggregated/#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context.csv", 'w') {|fw|
-        print_matrix(collect_different_sample_statistics(files), stream: fw)
+        matrix = collect_different_sample_statistics(files)
+        matrix_augmented = with_motif_info_rows(matrix, motif_family_recognizer, uniprots_by_motif, motif_qualities)
+        print_matrix(matrix_augmented, stream: fw)
       }
       File.open("results/motif_statistics/aggregated/#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context_glued.csv", 'w') {|fw|
-        print_matrix(collect_different_sample_statistics_gluing_subfamilies(files, motif_family_recognizer, uniprot_by_motif), stream: fw)
+        matrix = collect_different_sample_statistics_gluing_subfamilies(files, motif_family_recognizer, uniprots_by_motif)
+        print_matrix(matrix, stream: fw)
       }
     end
   end
@@ -88,7 +111,8 @@ directory 'results/motif_statistics/aggregated_wo_fitting/'
 
 desc 'Aggregate common motifs over samples (w/o fitting)'
 task 'aggregate_common_motifs_wo_fitting' => ['results/motif_statistics/aggregated_wo_fitting/'] do
-  uniprot_by_motif = motif_uniprots(LocalPaths::Secondary::GeneInfos)
+  uniprots_by_motif = motif_uniprots(LocalPaths::Secondary::GeneInfos)
+  motif_qualities = load_motif_qualities(LocalPaths::Secondary::GeneInfos)
   motif_family_recognizer = MotifFamilyRecognizer.new(3,'source_data/human_uniprot.txt',
                                                         'source_data/TFOntologies/TFClass_human.obo')
   [:protected, :subjected].each do |protected_or_subjected|
@@ -96,10 +120,13 @@ task 'aggregate_common_motifs_wo_fitting' => ['results/motif_statistics/aggregat
       prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
       files = sample_files('results/motif_statistics/common_wo_fitting/', 'any', protected_or_subjected, characteristic)
       File.open("results/motif_statistics/aggregated_wo_fitting/#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context.csv", 'w') {|fw|
-        print_matrix(collect_different_sample_statistics(files), stream: fw)
+        matrix = collect_different_sample_statistics(files)
+        matrix_augmented = with_motif_info_rows(matrix, motif_family_recognizer, uniprots_by_motif, motif_qualities)
+        print_matrix(matrix_augmented, stream: fw)
       }
       File.open("results/motif_statistics/aggregated_wo_fitting/#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context_glued.csv", 'w') {|fw|
-        print_matrix(collect_different_sample_statistics_gluing_subfamilies(files, motif_family_recognizer, uniprot_by_motif), stream: fw)
+        matrix = collect_different_sample_statistics_gluing_subfamilies(files, motif_family_recognizer, uniprots_by_motif)
+        print_matrix(matrix, stream: fw)
       }
     end
   end
