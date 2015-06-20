@@ -82,10 +82,36 @@ def sample_files(folder_common_motifs, context, protected_or_subjected, characte
   } ).to_h
 end
 
+def fitted_non_fitted_occurence_state(in_fitted, in_nonfitted)
+  if in_fitted
+    in_nonfitted ? 0 : 1
+  else
+    in_nonfitted ? -1 : nil
+  end
+end
+
+
+def fitted_non_fitted_occurence_matrix(motifs_fitted_by_sample, motifs_nonfitted_by_sample)
+  all_motifs = (motifs_fitted_by_sample.values + motifs_nonfitted_by_sample.values).inject(&:|).to_a.sort # values are sets
+  results = []
+  results << ['Motif', *all_motifs]
+  Configuration.sample_paths.each_key{|sample_name|
+    motifs_fitted = motifs_fitted_by_sample[sample_name]
+    motifs_nonfitted = motifs_nonfitted_by_sample[sample_name]
+    motifs_occurences = all_motifs.map{|motif|
+      fitted_non_fitted_occurence_state(motifs_fitted.include?(motif), motifs_nonfitted.include?(motif))
+    }
+    results << [sample_name, *motifs_occurences]
+  }
+
+  results.transpose
+end
+
 directory 'results/motif_statistics/aggregated/'
 
 desc 'Aggregate common motifs over samples'
 task 'aggregate_common_motifs' => ['results/motif_statistics/aggregated/'] do
+  output_folder = 'results/motif_statistics/aggregated/'
   uniprots_by_motif = motif_uniprots(LocalPaths::Secondary::GeneInfos)
   motif_qualities = load_motif_qualities(LocalPaths::Secondary::GeneInfos)
   motif_family_recognizer = MotifFamilyRecognizer.new(3,'source_data/human_uniprot.txt',
@@ -94,12 +120,12 @@ task 'aggregate_common_motifs' => ['results/motif_statistics/aggregated/'] do
     ['disruption', 'emergence', 'substitution-in-core'].each do |characteristic|
       prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
       files = sample_files('results/motif_statistics/common/', 'any', protected_or_subjected, characteristic)
-      File.open("results/motif_statistics/aggregated/#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context.csv", 'w') {|fw|
+      File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context.csv"), 'w') {|fw|
         matrix = collect_different_sample_statistics(files)
         matrix_augmented = with_motif_info_rows(matrix, motif_family_recognizer, uniprots_by_motif, motif_qualities)
         print_matrix(matrix_augmented, stream: fw)
       }
-      File.open("results/motif_statistics/aggregated/#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context_glued.csv", 'w') {|fw|
+      File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context_glued.csv"), 'w') {|fw|
         matrix = collect_different_sample_statistics_gluing_subfamilies(files, motif_family_recognizer, uniprots_by_motif)
         print_matrix(matrix, stream: fw)
       }
@@ -111,6 +137,7 @@ directory 'results/motif_statistics/aggregated_wo_fitting/'
 
 desc 'Aggregate common motifs over samples (w/o fitting)'
 task 'aggregate_common_motifs_wo_fitting' => ['results/motif_statistics/aggregated_wo_fitting/'] do
+  output_folder = 'results/motif_statistics/aggregated_wo_fitting/'
   uniprots_by_motif = motif_uniprots(LocalPaths::Secondary::GeneInfos)
   motif_qualities = load_motif_qualities(LocalPaths::Secondary::GeneInfos)
   motif_family_recognizer = MotifFamilyRecognizer.new(3,'source_data/human_uniprot.txt',
@@ -119,12 +146,12 @@ task 'aggregate_common_motifs_wo_fitting' => ['results/motif_statistics/aggregat
     ['disruption', 'emergence', 'substitution-in-core'].each do |characteristic|
       prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
       files = sample_files('results/motif_statistics/common_wo_fitting/', 'any', protected_or_subjected, characteristic)
-      File.open("results/motif_statistics/aggregated_wo_fitting/#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context.csv", 'w') {|fw|
+      File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context.csv"), 'w') {|fw|
         matrix = collect_different_sample_statistics(files)
         matrix_augmented = with_motif_info_rows(matrix, motif_family_recognizer, uniprots_by_motif, motif_qualities)
         print_matrix(matrix_augmented, stream: fw)
       }
-      File.open("results/motif_statistics/aggregated_wo_fitting/#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context_glued.csv", 'w') {|fw|
+      File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context_glued.csv"), 'w') {|fw|
         matrix = collect_different_sample_statistics_gluing_subfamilies(files, motif_family_recognizer, uniprots_by_motif)
         print_matrix(matrix, stream: fw)
       }
@@ -136,51 +163,31 @@ directory 'results/motif_statistics/aggregated_comparison'
 
 desc 'Compare motif sets for experiment with and without fitting'
 task :compare_fitted_to_unfitted => 'results/motif_statistics/aggregated_comparison' do
+  output_folder = 'results/motif_statistics/aggregated_comparison/'
 
   [:protected, :subjected].each do |protected_or_subjected|
     ['disruption', 'emergence', 'substitution-in-core'].each do |characteristic|
       prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
       filename_last_part = File.join(protected_or_subjected.to_s, characteristic.to_s, 'compared_to_each.txt')
 
-      motifs_fitted = Configuration.sample_paths.map{|sample_name, sample_path|
+      motifs_fitted_by_sample = Configuration.sample_paths.map{|sample_name, sample_path|
         motifs = File.readlines(
           File.join('results/motif_statistics/common/', sample_path, filename_last_part)
         ).map(&:chomp).to_set
         [sample_name, motifs]
       }.to_h
 
-      motifs_nonfitted = Configuration.sample_paths.map{|sample_name, sample_path|
+      motifs_nonfitted_by_sample = Configuration.sample_paths.map{|sample_name, sample_path|
         motifs = File.readlines(
           File.join('results/motif_statistics/common_wo_fitting/', sample_path, filename_last_part)
         ).map(&:chomp).to_set
         [sample_name, motifs]
       }.to_h
 
-      all_motifs = (motifs_fitted.values + motifs_nonfitted.values).inject(&:|).to_a.sort
-      all_samples = Configuration.sample_paths.keys
-      results = []
-      results << ['Motif', *all_samples]
-      all_motifs.each{|motif|
-        occurences = all_samples.map{|sample|
-          if motifs_fitted[sample].include?(motif)
-            if motifs_nonfitted[sample].include?(motif)
-              0
-            else
-              1
-            end
-          else
-            if motifs_nonfitted[sample].include?(motif)
-              -1
-            else
-              nil
-            end
-          end
-        }
-        results << [motif, *occurences]
-      }
+      occurence_matrix = fitted_non_fitted_occurence_matrix(motifs_fitted_by_sample, motifs_nonfitted_by_sample)
 
-      File.open("results/motif_statistics/aggregated_comparison/#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context.csv", 'w') do |fw|
-        print_matrix(results, stream: fw)
+      File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context.csv"), 'w') do |fw|
+        print_matrix(occurence_matrix, stream: fw)
       end
     end
   end
