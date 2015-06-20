@@ -56,7 +56,7 @@ class TFClassification
     @terms_by_id.each_value.select{|term|
       term.deepness >= slice_deepness && (!term.parent || term.parent.deepness < slice_deepness)
     }.map{|term|
-      [term, term.descendant_leafs]
+      [term, term.subtree_nodes]
     }.to_h
   end
 
@@ -113,7 +113,15 @@ class TFClassification
       leaf? ? [self] : children.flat_map(&:descendant_leafs)
     end
 
-   def ancestors
+    def descendants
+      children + children.flat_map(&:descendants)
+    end
+
+    def subtree_nodes
+      [self] + children.flat_map(&:subtree_nodes)
+    end
+
+    def ancestors
       result = []
       term = self
       while term.parent
@@ -126,5 +134,7 @@ class TFClassification
     def to_s
       "#{name}(#{id})"
     end
+
+    def inspect; to_s; end
   end
 end
