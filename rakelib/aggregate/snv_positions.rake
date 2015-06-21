@@ -54,7 +54,7 @@ end
 
 
 def motif_infos_in_snv_positions_file(filename)
-  File.readlines()
+  File.readlines(filename)
       .map(&:chomp)
       .each_slice(2)
       .map{|motif_info, profile| motif_info}
@@ -63,14 +63,14 @@ end
 def ic_averaged_on_core_by_motif(motif_infos)
   motif_infos.map{|motif_info|
     motif_name, ic_averaged_on_core, ic_averaged_on_everything = motif_info.split("\t").drop(1)
-    [motif_name, ic_averaged_on_core]
+    [motif_name, ic_averaged_on_core.to_f]
   }.to_h
 end
 
 def ic_averaged_on_everything_by_motif(motif_infos)
   motif_infos.map{|motif_info|
     motif_name, ic_averaged_on_core, ic_averaged_on_everything = motif_info.split("\t").drop(1)
-    [motif_name, ic_averaged_on_core]
+    [motif_name, ic_averaged_on_core.to_f]
   }.to_h
 end
 
@@ -81,7 +81,7 @@ def motif_IC_matrix(cancer_ic_by_motif, random_samples_ics_by_motifs)
             'Cancer',
             *random_samples.map(&:capitalize),
             *random_samples.map{|sample| "Cancer to #{sample.downcase}"}
-          ].join("\t")
+          ]
   motifs = cancer_ic_by_motif.keys
   motifs.each{|motif|
     cancer_ic = cancer_ic_by_motif[motif]
@@ -107,13 +107,13 @@ def samples_with_contexts_and_config
     end
   end
 
-  results << Configuration::NikZainalContexts.each do |context|
+  Configuration::NikZainalContexts.each do |context|
     results << [File.join('NikZainal', context.to_s), Configuration::NikZainal]
   end
   results
 end
 
-
+desc 'Aggregate SNV mean KDICs'
 task :aggregate_snv_positions do
   samples_with_contexts_and_config.each do |sample_path, config|
     output_folder = File.join('results/snv_positions_aggregated', sample_path)
