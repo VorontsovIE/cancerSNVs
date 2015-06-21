@@ -14,6 +14,7 @@ require_relative 'lib/data_import/cancer_mutations_loading'
 # These can be safely redefined
 module SystemPaths
   MotifCollection = File.absolute_path('./source_data/hocomoco', __dir__)
+  MotifCollectionPCM = File.absolute_path('./source_data/hocomoco_pcm', __dir__)
   MotifThresholds = File.absolute_path('./source_data/hocomoco-thresholds', __dir__)
   Genome          = File.absolute_path('./source_data/Ensembl-GRCh37.p13', __dir__)
   ExonicMarkup    = File.absolute_path('./source_data/hg19_exons(ensembl,GRCh37.p13).txt', __dir__)
@@ -25,6 +26,7 @@ module LocalPaths
   Root            = File.absolute_path(__dir__)
 
   MotifCollection = File.absolute_path('./source_data/motif_collection', __dir__)
+  MotifCollectionPCM = File.absolute_path('./source_data/motif_collection_pcm', __dir__)
   MotifThresholds = File.absolute_path('./source_data/motif_thresholds', __dir__)
   Genome          = File.absolute_path('./source_data/genome', __dir__)
   ExonicMarkup    = File.absolute_path('./source_data/exons.txt', __dir__)
