@@ -3,7 +3,7 @@ require_relative '../../lib/perfectosape/results_short'
 
 def extract_snv_positions_profile(sites_filename)
   results = Hash.new{|hsh, motif| hsh[motif] = Hash.new(0) }
-  PerfectosAPE::Result.each_in_file(sites_filename) do |site_info|
+  PerfectosAPE::ResultShort.each_in_file(sites_filename) do |site_info|
     pos = (site_info.pvalue_1 <= site_info.pvalue_2) ? site_info.snv_position_in_site_1_pwm :  site_info.snv_position_in_site_2_pwm
     results[site_info.motif_name][pos] += 1
   end
@@ -51,6 +51,7 @@ Dir.glob(File.join(LocalPaths::MotifCollectionPCM, '*.pcm')) do |motif_filename|
   motif_pcms[motif.name.to_sym] ||= motif
 end
 
+desc 'Extract SNV proiles and mean information content of affected positions'
 task :extract_snv_positions => ['extract_snv_positions:Alexandrov']
 
 Configuration.getAlexandrovWholeGenomeCancers.each do |cancer_type|
@@ -63,7 +64,7 @@ Configuration.getAlexandrovWholeGenomeCancers.each do |cancer_type|
       output_folder = File.join('results/snv_positions', 'Alexandrov', cancer_type.to_s, context.to_s)
       directory output_folder
       task "extract_snv_positions:Alexandrov:#{cancer_type}:#{context}:#{dataset}" => [output_folder] do
-        sites_filename = File.join('results/fitted_sites', 'Alexandrov', cancer_type.to_s, context.to_s, "#{dataset}.txt")
+        sites_filename = File.join('results/fitted_sites', 'Alexandrov', cancer_type.to_s, context.to_s, "sites_#{dataset}.txt")
         output_filename = File.join(output_folder, "#{dataset}.txt")
         extract_snv_positions_profile_to_file(sites_filename, output_filename, motif_pcms, expansion_flank_length: Configuration::ExpandFlanksLength)
       end
@@ -81,7 +82,7 @@ Configuration.getYeastApobecSamples.each do |cancer_type|
       output_folder = File.join('results/snv_positions', 'YeastApobec', cancer_type.to_s, context.to_s)
       directory output_folder
       task "extract_snv_positions:YeastApobec:#{cancer_type}:#{context}:#{dataset}" => [output_folder] do
-        sites_filename = File.join('results/fitted_sites', 'YeastApobec', cancer_type.to_s, context.to_s, "#{dataset}.txt")
+        sites_filename = File.join('results/fitted_sites', 'YeastApobec', cancer_type.to_s, context.to_s, "sites_#{dataset}.txt")
         output_filename = File.join(output_folder, "#{dataset}.txt")
         extract_snv_positions_profile_to_file(sites_filename, output_filename, motif_pcms, expansion_flank_length: Configuration::ExpandFlanksLength)
       end
@@ -97,7 +98,7 @@ Configuration::NikZainalContexts.each do |context|
     output_folder = File.join('results/snv_positions', 'NikZainal', context.to_s)
     directory output_folder
     task "extract_snv_positions:NikZainal:#{context}:#{dataset}" => [output_folder] do
-      sites_filename = File.join('results/fitted_sites', 'NikZainal', context.to_s, "#{dataset}.txt")
+      sites_filename = File.join('results/fitted_sites', 'NikZainal', context.to_s, "sites_#{dataset}.txt")
       output_filename = File.join(output_folder, "#{dataset}.txt")
       extract_snv_positions_profile_to_file(sites_filename, output_filename, motif_pcms, expansion_flank_length: Configuration::ExpandFlanksLength)
     end
