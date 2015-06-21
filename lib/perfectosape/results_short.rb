@@ -73,6 +73,14 @@ module PerfectosAPE
       end
     end
 
+    def snv_position_in_site_2_pwm
+      if orientation_2 == :direct
+        - pos_2
+      else
+        pos_2 + length - 1
+      end
+    end
+
     def substitution_in_core?
       pos = snv_position_in_site_1_pwm
       pos >= 0 && pos < length
