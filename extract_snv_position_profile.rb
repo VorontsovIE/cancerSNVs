@@ -5,7 +5,8 @@ require_relative 'lib/perfectosape/results_short'
 def extract_snv_positions_profile(sites_filename)
   results = Hash.new{|hsh, motif| hsh[motif] = Hash.new(0) }
   PerfectosAPE::ResultShort.each_in_file(sites_filename) do |site_info|
-    pos = (site_info.pvalue_1 <= site_info.pvalue_2) ? site_info.snv_position_in_site_1_pwm :  site_info.snv_position_in_site_2_pwm
+    next  unless site_info.site_before_substitution?(pvalue_cutoff: Configuration::PvalueCutoff)
+    pos = site_info.snv_position_in_site_1_pwm
     results[site_info.motif_name][pos] += 1
   end
   results
