@@ -1,7 +1,7 @@
 require_relative '../../lib/calculate_contexts'
 
 desc 'Collect sample statistics'
-task :sample_statistics do
+task :sample_statistics_regulatory_SNVs do
   header = ['Sample', 'Genomic control fold', 'Shuffle control fold', 'Genomic control fitting fold', 'Shuffle control fitting fold', 'Mutations total']
   matrix = [ [*header, *possible_contexts] ]
   short_matrix = [ [*header, *possible_short_contexts] ]
@@ -53,10 +53,10 @@ task :sample_statistics do
                   short_context_counts.each_value.inject(0, &:+),
                   *possible_short_contexts.map{|context| short_context_counts[context] }]
 
-  File.open('results/motif_statistics/sample_statistics.tsv', 'w'){|fw|
+  File.open('results/motif_statistics/regulatory_SNVs_sample_statistics.tsv', 'w'){|fw|
     print_matrix(matrix.transpose, stream: fw)
   }
-  File.open('results/motif_statistics/sample_statistics_wo_mutation_direction.tsv', 'w'){|fw|
+  File.open('results/motif_statistics/regulatory_SNVs_sample_statistics_wo_mutation_direction.tsv', 'w'){|fw|
     print_matrix(short_matrix.transpose, stream: fw)
   }
 
@@ -64,10 +64,10 @@ task :sample_statistics do
   rates_matrix = []
   rates_matrix << matrix.first
   matrix.drop(1).each{|row|
-    total_count = row[3]
-    rates_matrix << [*row.first(3), total_count, *row.drop(4).map{|count| (count.to_f / total_count).round(5) } ]
+    total_count = row[cancer_infos.size]
+    rates_matrix << [*row.first(cancer_infos.size), total_count, *row.drop(cancer_infos.size + 1).map{|count| (count.to_f / total_count).round(5) } ]
   }
-  File.open('results/motif_statistics/sample_statistics_rates.tsv', 'w'){|fw|
+  File.open('results/motif_statistics/regulatory_SNVs_sample_statistics_rates.tsv', 'w'){|fw|
     print_matrix(rates_matrix.transpose, stream: fw)
   }
 
@@ -75,10 +75,10 @@ task :sample_statistics do
   short_matrix_rates = []
   short_matrix_rates << short_matrix.first
   short_matrix.drop(1).each{|row|
-    total_count = row[3]
-    short_matrix_rates << [*row.first(3), total_count, *row.drop(4).map{|count| (count.to_f / total_count).round(5) } ]
+    total_count = row[cancer_infos.size]
+    short_matrix_rates << [*row.first(cancer_infos.size), total_count, *row.drop(cancer_infos.size + 1).map{|count| (count.to_f / total_count).round(5) } ]
   }
-  File.open('results/motif_statistics/sample_statistics_rates_wo_mutation_direction.tsv', 'w'){|fw|
+  File.open('results/motif_statistics/regulatory_SNVs_sample_statistics_rates_wo_mutation_direction.tsv', 'w'){|fw|
     print_matrix(short_matrix_rates.transpose, stream: fw)
   }
 end
