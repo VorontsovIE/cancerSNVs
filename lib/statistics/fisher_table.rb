@@ -88,30 +88,30 @@ class FisherTable
       return 1.0 # totally insignificant difference
     end
 
-    # This method uses brute force to find the worst case in terms of significance.
-    # It can be very slow when there are many unclassified elements
-    (0..unclassified_a).flat_map{|a_positive_in_unclassified|
-      a_negative_in_unclassified = unclassified_a - a_positive_in_unclassified
+    # # This method uses brute force to find the worst case in terms of significance.
+    # # It can be very slow when there are many unclassified elements
+    # (0..unclassified_a).flat_map{|a_positive_in_unclassified|
+    #   a_negative_in_unclassified = unclassified_a - a_positive_in_unclassified
 
-      (0..unclassified_b).map{|b_positive_in_unclassified|
-        b_negative_in_unclassified = unclassified_b - b_positive_in_unclassified
+    #   (0..unclassified_b).map{|b_positive_in_unclassified|
+    #     b_negative_in_unclassified = unclassified_b - b_positive_in_unclassified
 
-        statistical_test.calculate( class_a_positive + a_positive_in_unclassified, class_a_negative + a_negative_in_unclassified,
-                                    class_b_positive + b_positive_in_unclassified, class_b_negative + b_negative_in_unclassified
-                                  )[:twotail]
-      }
-    }.max
+    #     statistical_test.calculate( class_a_positive + a_positive_in_unclassified, class_a_negative + a_negative_in_unclassified,
+    #                                 class_b_positive + b_positive_in_unclassified, class_b_negative + b_negative_in_unclassified
+    #                               )[:twotail]
+    #   }
+    # }.max
 
-    # # This method is faster but can give not the exact same result because it (probably) maximizes one-tail significance, not a two-tail
-    # if class_a_positive * class_b_total < class_b_positive * class_a_total  # i.e.  (Apos / Atotal) < (Bpos / Btotal)
-    #   statistical_test.calculate( class_a_positive + unclassified_a, class_a_negative,
-    #                               class_b_positive,                  class_b_negative + unclassified_b
-    #                             )[:twotail]
-    # else
-    #   statistical_test.calculate( class_a_positive,                  class_a_negative + unclassified_a,
-    #                               class_b_positive + unclassified_b, class_b_negative
-    #                             )[:twotail]
-    # end
+    # This method is faster but can give not the exact same result because it (probably) maximizes one-tail significance, not a two-tail
+    if class_a_positive * class_b_total < class_b_positive * class_a_total  # i.e.  (Apos / Atotal) < (Bpos / Btotal)
+      statistical_test.calculate( class_a_positive + unclassified_a, class_a_negative,
+                                  class_b_positive,                  class_b_negative + unclassified_b
+                                )[:twotail]
+    else
+      statistical_test.calculate( class_a_positive,                  class_a_negative + unclassified_a,
+                                  class_b_positive + unclassified_b, class_b_negative
+                                )[:twotail]
+    end
   end
 
   class << self
