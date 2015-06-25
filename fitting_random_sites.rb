@@ -30,14 +30,15 @@ raise 'Specify file with mutated sites in cancer'  unless mutated_site_infos_can
 raise 'Specify file with mutated sites in control group'  unless mutated_site_infos_random_filename = ARGV[1] # './results/intermediate/site_subsets/random_cpg.txt'
 
 histograms = MultiHistogram.new{
-  Histogram.new(1.0 / 2**40, 1.0, 0.5){|pvalue_1| - Math.log2(pvalue_1) } # Take actual site with any P-value into the same bin
+  # Histogram.new(1.0 / 2**40, 1.0, 0.5){|pvalue_1| - Math.log2(pvalue_1) } # Take actual site with any P-value into the same bin
+  Histogram.new(-2, pvalue_cutoff, 3){|pvalue_1| pvalue_1 } # Take actual site with any P-value into the same bin
 }
 
 PerfectosAPE::ResultShort.each_in_file(mutated_site_infos_cancer_filename).each do |site|
   motif = site.motif_name
-  # context = context_by_snv_name(site.variant_id)
-  # histograms.add_element([motif, context], site.pvalue_1)
-  histograms.add_element([motif], site.pvalue_1)
+  context = context_by_snv_name(site.variant_id)
+  histograms.add_element([motif, context], site.pvalue_1)
+  # histograms.add_element([motif], site.pvalue_1)
 end
 
 fitters = histograms.multiply(fitting_fold).fitter(raise_on_missing: false)
@@ -47,8 +48,8 @@ $stderr.puts "Loaded original #{fitters.goal_total / fitting_fold} sites. Now ne
 PerfectosAPE::ResultShort.each_in_file(mutated_site_infos_random_filename).each_with_index do |site, index|
   motif = site.motif_name
   context = context_by_snv_name(site.variant_id)
-  # fitters.fit_element([motif, context], site.pvalue_1) do
-  fitters.fit_element([motif], site.pvalue_1) do
+  fitters.fit_element([motif, context], site.pvalue_1) do
+  # fitters.fit_element([motif], site.pvalue_1) do
     puts site.line
   end
 end
