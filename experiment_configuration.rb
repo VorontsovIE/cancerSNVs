@@ -88,8 +88,8 @@ module Configuration
     RandomDatasets = RandomGenomeDatasets + RandomShuffleDatasets
     Datasets = RandomDatasets + ['cancer']
 
-    FittingFoldGenome = 35
-    FittingFoldShuffle = 25
+    FittingFoldGenome = 20
+    FittingFoldShuffle = 20
   end
 
   module Alexandrov
@@ -111,7 +111,7 @@ module Configuration
 
   module YeastApobec
     RandomShuffleFold = Hash.new(500).merge({:A1 => 5000, :A3G => 25000, :AID => 5000, :HAP_sub1 => 1000})
-    FittingFoldShuffle = Hash.new(80).merge({:A1 => 500, :A3G => 2000, :AID => 500, :HAP_sub1 => 150})
+    FittingFoldShuffle = Hash.new(100).merge({:A1 => 1000, :A3G => 5000, :AID => 1000, :HAP_sub1 => 200})
     RandomShuffleSeeds = 98765
 
     RandomGenomeDatasets = []
