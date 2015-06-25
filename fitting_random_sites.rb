@@ -31,7 +31,7 @@ raise 'Specify file with mutated sites in control group'  unless mutated_site_in
 
 histograms = MultiHistogram.new{
   # Histogram.new(1.0 / 2**40, 1.0, 0.5){|pvalue_1| - Math.log2(pvalue_1) } # Take actual site with any P-value into the same bin
-  Histogram.new(-2, pvalue_cutoff, 3){|pvalue_1| pvalue_1 } # Take actual site with any P-value into the same bin
+  Histogram.new(-1, 1, 2){|pvalue_1| 0 } # Take actual site with any P-value into the same bin
 }
 
 PerfectosAPE::ResultShort.each_in_file(mutated_site_infos_cancer_filename).each do |site|
