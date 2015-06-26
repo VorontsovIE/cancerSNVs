@@ -1,8 +1,8 @@
 require_relative 'tf_ontology'
 require_relative 'uniprot_reader'
 
-def uniprot_acs_by_id(uniprot_ac)
-  result = UniprotEntry.each_in_file(@uniprots_filename)
+def read_uniprot_acs_by_id(uniprots_filename)
+  result = UniprotEntry.each_in_file(uniprots_filename)
                       .group_by(&:uniprot_id)
                       .map{|uniprot_id, uniprots|
                         [uniprot_id, uniprots.map(&:uniprot_ac)]
@@ -60,7 +60,8 @@ class MotifFamilyRecognizerByUniprotID
   # In most cases Uniprot refers the only leaf, but in some cases it refers several leafs in different subtrees.
   # So we return an array of subfamilies
   def subfamilies_by_uniprot_id(uniprot_id)
-    @motif_family_recognizer_by_uniprot_ac.subfamilies_by_multiple_uniprot_acs( uniprot_acs_by_id[uniprot_id] )
+    uniprot_acs = @uniprot_acs_by_id[uniprot_id]
+    @motif_family_recognizer_by_uniprot_ac.subfamilies_by_multiple_uniprot_acs( uniprot_acs )
   end
 
   def subfamilies_by_multiple_uniprot_ids(uniprot_ids)

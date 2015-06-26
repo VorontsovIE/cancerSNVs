@@ -8,10 +8,18 @@ def load_motif_qualities(filename)
   }.to_h
 end
 
+def read_uniprot_ids_by_motif(filename)
+  File.readlines(filename).drop(1).map{|line|
+    motif, gene, quality, weight, human_uniprot, mouse_uniprot, consensus = line.chomp.split("\t")
+    [motif, human_uniprot.split(',')]
+  }.to_h
+end
+
 def collect_different_sample_statistics_gluing_subfamilies(sample_files, motif_family_recognizer)
   motif_subfamilies_by_sample = sample_files.map{|sample, filename|
-    motifs = File.readline(filename).map(&:strip)
-    families = motif_family_recognizer.subfamilies_by_multiple_motifs(motifs)
+    motifs = File.readlines(filename).map(&:strip)
+    # don't use subfamilies_by_multiple_motifs because it removes duplicated inner nodes resulting from different motifs, which we want to count downstream
+    families = motifs.flat_map{|motif| motif_family_recognizer.subfamilies_by_motif(motif) }
     [sample, families]
   }.to_h
 
@@ -32,7 +40,7 @@ def print_matrix(matrix, stream:)
 end
 
 def term_occurences_matrix(terms_by_sample)
-  term_union = terms_by_sample.map{|sample, terms_in_sample| terms_in_sample }.inject(Set.new, :|).sort
+  term_union = terms_by_sample.map{|sample, terms_in_sample| terms_in_sample }.inject(Set.new, :|).sort_by(&:to_s)
   matrix = []
   matrix << ['Sample', *term_union]
   terms_by_sample.each{|sample, terms_in_sample|
@@ -111,8 +119,12 @@ desc 'Aggregate common motifs over samples'
 task :aggregate_common_motifs => ['results/motif_statistics/aggregated/'] do
   output_folder = 'results/motif_statistics/aggregated/'
   motif_qualities = load_motif_qualities(LocalPaths::Secondary::GeneInfos)
+
+  tf_classification = TFClassification.from_file('source_data/TFOntologies/TFClass_human.obo')
+  uniprot_acs_by_id = read_uniprot_acs_by_id('source_data/human_uniprot.txt')
+  uniprots_by_motif = read_uniprot_ids_by_motif('source_data/hocomoco_genes_infos.csv')
   motif_family_recognizers = Hash.new{|hsh, deepness|
-    hsh[deepness] = MotifFamilyRecognizerByUniprotID.new(MotifFamilyRecognizerByUniprotAC.new(tf_classification, deepness), uniprot_acs_by_id)
+    hsh[deepness] = MotifFamilyRecognizerByMotif.new(MotifFamilyRecognizerByUniprotID.new(MotifFamilyRecognizerByUniprotAC.new(tf_classification, deepness), uniprot_acs_by_id), uniprots_by_motif)
   }
   [:protected, :subjected].each do |protected_or_subjected|
     ['disruption', 'emergence', 'substitution-in-core'].each do |characteristic|
@@ -141,8 +153,12 @@ desc 'Aggregate common motifs over samples (w/o fitting)'
 task :aggregate_common_motifs_wo_fitting => ['results/motif_statistics/aggregated_wo_fitting/'] do
   output_folder = 'results/motif_statistics/aggregated_wo_fitting/'
   motif_qualities = load_motif_qualities(LocalPaths::Secondary::GeneInfos)
+
+  tf_classification = TFClassification.from_file('source_data/TFOntologies/TFClass_human.obo')
+  uniprot_acs_by_id = read_uniprot_acs_by_id('source_data/human_uniprot.txt')
+  uniprots_by_motif = read_uniprot_ids_by_motif('source_data/hocomoco_genes_infos.csv')
   motif_family_recognizers = Hash.new{|hsh, deepness|
-    hsh[deepness] = MotifFamilyRecognizerByUniprotID.new(MotifFamilyRecognizerByUniprotAC.new(tf_classification, deepness), uniprot_acs_by_id)
+    hsh[deepness] = MotifFamilyRecognizerByMotif.new(MotifFamilyRecognizerByUniprotID.new(MotifFamilyRecognizerByUniprotAC.new(tf_classification, deepness), uniprot_acs_by_id), uniprots_by_motif)
   }
   [:protected, :subjected].each do |protected_or_subjected|
     ['disruption', 'emergence', 'substitution-in-core'].each do |characteristic|
@@ -172,9 +188,10 @@ task :compare_fitted_to_unfitted => 'results/motif_statistics/aggregated_compari
   motif_qualities = load_motif_qualities(LocalPaths::Secondary::GeneInfos)
 
   tf_classification = TFClassification.from_file('source_data/TFOntologies/TFClass_human.obo')
-  uniprot_acs_by_id = uniprot_acs_by_id('source_data/human_uniprot.txt')
+  uniprot_acs_by_id = read_uniprot_acs_by_id('source_data/human_uniprot.txt')
+  uniprots_by_motif = read_uniprot_ids_by_motif('source_data/hocomoco_genes_infos.csv')
   motif_family_recognizers = Hash.new{|hsh, deepness|
-    hsh[deepness] = MotifFamilyRecognizerByUniprotID.new(MotifFamilyRecognizerByUniprotAC.new(tf_classification, deepness), uniprot_acs_by_id)
+    hsh[deepness] = MotifFamilyRecognizerByMotif.new(MotifFamilyRecognizerByUniprotID.new(MotifFamilyRecognizerByUniprotAC.new(tf_classification, deepness), uniprot_acs_by_id), uniprots_by_motif)
   }
 
   [:protected, :subjected].each do |protected_or_subjected|
