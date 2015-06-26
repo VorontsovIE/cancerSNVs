@@ -82,3 +82,5 @@ task :sample_statistics_regulatory_SNVs do
     print_matrix(short_matrix_rates.transpose, stream: fw)
   }
 end
+
+task :default => [:sample_statistics_regulatory_SNVs]

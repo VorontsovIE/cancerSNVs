@@ -1,8 +1,4 @@
-
 class TFClassification
-  # attr_reader :terms
-  # attr_reader :children
-
   # terms by ids
   def initialize()
     @terms_by_id = {}
