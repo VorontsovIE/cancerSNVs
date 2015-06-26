@@ -19,6 +19,11 @@ class MultiHistogramFitter
     end
   end
 
+  def element_can_be_added?(indices, object)
+    fitter = get_fitter(indices)
+    fitter && fitter.element_can_be_added?(object)
+  end
+
   def fit_element(indices, object, &block)
     fitter = get_fitter(indices)
     if fitter

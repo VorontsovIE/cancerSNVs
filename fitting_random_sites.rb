@@ -29,30 +29,40 @@ end.parse!(ARGV)
 raise 'Specify file with mutated sites in cancer'  unless mutated_site_infos_cancer_filename = ARGV[0] # './results/intermediate/site_subsets/cancer_cpg.txt'
 raise 'Specify file with mutated sites in control group'  unless mutated_site_infos_random_filename = ARGV[1] # './results/intermediate/site_subsets/random_cpg.txt'
 
-histograms = MultiHistogram.new{
-  # Histogram.new(1.0 / 2**40, 1.0, 0.5){|pvalue_1| - Math.log2(pvalue_1) } # Take actual site with any P-value into the same bin
-  Histogram.new(-2, 2, 4)
+histograms_affinity = MultiHistogram.new{
+  Histogram.new(1.0 / 2**40, 1.0, 0.5){|pvalue_1| - Math.log2(pvalue_1) } # Take actual site with any P-value into the same bin
+}
+
+histograms_context = MultiHistogram.new{
+  Histogram.new(-1, 1, 2)
 }
 
 PerfectosAPE::ResultShort.each_in_file(mutated_site_infos_cancer_filename).each do |site|
   motif = site.motif_name
   context = context_by_snv_name(site.variant_id)
-  histograms.add_element([motif, context], site.pvalue_1)
-  # histograms.add_element([motif], site.pvalue_1)
+  histograms_context.add_element([motif, context], 0)
+  histograms_affinity.add_element([motif], site.pvalue_1)
 end
 
-fitters = histograms.multiply(fitting_fold).fitter(raise_on_missing: false)
+fitters_context = histograms_context.multiply(fitting_fold).fitter(raise_on_missing: false)
+fitters_affinity = histograms_affinity.multiply(fitting_fold).fitter(raise_on_missing: false)
 
-$stderr.puts "Loaded original #{fitters.goal_total / fitting_fold} sites. Now need #{fitters.goal_total} sites"
+$stderr.puts "# Loaded original #{fitters_context.goal_total / fitting_fold} sites (fitting by context). Now need #{fitters_context.goal_total} sites."
+$stderr.puts "# Loaded original #{fitters_affinity.goal_total / fitting_fold} sites (fitting by affinity). Now need #{fitters_affinity.goal_total} sites."
 
 PerfectosAPE::ResultShort.each_in_file(mutated_site_infos_random_filename).each_with_index do |site, index|
   motif = site.motif_name
   context = context_by_snv_name(site.variant_id)
-  fitters.fit_element([motif, context], site.pvalue_1) do
-  # fitters.fit_element([motif], site.pvalue_1) do
+  if fitters_context.element_can_be_added?([motif, context], 0) && fitters_affinity.element_can_be_added?([motif], site.pvalue_1)
+    fitters_context.fit_element([motif, context], 0){ }
+    fitters_affinity.fit_element([motif], site.pvalue_1){ }
     puts site.line
   end
 end
-$stderr.puts "Loaded #{fitters.current_total} fitted sites"
 
-fitters.print_discrepancies(output_stream: $stderr)
+$stderr.puts "# Loaded #{fitters_context.current_total} fitted sites (by context)."
+$stderr.puts "# Loaded #{fitters.current_total} fitted sites (by affinity)"
+
+fitters_context.print_discrepancies(output_stream: $stderr)
+$stderr.puts '#######################' # after this line fitting log won't be processed as total underfitting should be the same for both fitters
+fitters_affinity.print_discrepancies(output_stream: $stderr)
