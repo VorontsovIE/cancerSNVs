@@ -11,6 +11,13 @@ def read_uniprot_acs_by_id(uniprots_filename)
   result
 end
 
+def read_uniprot_ids_by_motif(filename)
+  File.readlines(filename).drop(1).map{|line|
+    motif, gene, quality, weight, human_uniprot, mouse_uniprot, consensus = line.chomp.split("\t")
+    [motif, human_uniprot.split(',')]
+  }.to_h
+end
+
 ##################################
 
 class MotifFamilyRecognizerByUniprotAC

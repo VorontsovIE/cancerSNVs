@@ -1,8 +1,20 @@
 require 'set'
+require_relative '../../lib/motif_family_recognizer'
+
 
 directory 'results/motif_statistics/disruption_and_emergence'
 desc 'Find motifs subjected or protected from both disruption and emergence'
 task :find_both_disrupted_and_emerged => 'results/motif_statistics/disruption_and_emergence' do
+  motif_qualities = load_motif_qualities(LocalPaths::Secondary::GeneInfos)
+
+  tf_classification = TFClassification.from_file('source_data/TFOntologies/TFClass_human.obo')
+  uniprot_acs_by_id = read_uniprot_acs_by_id('source_data/human_uniprot.txt')
+  uniprots_by_motif = read_uniprot_ids_by_motif('source_data/hocomoco_genes_infos.csv')
+  motif_family_recognizers = Hash.new{|hsh, deepness|
+    hsh[deepness] = MotifFamilyRecognizerByMotif.new(MotifFamilyRecognizerByUniprotID.new(MotifFamilyRecognizerByUniprotAC.new(tf_classification, deepness), uniprot_acs_by_id), uniprots_by_motif)
+  }
+
+
   [:protected, :subjected].each do |protected_or_subjected|
     prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
 
@@ -19,9 +31,13 @@ task :find_both_disrupted_and_emerged => 'results/motif_statistics/disruption_an
     all_samples = Configuration.sample_paths.keys
 
     results = []
-    results << ['Motif', *all_samples]
+    results << ['Motif', 'Motif quality', 'Motif families (level 3)', 'Motif families (level 4)', *all_samples]
     all_motifs.each{|motif|
-      results << [motif, *all_samples.map{|sample| both_disrupted_and_emerged_by_sample[sample].include?(motif) ? 1 : nil }]
+      quality = motif_qualities[motif]
+      families_3 = motif_family_recognizers[3].subfamilies_by_motif(motif).map(&:to_s).join('; ')
+      families_4 = motif_family_recognizers[4].subfamilies_by_motif(motif).map(&:to_s).join('; ')
+      occurences_in_sample = all_samples.map{|sample| both_disrupted_and_emerged_by_sample[sample].include?(motif) ? 1 : nil }
+      results << [motif, quality, families_3, families_4, *occurences_in_sample]
     }
 
     output_filename = File.join('results/motif_statistics/disruption_and_emergence', "#{protected_or_subjected}_#{prep}_both_in_any_context.tsv")
