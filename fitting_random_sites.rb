@@ -61,7 +61,7 @@ PerfectosAPE::ResultShort.each_in_file(mutated_site_infos_random_filename).each_
 end
 
 $stderr.puts "# Loaded #{fitters_context.current_total} fitted sites (by context)."
-$stderr.puts "# Loaded #{fitters.current_total} fitted sites (by affinity)"
+$stderr.puts "# Loaded #{fitters_affinity.current_total} fitted sites (by affinity)"
 
 fitters_context.print_discrepancies(output_stream: $stderr)
 $stderr.puts '#######################' # after this line fitting log won't be processed as total underfitting should be the same for both fitters
