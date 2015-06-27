@@ -146,6 +146,18 @@ module Configuration
     end
   end
 
+  def self.sample_paths
+    results = []
+    results += Configuration.getAlexandrovWholeGenomeCancers.map{|cancer_type|
+      ["#{cancer_type} (Alexandrov et al. sample)", File.join('Alexandrov', cancer_type.to_s)]
+    }
+    results += Configuration.getYeastApobecSamples.map{|cancer_type|
+      ["#{cancer_type} (Yeast APOBEC sample)", File.join('YeastApobec', cancer_type.to_s)]
+    }
+    results += [ ["Breast (NikZainal et al. samples)", 'NikZainal'] ]
+    results.to_h
+  end
+
   # part of pathname specifying sample with context for each cancer type for each experiment in each context
   def self.sample_with_context_paths
     results = []
@@ -156,10 +168,10 @@ module Configuration
     }
     results += getYeastApobecSamples.flat_map{|cancer_type|
       YeastApobec.contexts_by_cancer_type(cancer_type).map{|context|
-        ["#{cancer_type} (Yeast APOBEC samples) in #{context} context", File.join('YeastApobec', cancer_type.to_s, context.to_s)]
+        ["#{cancer_type} (Yeast APOBEC sample) in #{context} context", File.join('YeastApobec', cancer_type.to_s, context.to_s)]
       }
     }
-    results += NikZainalContexts.map{|context| ["Breast (NikZainal samples) in #{context} context", File.join('NikZainal', context.to_s)] }
+    results += NikZainalContexts.map{|context| ["Breast (NikZainal et al. samples) in #{context} context", File.join('NikZainal', context.to_s)] }
     results.to_h
   end
 end
