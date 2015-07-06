@@ -45,7 +45,7 @@ module GenomeReader
 
     def to_s
       chromosomes_text = chromosome_names.sort.first(5).join(', ') + (chromosome_names.size > 5 ? ', ...' : '')
-      "GenomeReader::MemoryReader<#{chromosome_names.size} chromosomes: #{chromosomes_text}>"
+      "#{self.class}<#{chromosome_names.size} chromosomes: #{chromosomes_text}>"
     end
 
     def inspect

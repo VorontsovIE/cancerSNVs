@@ -8,13 +8,6 @@ def load_motif_qualities(filename)
   }.to_h
 end
 
-def read_uniprot_ids_by_motif(filename)
-  File.readlines(filename).drop(1).map{|line|
-    motif, gene, quality, weight, human_uniprot, mouse_uniprot, consensus = line.chomp.split("\t")
-    [motif, human_uniprot.split(',')]
-  }.to_h
-end
-
 def collect_different_sample_statistics_gluing_subfamilies(sample_files, motif_family_recognizer)
   motif_subfamilies_by_sample = sample_files.map{|sample, filename|
     motifs = File.readlines(filename).map(&:strip)
