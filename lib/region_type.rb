@@ -1,7 +1,8 @@
 require 'set'
 
+# Make the only region type: regulatory or not; don't take into account promoter/intronic
 class RegionType
-  FEATURES = [:promoter, :intronic, :kataegis]
+  FEATURES = [:promoter, :intronic, :kataegis, :coding]
   CALCULATED_FEATURES = [:regulatory]
   FEATURE_INQUIRIES = (FEATURES + CALCULATED_FEATURES).map{|feature| "#{feature}?".to_sym }
 
@@ -11,11 +12,12 @@ class RegionType
     @features = features
   end
 
-  def self.by_feature_status(promoter: false, intronic: false, kataegis: false)
+  def self.by_feature_status(promoter: false, intronic: false, kataegis: false, coding: false)
     result = self.new.tap{|r|
       r << :kataegis  if kataegis
       r << :promoter  if promoter
       r << :intronic  if intronic
+      r << :coding  if coding
     }
   end
 
@@ -36,7 +38,7 @@ class RegionType
   end
 
   def regulatory?
-    (intronic? || promoter?) && ! kataegis?
+    (intronic? || promoter?) && !coding? # && ! kataegis?
   end
 
   def ==(other)
@@ -71,8 +73,8 @@ class RegionType
 
   def self.each_possible
     return enum_for(:each_possible)  unless block_given?
-    [true, false].repeated_permutation(3) do |promoter, intronic, kataegis|
-      yield self.by_feature_status(promoter: promoter, intronic: intronic, kataegis: kataegis)
+    [true, false].repeated_permutation(4) do |promoter, intronic, kataegis, coding|
+      yield self.by_feature_status(promoter: promoter, intronic: intronic, kataegis: kataegis, coding: coding)
     end
   end
 end

@@ -39,7 +39,7 @@ namespace :statistics do
       genome_markup = GENOME_MARKUP_LOADER.load_markup
       mutations_by_cancer_type = ALEXANDROV_MUTATIONS_LOADER.load
       File.open('./results/alexandrov_somatic_mutations_contexts.txt', 'w') do |fw|
-        fw.puts '(promoter || intronic) && !kataegis'
+        fw.puts 'regulatory'
         mutations_by_cancer_type.each do |cancer_type, mutations|
           fw.puts "> #{cancer_type}"
 

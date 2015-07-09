@@ -36,6 +36,21 @@ def read_introns_by_chromosome(filename)
   result
 end
 
+# /home/ilya/iogen/genome/hg19_exons(ensembl,GRCh37.p13).txt
+def read_coding_regions_by_chromosome(filename)
+  result = EnsemblExon.each_in_file(filename)
+            .group_by(&:chromosome)
+            .map{|chromosome, exons|
+              # grouping by transctripts is not necessary for now but can make sense in future
+              transcript_coding_regions = exons.group_by(&:ensembl_transcript_id).map{|ensembl_transcript_id, exons|
+                IntervalNotation::Operations.union(exons.map(&:coding_part_region))
+              }
+              [chromosome, IntervalNotation::Operations.union(transcript_coding_regions)]
+            }.to_h
+  result.default = IntervalNotation::Syntax::Long::Empty
+  result
+end
+
 ### Regions of kataegis
 KataegisRegion = Struct.new(:cancer_type, :sample_name, :chromosome, :position_start, :position_end, :number_of_variants) do
   def interval(expansion_length: 0)

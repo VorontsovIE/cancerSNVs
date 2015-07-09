@@ -6,17 +6,19 @@ class GenomeMarkup
   attr_reader :introns_by_chromosome
   attr_reader :promoters_by_chromosome
   attr_reader :kataegis_regions_by_chromosome
+  attr_reader :coding_regions_by_chromosome
   attr_reader :regulatory_by_chromosome
 
   # To load genome markup from source files, use GenomeMarkupLoader
-  def initialize(introns_by_chromosome:, promoters_by_chromosome:, kataegis_regions_by_chromosome:)
+  def initialize(introns_by_chromosome:, promoters_by_chromosome:, kataegis_regions_by_chromosome:, coding_regions_by_chromosome:)
     @introns_by_chromosome = Hash.new(IntervalNotation::Syntax::Long::Empty).merge(introns_by_chromosome)
     @promoters_by_chromosome = Hash.new(IntervalNotation::Syntax::Long::Empty).merge(promoters_by_chromosome)
+    @coding_regions_by_chromosome = Hash.new(IntervalNotation::Syntax::Long::Empty).merge(coding_regions_by_chromosome)
     @kataegis_regions_by_chromosome = Hash.new(IntervalNotation::Syntax::Long::Empty).merge(kataegis_regions_by_chromosome)
 
     @regulatory_by_chromosome = Hash.new(IntervalNotation::Syntax::Long::Empty)
-    (@introns_by_chromosome.keys + @promoters_by_chromosome.keys + kataegis_regions_by_chromosome.keys).uniq.each do |chr|
-      @regulatory_by_chromosome[chr] = (@promoters_by_chromosome[chr] | @introns_by_chromosome[chr]) - kataegis_regions_by_chromosome[chr]
+    (@introns_by_chromosome.keys + @promoters_by_chromosome.keys + @coding_regions_by_chromosome.keys).uniq.each do |chr|
+      @regulatory_by_chromosome[chr] = (@promoters_by_chromosome[chr] | @introns_by_chromosome[chr]) - @coding_regions_by_chromosome[chr]
     end
   end
 
@@ -99,11 +101,13 @@ GenomeMarkupLoader = Struct.new(:exonic_markup_filename, :kataegis_coordinates_f
       promoters = load_promoters_by_chromosome(exonic_markup_filename,
                                               length_5_prime: promoter_length_5_prime,
                                               length_3_prime: promoter_length_3_prime)
+      coding_regions = read_coding_regions_by_chromosome(exonic_markup_filename)
       kataegis = load_kataegis_regions_by_chromosome(kataegis_coordinates_filename,
                                                     expansion_length: kataegis_expansion_length)
       @cache = GenomeMarkup.new(introns_by_chromosome: introns,
                                promoters_by_chromosome: promoters,
-                               kataegis_regions_by_chromosome: kataegis)
+                               kataegis_regions_by_chromosome: kataegis,
+                               coding_regions_by_chromosome: coding_regions)
     end
     @cache
   end
