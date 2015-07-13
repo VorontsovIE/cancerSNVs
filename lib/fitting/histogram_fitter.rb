@@ -17,7 +17,7 @@ class HistogramFitter
   def fit_element(object)
     if element_can_be_added?(object)
       current_distribution.add_element(object)
-      yield
+      yield  if block_given?
     end
   end
 
