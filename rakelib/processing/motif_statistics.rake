@@ -23,7 +23,7 @@ def make_filtered_statistics_task(motif_statistics_file:, output_folder:, task_n
         mkdir_p output_subfolder
         output_filename = File.join(output_subfolder, File.basename(motif_statistics_file))
         ruby 'filter_summary.rb', motif_statistics_file,
-                                '--motif-qualities', 'A,B,C,D',
+                                '--motif-qualities', 'A,B,C',
                                 '--significance', 0.05.to_s,
                                 '--characteristic', characteristic,
                                 "--#{subjected_or_protected}",
