@@ -27,8 +27,18 @@ def read_introns_by_chromosome(filename)
             .group_by(&:chromosome)
             .map{|chromosome, exons|
               transcript_introns = exons.group_by(&:ensembl_transcript_id).map{|ensembl_transcript_id, exons|
+                strand = exons.first.strand
+                raise 'Different strands for the same exon list'  unless exons.all?{|exon| exon.strand == strand }
                 gene_exons = IntervalNotation::Operations.union(exons.map(&:exon_region))
-                gene_exons.covering_interval - gene_exons
+                all_introns = gene_exons.covering_interval - gene_exons
+                case strand
+                when :+
+                  IntervalNotation::IntervalSet.new(all_introns.intervals.first(1))
+                when :-
+                  IntervalNotation::IntervalSet.new(all_introns.intervals.last(1))
+                else
+                  raise 'Unknown strand'
+                end
               }
               [chromosome, IntervalNotation::Operations.union(transcript_introns)]
             }.to_h
