@@ -60,15 +60,18 @@ def with_motif_info_rows(matrix, motif_family_recognizers, motif_qualities)
   result
 end
 
-def sample_files(folder_common_motifs, context, protected_or_subjected, characteristic)
-  ( AlexandrovWholeGenomeCancers.map{|sample|
+def sample_files(folder_common_motifs, context, protected_or_subjected, characteristic, with_yeast: true)
+  result = AlexandrovWholeGenomeCancers.map{|sample|
     [sample, File.join(folder_common_motifs, 'Alexandrov', sample.to_s,
                         context.to_s, protected_or_subjected.to_s, characteristic.to_s, 'compared_to_each.txt') ]
-  } +
-  YeastApobecSamples.map{|sample|
-    [sample, File.join(folder_common_motifs, 'YeastApobec', sample.to_s,
-                        context.to_s, protected_or_subjected.to_s, characteristic.to_s, 'compared_to_each.txt') ]
-  } ).to_h
+  }
+  if with_yeast
+    result += YeastApobecSamples.map{|sample|
+      [sample, File.join(folder_common_motifs, 'YeastApobec', sample.to_s,
+                          context.to_s, protected_or_subjected.to_s, characteristic.to_s, 'compared_to_each.txt') ]
+    }
+  end
+  result.to_h
 end
 
 def fitted_non_fitted_occurence_state(in_fitted, in_nonfitted)
@@ -94,7 +97,7 @@ def fitted_non_fitted_occurence_matrix(motifs_fitted_by_sample, motifs_nonfitted
   results << ['Motif quality', *qualities]
   results << ['Motif families (level 3)', *motifs_subfamilies_3]
   results << ['Motif families (level 4)', *motifs_subfamilies_4]
-  Configuration.sample_with_context_paths.each_key{|sample_name|
+  Configuration.sample_with_context_paths(with_nik_zainal: false, with_yeast: false).each_key{|sample_name|
     motifs_fitted = motifs_fitted_by_sample[sample_name]
     motifs_nonfitted = motifs_nonfitted_by_sample[sample_name]
     motifs_occurences = all_motifs.map{|motif|
@@ -122,7 +125,7 @@ task :aggregate_common_motifs => ['results/motif_statistics/aggregated/'] do
   [:protected, :subjected].each do |protected_or_subjected|
     ['disruption', 'emergence', 'substitution-in-core'].each do |characteristic|
       prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
-      files = sample_files('results/motif_statistics/common/', 'any', protected_or_subjected, characteristic)
+      files = sample_files('results/motif_statistics/common/', 'any', protected_or_subjected, characteristic, with_yeast: false)
       File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context.tsv"), 'w') {|fw|
         matrix = collect_different_sample_statistics(files)
         matrix_augmented = with_motif_info_rows(matrix, motif_family_recognizers, motif_qualities)
@@ -156,7 +159,7 @@ task :aggregate_common_motifs_wo_fitting => ['results/motif_statistics/aggregate
   [:protected, :subjected].each do |protected_or_subjected|
     ['disruption', 'emergence', 'substitution-in-core'].each do |characteristic|
       prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
-      files = sample_files('results/motif_statistics/common_wo_fitting/', 'any', protected_or_subjected, characteristic)
+      files = sample_files('results/motif_statistics/common_wo_fitting/', 'any', protected_or_subjected, characteristic, with_yeast: false)
       File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context.tsv"), 'w') {|fw|
         matrix = collect_different_sample_statistics(files)
         matrix_augmented = with_motif_info_rows(matrix, motif_family_recognizers, motif_qualities)
@@ -192,14 +195,14 @@ task :compare_fitted_to_unfitted => 'results/motif_statistics/aggregated_compari
       prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
       filename_last_part = File.join(protected_or_subjected.to_s, characteristic.to_s, 'compared_to_each.txt')
 
-      motifs_fitted_by_sample = Configuration.sample_with_context_paths.map{|sample_name, sample_path|
+      motifs_fitted_by_sample = Configuration.sample_with_context_paths(with_nik_zainal: false, with_yeast: false).map{|sample_name, sample_path|
         motifs = File.readlines(
           File.join('results/motif_statistics/common/', sample_path, filename_last_part)
         ).map(&:chomp).to_set
         [sample_name, motifs]
       }.to_h
 
-      motifs_nonfitted_by_sample = Configuration.sample_with_context_paths.map{|sample_name, sample_path|
+      motifs_nonfitted_by_sample = Configuration.sample_with_context_paths(with_nik_zainal: false, with_yeast: false).map{|sample_name, sample_path|
         motifs = File.readlines(
           File.join('results/motif_statistics/common_wo_fitting/', sample_path, filename_last_part)
         ).map(&:chomp).to_set

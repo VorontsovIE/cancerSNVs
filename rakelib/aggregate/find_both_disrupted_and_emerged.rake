@@ -18,7 +18,7 @@ task :find_both_disrupted_and_emerged => 'results/motif_statistics/disruption_an
   [:protected, :subjected].each do |protected_or_subjected|
     prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
 
-    both_disrupted_and_emerged_by_sample = Configuration.sample_paths.map{|sample_name, sample_folder|
+    both_disrupted_and_emerged_by_sample = Configuration.sample_paths(with_nik_zainal: false, with_yeast: false).map{|sample_name, sample_folder|
       disruption_motifs_fn = File.join('results/motif_statistics/common', sample_folder, 'any', protected_or_subjected.to_s, 'disruption/compared_to_each.txt')
       emergence_motifs_fn = File.join('results/motif_statistics/common', sample_folder, 'any', protected_or_subjected.to_s, 'emergence/compared_to_each.txt')
       disruption_motifs = File.readlines(disruption_motifs_fn).map(&:strip)
@@ -28,7 +28,7 @@ task :find_both_disrupted_and_emerged => 'results/motif_statistics/disruption_an
     }.to_h
 
     all_motifs = both_disrupted_and_emerged_by_sample.map{|sample_name, motifs| motifs }.inject(Set.new, :|).sort
-    all_samples = Configuration.sample_paths.keys
+    all_samples = Configuration.sample_paths(with_nik_zainal: false, with_yeast: false).keys
 
     results = []
     results << ['Motif', 'Motif quality', 'Motif families (level 3)', 'Motif families (level 4)', *all_samples]
