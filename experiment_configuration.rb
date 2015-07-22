@@ -204,3 +204,12 @@ ALEXANDROV_MUTATIONS_LOADER = MutationsByCancerTypeLoader.create(
                                 mutations_folder: LocalPaths::Secondary::Alexandrov::Mutations,
                                 samples_summary_filename: LocalPaths::Secondary::Alexandrov::SamplesSummary
                               )
+
+MOTIF_FAMILY_RECOGNIZERS = Hash.new{|hsh, deepness|
+  hsh[deepness] = motif_family_recognizer_by_motif(
+    deepness: deepness,
+    tf_classification_filename: 'source_data/TFOntologies/TFClass_human.obo',
+    uniprot_acs_by_id_filename: 'source_data/human_uniprot.txt',
+    uniprot_ids_by_motif_filename: 'source_data/hocomoco_genes_infos.csv'
+  )
+}

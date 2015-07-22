@@ -18,6 +18,19 @@ def read_uniprot_ids_by_motif(filename)
   }.to_h
 end
 
+def motif_family_recognizer_by_motif(deepness:, tf_classification_filename:, uniprot_acs_by_id_filename:, uniprot_ids_by_motif_filename:)
+  tf_classification = TFClassification.from_file(tf_classification_filename)
+  uniprot_acs_by_id = read_uniprot_acs_by_id(uniprot_acs_by_id_filename)
+  uniprots_by_motif = read_uniprot_ids_by_motif(uniprot_ids_by_motif_filename)
+  MotifFamilyRecognizerByMotif.new(
+    MotifFamilyRecognizerByUniprotID.new(
+      MotifFamilyRecognizerByUniprotAC.new(tf_classification, deepness),
+      uniprot_acs_by_id
+    ),
+    uniprots_by_motif
+  )
+end
+
 ##################################
 
 class MotifFamilyRecognizerByUniprotAC
