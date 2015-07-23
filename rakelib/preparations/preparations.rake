@@ -4,6 +4,7 @@ namespace :preparations do
     Rake::Task['preparations:extractSNVs'].invoke
     Rake::Task['preparations:generate_random_SNVs'].invoke
     Rake::Task['preparations:generate_chunks'].invoke
+    # TODO: Here perfectosape should be run
     Rake::Task['preparations:shuffle_sites'].invoke
   end
 end
