@@ -39,13 +39,15 @@ def generate_random_shuffle_task(output_filename:, task_name:, cancer_filename:,
   task task_name => output_filename
 end
 
-def generate_random_genome_task(output_filename:, task_name:, cancer_filename:, random_seed:, fold:)
+def generate_random_genome_task(output_filename:, task_name:, cancer_filename:, random_seed:, fold:, dhs_filename: nil)
   file cancer_filename
   file output_filename => [cancer_filename] do
+    dhs_options = dhs_filename ? ['--dhs-accessible', dhs_filename] : []
     ruby 'bin/preparations/generate_random_genome_sequences.rb', cancer_filename,
                                                               '--flank-length', '50',
                                                               '--fold', fold.to_s,
                                                               '--seed', random_seed.to_s,
+                                                              *dhs_options,
                                                               {out: output_filename},{}
   end
   task task_name => output_filename
@@ -85,6 +87,7 @@ AlexandrovWholeGenomeCancers.each do |cancer_type|
   generate_random_genome_task(output_filename: File.join(LocalPaths::Secondary::SNVs, 'Alexandrov', cancer_type.to_s, 'random_genome.txt'),
                               task_name: 'preparations:generate_random_SNVs:Alexandrov:genome',
                               cancer_filename: cancer_filename,
+                              dhs_filename: Configuration::DHS_BED_FILES[cancer_type],
                               fold: Configuration::Alexandrov::RandomGenomeFold[cancer_type],
                               random_seed: "#{Configuration::AlexandrovRandomGenomeSeeds}_#{cancer_type}".hash)
 
@@ -101,6 +104,7 @@ Configuration::RandomGenomeSeeds.each do |seed|
   generate_random_genome_task(output_filename: File.join(LocalPaths::Secondary::SNVs, 'NikZainal', "random_genome_#{seed}.txt"),
                               task_name: 'preparations:generate_random_SNVs:NikZainal:genome',
                               cancer_filename: File.join(LocalPaths::Secondary::SNVs, 'NikZainal', 'cancer.txt'),
+                              dhs_filename: Configuration::DHS_BED_FILES[:Breast],
                               fold: Configuration::NikZainal::RandomGenomeFold,
                               random_seed: seed)
 end

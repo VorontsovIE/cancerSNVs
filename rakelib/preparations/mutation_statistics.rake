@@ -16,12 +16,12 @@ namespace :statistics do
     desc 'Statistics of mutation types(SNV,DNV,TNV,indel) in different region types of different cancer types'
     task mutation_types: [LocalPaths::Results::Alexandrov::MutationTypesStatistics]
     file LocalPaths::Results::Alexandrov::MutationTypesStatistics do
-      genome_markup = GENOME_MARKUP_LOADER.load_markup
       mutations_by_cancer_type = ALEXANDROV_MUTATIONS_LOADER.load
       File.open(LocalPaths::Results::Alexandrov::MutationTypesStatistics, 'w') do |fw|
         mutations_by_cancer_type.each do |cancer_type, mutations|
           fw.puts "> #{cancer_type}"
 
+          genome_markup = GENOME_MARKUP_LOADER.load_markup(dhs_accessible_filename: Configuration::DHS_BED_FILES[cancer_type])
           RegionType.each_possible do |look_for_region_type|
             mutations_of_specified_region_type = mutations.select{|mutation|
               genome_markup.get_region_type(mutation.chromosome, mutation.interval) == look_for_region_type
@@ -36,13 +36,13 @@ namespace :statistics do
     desc 'Statistics of contexts of SNVs in different cancer types of Alexandrov data set'
     task context_types: [LocalPaths::Results::Alexandrov::ContextStatistics]
     file LocalPaths::Results::Alexandrov::ContextStatistics do
-      genome_markup = GENOME_MARKUP_LOADER.load_markup
       mutations_by_cancer_type = ALEXANDROV_MUTATIONS_LOADER.load
       File.open('./results/alexandrov_somatic_mutations_contexts.txt', 'w') do |fw|
         fw.puts 'regulatory'
         mutations_by_cancer_type.each do |cancer_type, mutations|
           fw.puts "> #{cancer_type}"
 
+          genome_markup = GENOME_MARKUP_LOADER.load_markup(dhs_accessible_filename: Configuration::DHS_BED_FILES[cancer_type])
           regulatory_mutations = mutations.select(&:snv?).select{|mutation|
             genome_markup.regulatory?(mutation.chromosome, mutation.interval)
           }

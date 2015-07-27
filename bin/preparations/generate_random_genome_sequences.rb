@@ -121,18 +121,20 @@ end
 
 fold = 1
 flank_length = 50
+dhs_accessible_filename = nil
 random_generator = Random.new
 
 OptionParser.new{|opts|
   opts.on('--seed SEED', 'Random generator seed'){|value| random_generator = Random.new(Integer(value)) }
   opts.on('--flank-length LENGTH', 'Flank length'){|value| flank_length = Integer(value) }
   opts.on('--fold TIMES', 'Random set size is that times more than a cancer one'){|value| fold = Integer(value) }
+  opts.on('--dhs-accessible FILENAME', '*.bed file with DHS accessible profiles'){|value| dhs_accessible_filename = value }
 }.parse!(ARGV)
 
 cancer_snvs_filename = ARGV[0]
 
 # Markup to cut regulatory FASTA (with actual mutations cutted out)
-genome_markup = GENOME_MARKUP_LOADER.load_markup
+genome_markup = GENOME_MARKUP_LOADER.load_markup(dhs_accessible_filename: dhs_accessible_filename)
 ensembl_markup_by_chromosome = genome_markup.regulatory_by_chromosome
 cancer_mutations = snv_neighborhood_by_chromosome(SNVInfo.each_in_file(cancer_snvs_filename), flank_length: flank_length)
 

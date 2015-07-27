@@ -31,14 +31,15 @@ def read_introns_by_chromosome(filename)
                 raise 'Different strands for the same exon list'  unless exons.all?{|exon| exon.strand == strand }
                 gene_exons = IntervalNotation::Operations.union(exons.map(&:exon_region))
                 all_introns = gene_exons.covering_interval - gene_exons
-                case strand
-                when :+
-                  IntervalNotation::IntervalSet.new(all_introns.intervals.first(1))
-                when :-
-                  IntervalNotation::IntervalSet.new(all_introns.intervals.last(1))
-                else
-                  raise 'Unknown strand'
-                end
+                # # Choose only the first intron
+                # case strand
+                # when :+
+                #   IntervalNotation::IntervalSet.new(all_introns.intervals.first(1))
+                # when :-
+                #   IntervalNotation::IntervalSet.new(all_introns.intervals.last(1))
+                # else
+                #   raise 'Unknown strand'
+                # end
               }
               [chromosome, IntervalNotation::Operations.union(transcript_introns)]
             }.to_h
@@ -57,6 +58,25 @@ def read_coding_regions_by_chromosome(filename)
               }
               [chromosome, IntervalNotation::Operations.union(transcript_coding_regions)]
             }.to_h
+  result.default = IntervalNotation::Syntax::Long::Empty
+  result
+end
+
+
+GenomeBasicInterval = Struct.new(:chromosome, :from, :to) do
+  def interval
+    IntervalNotation::Syntax::Long::closed_open(from + 1, to + 1) # from 0-based right excluded to 1-based right included
+  end
+end
+
+def read_dhs_accessible_regions_by_chromosome(filename)
+  result = File.readlines(filename).map{|line|
+    chr, from, to = line.chomp.split("\t")
+    GenomeBasicInterval.new(chr.sub(/^chr/, '').to_sym, from.to_i, to.to_i)
+  }.group_by(&:chromosome)
+  .map{|chromosome, accessible_regions|
+    [chromosome, IntervalNotation::Operations.union(accessible_regions.map(&:interval))]
+  }.to_h
   result.default = IntervalNotation::Syntax::Long::Empty
   result
 end

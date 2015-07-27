@@ -36,7 +36,8 @@ file 'results/AllSNVs/NikZainal/cancer.txt' => [LocalPaths::Secondary::NikZainal
   snv_infos_stream = BreastCancerSNV \
     .each_in_file(LocalPaths::Secondary::NikZainalSNVsOriginal) \
     .map{|snv| snv.to_snv_info(GENOME_READER, flank_length: 50) }
-  markup_dont_filter_SNVInfos_to_file(snv_infos_stream, GENOME_MARKUP_LOADER.load_markup, output_file: 'results/AllSNVs/NikZainal/cancer.txt')
+  genome_markup = GENOME_MARKUP_LOADER.load_markup(dhs_accessible_filename: Configuration::DHS_BED_FILES[:Breast])
+  markup_dont_filter_SNVInfos_to_file(snv_infos_stream, genome_markup, output_file: 'results/AllSNVs/NikZainal/cancer.txt')
 end
 
 # Alexandrov
@@ -58,7 +59,8 @@ AlexandrovWholeGenomeCancers.each do |cancer_type|
           variant_id: "#{mutation.sample_id};#{mutation.chromosome}:#{mutation.position_start}",
           flank_length: 50)
       }
-    markup_dont_filter_SNVInfos_to_file(snv_infos_stream, GENOME_MARKUP_LOADER.load_markup, output_file: cancer_filename)
+    genome_markup = GENOME_MARKUP_LOADER.load_markup(dhs_accessible_filename: Configuration::DHS_BED_FILES[cancer_type])
+    markup_dont_filter_SNVInfos_to_file(snv_infos_stream, genome_markup, output_file: cancer_filename)
   end
   task 'preparations:extractAllSNVs:Alexandrov' => cancer_filename
 end
