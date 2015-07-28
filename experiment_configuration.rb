@@ -132,17 +132,25 @@ module Configuration
 
   def self.getAlexandrovWholeGenomeCancers
     @alexandrov_samples ||= begin
-      SampleInfo.each_in_file(LocalPaths::Secondary::Alexandrov::SamplesSummary)
-                .group_by(&:cancer_type)
-                .select{|cancer_type, samples| samples.any?(&:whole_genome?) }
-                .map{|cancer_type, samples| cancer_type }
-                .to_a.sort
+      if ENV['ALEXANDROV_SAMPLES']
+        ENV['ALEXANDROV_SAMPLES'].split(',').map(&:to_sym).sort
+      else
+        SampleInfo.each_in_file(LocalPaths::Secondary::Alexandrov::SamplesSummary)
+                  .group_by(&:cancer_type)
+                  .select{|cancer_type, samples| samples.any?(&:whole_genome?) }
+                  .map{|cancer_type, samples| cancer_type }
+                  .to_a.sort
+      end
     end
   end
 
   def self.getYeastApobecSamples
     @yeast_apobec_samples ||= begin
-      Dir.glob('source_data/YeastApobec/*.mfa').map{|fn| File.basename(fn, '.mfa').to_sym }
+      if ENV['YEAST_SAMPLES']
+        ENV['YEAST_SAMPLES'].split(',').map(&:to_sym).sort
+      else
+        Dir.glob('source_data/YeastApobec/*.mfa').map{|fn| File.basename(fn, '.mfa').to_sym }
+      end
     end
   end
 
