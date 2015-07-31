@@ -106,11 +106,11 @@ module Configuration
       [:any]
     end
 
-    RandomGenomeFold = Hash.new(100).merge({:'Lung Adeno' => 10, :Breast => 30, :Liver => 20, :ALL => 1500, :AML => 3000, :'Pilocytic Astrocytoma' => 1000, :CLL => 200})
-    RandomShuffleFold = Hash.new(100).merge({:'Lung Adeno' => 10, :Breast => 30, :Liver => 20, :ALL => 1500, :AML => 3000, :'Pilocytic Astrocytoma' => 1000, :CLL => 200})
+    RandomGenomeFold = Hash.new(100).merge({:'Lung Adeno' => 10, :Breast => 5, :Liver => 20, :ALL => 1500, :AML => 3000, :'Pilocytic Astrocytoma' => 1000, :CLL => 200})
+    RandomShuffleFold = Hash.new(100).merge({:'Lung Adeno' => 10, :Breast => 5, :Liver => 20, :ALL => 1500, :AML => 3000, :'Pilocytic Astrocytoma' => 1000, :CLL => 200})
 
-    FittingFoldGenome = Hash.new(20).merge({:'Lung Adeno' => 2, :Breast => 6, :Liver => 4, :ALL => 300, :AML => 600, :'Pilocytic Astrocytoma' => 200, :CLL => 40})
-    FittingFoldShuffle = Hash.new(20).merge({:'Lung Adeno' => 2, :Breast => 6, :Liver => 4, :ALL => 300, :AML => 600, :'Pilocytic Astrocytoma' => 200, :CLL => 40})
+    FittingFoldGenome = Hash.new(20).merge({:'Lung Adeno' => 2, :Breast => 1, :Liver => 4, :ALL => 300, :AML => 600, :'Pilocytic Astrocytoma' => 200, :CLL => 40})
+    FittingFoldShuffle = Hash.new(20).merge({:'Lung Adeno' => 2, :Breast => 1, :Liver => 4, :ALL => 300, :AML => 600, :'Pilocytic Astrocytoma' => 200, :CLL => 40})
   end
 
   module YeastApobec
