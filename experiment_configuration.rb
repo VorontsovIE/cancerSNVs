@@ -69,6 +69,8 @@ module Configuration
   CorrectionMethod = 'fdr' # FDR
   SignificanceCutoff = 0.05
 
+  MotifQualities = 'A,B,C' # the only motif qualities to be taken into account
+
   FoldChangeCutoff = 4
   PvalueCutoff = 0.0005
 

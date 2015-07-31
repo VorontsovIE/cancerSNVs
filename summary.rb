@@ -24,6 +24,7 @@ def load_motif_infos(filename)
   results
 end
 
+motif_qualities = [:A, :B, :C]
 pvalue_correction_method = 'fdr'
 control_set_multiplier = 1
 ignore_underfitting = false
@@ -43,6 +44,9 @@ OptionParser.new do |opts|
   }
   opts.on('--fitting-log FILE', 'Specify fitting log file to make underfitting corrections') {|filename|
     fitting_log_filename = filename
+  }
+  opts.on('--motif-qualities QUALITIES', 'Take motifs of given qualities (comma-separated). Default is A,B,C') {|value|
+    motif_qualities = value.upcase.split(',').map(&:to_sym)
   }
 end.parse!(ARGV)
 
@@ -73,7 +77,9 @@ motif_infos = {
 
 significance_corrector = PvalueCorrector.new(pvalue_correction_method)
 
-motif_statistics = motif_names.map{|motif|
+motif_statistics = motif_names.select{|motif|
+  motif_qualities.include?( motif_collection_infos[:quality][motif] )
+}.map{|motif|
   MotifStatistics.new(
     motif: motif,
     disruption_table: FisherTable.by_class_and_total(

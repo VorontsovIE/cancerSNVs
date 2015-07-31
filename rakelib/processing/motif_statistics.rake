@@ -11,6 +11,7 @@ def make_statistics_comparison_task(cancer_slices_folder:, random_slices_folder:
                         *fitting_log_option,
                         '--correction', Configuration::CorrectionMethod,
                         '--expand-control-set', Configuration::ExpandControlSetFold.to_s,
+                        '--motif-qualities', Configuration::MotifQualities,
                         {out: output_file}, {}
   end
 end
@@ -23,7 +24,7 @@ def make_filtered_statistics_task(motif_statistics_file:, output_folder:, task_n
         mkdir_p output_subfolder
         output_filename = File.join(output_subfolder, File.basename(motif_statistics_file))
         ruby 'filter_summary.rb', motif_statistics_file,
-                                '--motif-qualities', 'A,B,C',
+                                '--motif-qualities', Configuration::MotifQualities,
                                 '--significance', Configuration::SignificanceCutoff.to_s,
                                 '--characteristic', characteristic,
                                 "--#{subjected_or_protected}",
