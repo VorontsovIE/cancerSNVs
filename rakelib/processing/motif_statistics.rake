@@ -24,7 +24,7 @@ def make_filtered_statistics_task(motif_statistics_file:, output_folder:, task_n
         output_filename = File.join(output_subfolder, File.basename(motif_statistics_file))
         ruby 'filter_summary.rb', motif_statistics_file,
                                 '--motif-qualities', 'A,B,C',
-                                '--significance', 0.05.to_s,
+                                '--significance', Configuration::SignificanceCutoff.to_s,
                                 '--characteristic', characteristic,
                                 "--#{subjected_or_protected}",
                                 {out: output_filename}, {}

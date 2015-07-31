@@ -67,6 +67,8 @@ end
 module Configuration
   # CorrectionMethod = 'BY' # Benjamini-Yekutieli
   CorrectionMethod = 'fdr' # FDR
+  SignificanceCutoff = 0.05
+
   FoldChangeCutoff = 4
   PvalueCutoff = 0.0005
 
