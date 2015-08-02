@@ -109,61 +109,44 @@ def fitted_non_fitted_occurence_matrix(motifs_fitted_by_sample, motifs_nonfitted
   results.transpose
 end
 
-directory 'results/motif_statistics/aggregated/'
 
-desc 'Aggregate common motifs over samples'
-task :aggregate_common_motifs => ['results/motif_statistics/aggregated/'] do
-  output_folder = 'results/motif_statistics/aggregated/'
-  motif_qualities = load_motif_qualities(LocalPaths::Secondary::GeneInfos)
 
-  [:protected, :subjected].each do |protected_or_subjected|
-    ['disruption', 'emergence', 'substitution-in-core'].each do |characteristic|
-      prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
-      files = sample_files('results/motif_statistics/common/', 'any', protected_or_subjected, characteristic, with_yeast: false)
-      File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context.tsv"), 'w') {|fw|
-        matrix = collect_different_sample_statistics(files)
-        matrix_augmented = with_motif_info_rows(matrix, MOTIF_FAMILY_RECOGNIZERS, motif_qualities)
-        print_matrix(matrix_augmented, stream: fw)
-      }
-      File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context_glued_level_3.tsv"), 'w') {|fw|
-        matrix = collect_different_sample_statistics_gluing_subfamilies(files, MOTIF_FAMILY_RECOGNIZERS[3])
-        print_matrix(matrix, stream: fw)
-      }
-      File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context_glued_level_4.tsv"), 'w') {|fw|
-        matrix = collect_different_sample_statistics_gluing_subfamilies(files, MOTIF_FAMILY_RECOGNIZERS[4])
-        print_matrix(matrix, stream: fw)
-      }
+def make_aggregation_task(common_motifs_folder:, output_folder:, task_name:, task_description: nil)
+  directory output_folder
+  desc task_description  if task_description
+  task task_name => output_folder do
+    [:protected, :subjected].each do |protected_or_subjected|
+      ['disruption', 'emergence', 'substitution-in-core'].each do |characteristic|
+        prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
+        files = sample_files(common_motifs_folder, 'any', protected_or_subjected, characteristic, with_yeast: false)
+        File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context.tsv"), 'w') {|fw|
+          matrix = collect_different_sample_statistics(files)
+          matrix_augmented = with_motif_info_rows(matrix, MOTIF_FAMILY_RECOGNIZERS, motif_qualities)
+          print_matrix(matrix_augmented, stream: fw)
+        }
+        File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context_glued_level_3.tsv"), 'w') {|fw|
+          matrix = collect_different_sample_statistics_gluing_subfamilies(files, MOTIF_FAMILY_RECOGNIZERS[3])
+          print_matrix(matrix, stream: fw)
+        }
+        File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context_glued_level_4.tsv"), 'w') {|fw|
+          matrix = collect_different_sample_statistics_gluing_subfamilies(files, MOTIF_FAMILY_RECOGNIZERS[4])
+          print_matrix(matrix, stream: fw)
+        }
+      end
     end
   end
 end
 
-directory 'results/motif_statistics/aggregated_wo_fitting/'
+make_aggregation_task common_motifs_folder: 'results/motif_statistics/common/',
+                      output_folder: 'results/motif_statistics/aggregated/',
+                      task_name: 'aggregate_common_motifs',
+                      task_description: 'Aggregate common motifs over samples'
 
-desc 'Aggregate common motifs over samples (w/o fitting)'
-task :aggregate_common_motifs_wo_fitting => ['results/motif_statistics/aggregated_wo_fitting/'] do
-  output_folder = 'results/motif_statistics/aggregated_wo_fitting/'
-  motif_qualities = load_motif_qualities(LocalPaths::Secondary::GeneInfos)
+make_aggregation_task common_motifs_folder: 'results/motif_statistics/common_wo_fitting/',
+                      output_folder: 'results/motif_statistics/aggregated_wo_fitting/',
+                      task_name: 'aggregate_common_motifs_wo_fitting',
+                      task_description: 'Aggregate common motifs over samples (w/o fitting)'
 
-  [:protected, :subjected].each do |protected_or_subjected|
-    ['disruption', 'emergence', 'substitution-in-core'].each do |characteristic|
-      prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
-      files = sample_files('results/motif_statistics/common_wo_fitting/', 'any', protected_or_subjected, characteristic, with_yeast: false)
-      File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context.tsv"), 'w') {|fw|
-        matrix = collect_different_sample_statistics(files)
-        matrix_augmented = with_motif_info_rows(matrix, MOTIF_FAMILY_RECOGNIZERS, motif_qualities)
-        print_matrix(matrix_augmented, stream: fw)
-      }
-      File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context_glued_level_3.tsv"), 'w') {|fw|
-        matrix = collect_different_sample_statistics_gluing_subfamilies(files, MOTIF_FAMILY_RECOGNIZERS[3])
-        print_matrix(matrix, stream: fw)
-      }
-      File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context_glued_level_4.tsv"), 'w') {|fw|
-        matrix = collect_different_sample_statistics_gluing_subfamilies(files, MOTIF_FAMILY_RECOGNIZERS[4])
-        print_matrix(matrix, stream: fw)
-      }
-    end
-  end
-end
 
 directory 'results/motif_statistics/aggregated_comparison'
 desc 'Compare motif sets for experiment with and without fitting'
