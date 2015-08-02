@@ -116,27 +116,21 @@ task :aggregate_common_motifs => ['results/motif_statistics/aggregated/'] do
   output_folder = 'results/motif_statistics/aggregated/'
   motif_qualities = load_motif_qualities(LocalPaths::Secondary::GeneInfos)
 
-  tf_classification = TFClassification.from_file('source_data/TFOntologies/TFClass_human.obo')
-  uniprot_acs_by_id = read_uniprot_acs_by_id('source_data/human_uniprot.txt')
-  uniprots_by_motif = read_uniprot_ids_by_motif('source_data/hocomoco_genes_infos.csv')
-  motif_family_recognizers = Hash.new{|hsh, deepness|
-    hsh[deepness] = MotifFamilyRecognizerByMotif.new(MotifFamilyRecognizerByUniprotID.new(MotifFamilyRecognizerByUniprotAC.new(tf_classification, deepness), uniprot_acs_by_id), uniprots_by_motif)
-  }
   [:protected, :subjected].each do |protected_or_subjected|
     ['disruption', 'emergence', 'substitution-in-core'].each do |characteristic|
       prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
       files = sample_files('results/motif_statistics/common/', 'any', protected_or_subjected, characteristic, with_yeast: false)
       File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context.tsv"), 'w') {|fw|
         matrix = collect_different_sample_statistics(files)
-        matrix_augmented = with_motif_info_rows(matrix, motif_family_recognizers, motif_qualities)
+        matrix_augmented = with_motif_info_rows(matrix, MOTIF_FAMILY_RECOGNIZERS, motif_qualities)
         print_matrix(matrix_augmented, stream: fw)
       }
       File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context_glued_level_3.tsv"), 'w') {|fw|
-        matrix = collect_different_sample_statistics_gluing_subfamilies(files, motif_family_recognizers[3])
+        matrix = collect_different_sample_statistics_gluing_subfamilies(files, MOTIF_FAMILY_RECOGNIZERS[3])
         print_matrix(matrix, stream: fw)
       }
       File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context_glued_level_4.tsv"), 'w') {|fw|
-        matrix = collect_different_sample_statistics_gluing_subfamilies(files, motif_family_recognizers[4])
+        matrix = collect_different_sample_statistics_gluing_subfamilies(files, MOTIF_FAMILY_RECOGNIZERS[4])
         print_matrix(matrix, stream: fw)
       }
     end
@@ -150,27 +144,21 @@ task :aggregate_common_motifs_wo_fitting => ['results/motif_statistics/aggregate
   output_folder = 'results/motif_statistics/aggregated_wo_fitting/'
   motif_qualities = load_motif_qualities(LocalPaths::Secondary::GeneInfos)
 
-  tf_classification = TFClassification.from_file('source_data/TFOntologies/TFClass_human.obo')
-  uniprot_acs_by_id = read_uniprot_acs_by_id('source_data/human_uniprot.txt')
-  uniprots_by_motif = read_uniprot_ids_by_motif('source_data/hocomoco_genes_infos.csv')
-  motif_family_recognizers = Hash.new{|hsh, deepness|
-    hsh[deepness] = MotifFamilyRecognizerByMotif.new(MotifFamilyRecognizerByUniprotID.new(MotifFamilyRecognizerByUniprotAC.new(tf_classification, deepness), uniprot_acs_by_id), uniprots_by_motif)
-  }
   [:protected, :subjected].each do |protected_or_subjected|
     ['disruption', 'emergence', 'substitution-in-core'].each do |characteristic|
       prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
       files = sample_files('results/motif_statistics/common_wo_fitting/', 'any', protected_or_subjected, characteristic, with_yeast: false)
       File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context.tsv"), 'w') {|fw|
         matrix = collect_different_sample_statistics(files)
-        matrix_augmented = with_motif_info_rows(matrix, motif_family_recognizers, motif_qualities)
+        matrix_augmented = with_motif_info_rows(matrix, MOTIF_FAMILY_RECOGNIZERS, motif_qualities)
         print_matrix(matrix_augmented, stream: fw)
       }
       File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context_glued_level_3.tsv"), 'w') {|fw|
-        matrix = collect_different_sample_statistics_gluing_subfamilies(files, motif_family_recognizers[3])
+        matrix = collect_different_sample_statistics_gluing_subfamilies(files, MOTIF_FAMILY_RECOGNIZERS[3])
         print_matrix(matrix, stream: fw)
       }
       File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context_glued_level_4.tsv"), 'w') {|fw|
-        matrix = collect_different_sample_statistics_gluing_subfamilies(files, motif_family_recognizers[4])
+        matrix = collect_different_sample_statistics_gluing_subfamilies(files, MOTIF_FAMILY_RECOGNIZERS[4])
         print_matrix(matrix, stream: fw)
       }
     end
@@ -182,13 +170,6 @@ desc 'Compare motif sets for experiment with and without fitting'
 task :compare_fitted_to_unfitted => 'results/motif_statistics/aggregated_comparison' do
   output_folder = 'results/motif_statistics/aggregated_comparison/'
   motif_qualities = load_motif_qualities(LocalPaths::Secondary::GeneInfos)
-
-  tf_classification = TFClassification.from_file('source_data/TFOntologies/TFClass_human.obo')
-  uniprot_acs_by_id = read_uniprot_acs_by_id('source_data/human_uniprot.txt')
-  uniprots_by_motif = read_uniprot_ids_by_motif('source_data/hocomoco_genes_infos.csv')
-  motif_family_recognizers = Hash.new{|hsh, deepness|
-    hsh[deepness] = MotifFamilyRecognizerByMotif.new(MotifFamilyRecognizerByUniprotID.new(MotifFamilyRecognizerByUniprotAC.new(tf_classification, deepness), uniprot_acs_by_id), uniprots_by_motif)
-  }
 
   [:protected, :subjected].each do |protected_or_subjected|
     ['disruption', 'emergence', 'substitution-in-core'].each do |characteristic|
@@ -209,7 +190,7 @@ task :compare_fitted_to_unfitted => 'results/motif_statistics/aggregated_compari
         [sample_name, motifs]
       }.to_h
 
-      occurence_matrix = fitted_non_fitted_occurence_matrix(motifs_fitted_by_sample, motifs_nonfitted_by_sample, motif_family_recognizers, motif_qualities)
+      occurence_matrix = fitted_non_fitted_occurence_matrix(motifs_fitted_by_sample, motifs_nonfitted_by_sample, MOTIF_FAMILY_RECOGNIZERS, motif_qualities)
 
       File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context.tsv"), 'w') do |fw|
         print_matrix(occurence_matrix, stream: fw)
