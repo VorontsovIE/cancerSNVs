@@ -182,4 +182,69 @@ task :compare_fitted_to_unfitted => 'results/motif_statistics/aggregated_compari
   end
 end
 
+
+def families_count(motifs, motif_family_recognizer)
+  result = Hash.new(0)
+  motifs.flat_map{|motif| motif_family_recognizer.subfamilies_by_motif(motif) }.each{|family| result[family] += 1 }
+  result
+end
+
+def only_high_quality_motifs(motifs)
+  motifs.select{|motif|
+    possible_qualities.include?(motif_qualities[motif])
+  }
+end
+
+task :collect_families_statistics do
+  motif_family_recognizer = MOTIF_FAMILY_RECOGNIZERS[3]
+
+  common_motifs_folder = 'results/motif_statistics/common/'
+
+  motif_qualities = load_motif_qualities(LocalPaths::Secondary::GeneInfos)
+  possible_qualities = Configuration::MotifQualities.split(',')
+  motif_names = only_high_quality_motifs( File.readlines(LocalPaths::Secondary::MotifNames).map(&:strip) )
+  families = motif_names.flat_map{|motif| motif_family_recognizer.subfamilies_by_motif(motif) }.uniq.sort
+
+  total_families_count = families_count(motifs)
+
+  [:protected, :subjected].each do |protected_or_subjected|
+    prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
+    # either subjected to or protected from disruption
+    disrupted_motifs_by_sample = sample_files(common_motifs_folder, 'any', protected_or_subjected, 'disruption', with_yeast: false).map{|header, filename|
+      [header, only_high_quality_motifs( File.readlines(filename).map(&:strip) )]
+    }.to_h
+
+    # either subjected to or protected from emergence
+    emerged_motifs_by_sample = sample_files(common_motifs_folder, 'any', protected_or_subjected, 'emergence', with_yeast: false).map{|header, filename|
+      [header, only_high_quality_motifs( File.readlines(filename).map(&:strip) )]
+    }.to_h
+
+    both_disrupted_and_emerged_motifs_by_sample = disrupted_motifs_by_sample & emerged_motifs_by_sample
+
+    disrupted_families_by_sample = disrupted_motifs_by_sample.map{|header, motifs| [header, families_count(motifs)] }.to_h
+    emerged_families_by_sample = emerged_motifs_by_sample.map{|header, motifs| [header, families_count(motifs)] }.to_h
+    both_disrupted_and_emerged_by_sample = both_disrupted_and_emerged_motifs_by_sample.map{|header, motifs| [header, families_count(motifs)] }.to_h
+
+    samples = disrupted_motifs_by_sample.keys.sort
+
+    matrix = []
+    matrix << [nil, nil] + samples.flat_map{|sample| [sample,nil,nil] }
+    matrix << ['Family', 'Total members'] + ['Disrupted', 'Emerged', 'Both'] * samples.size
+    families.each{|family|
+      family_statistics = samples.flat_map{|sample|
+        [ disrupted_families_by_sample[sample][family],
+          emerged_families_by_sample[sample][family],
+          both_disrupted_and_emerged_by_sample[sample][family]]
+      }
+      matrix << [family, total_families_count[family],  *family_statistics] 
+    }
+
+    File.open(File.join(output_folder, "#{protected_or_subjected}_in_any_context.tsv"), 'w') {|fw|
+      print_matrix(matrix, stream: fw)
+    }
+  end
+end
+
+
+
 task :default => [:aggregate_common_motifs, :aggregate_common_motifs_wo_fitting, :compare_fitted_to_unfitted]
