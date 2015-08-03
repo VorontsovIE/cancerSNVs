@@ -109,4 +109,11 @@ class MotifFamilyRecognizerByMotif
       subfamilies_by_motif(motif)
     }.uniq
   end
+
+  # count number of times, each family was hit
+  def families_count(motifs)
+    result = Hash.new(0)
+    motifs.flat_map{|motif| subfamilies_by_motif(motif) }.each{|family| result[family] += 1 }
+    result
+  end
 end
