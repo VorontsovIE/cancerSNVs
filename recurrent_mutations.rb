@@ -27,12 +27,19 @@ class PerfectosAPE::ResultShort
   def to_s; "#{full_sample_name};#{chromosome}:#{mutation_position}@#{motif_name}"; end
 end
 
-# def site_coordinates_in_file(filename)
-#   cancer = File.basename(filename, File.extname(filename))
-#   result = PerfectosAPE::ResultShort.each_in_file(filename).to_a
-#   result.each{|mut_site| mut_site.sample_type = cancer }
-#   result
-# end
+def output_recurrent_mutations(recurrent_mutations_by_sites)
+  recurrent_mutations_by_sites.each do |sites, mutations|
+    from, to = sites.flat_map{|motif, chr, pos|
+      [pos, pos + Bioinform::MotifModel::PWM.from_file("/home/ilya/iogen/hocomoco/#{motif}.pwm").length]
+    }.minmax
+    chr = sites.first[1]
+    puts '=================='
+    num_samples = mutations.uniq(&:full_sample_name).size
+    num_mutations = mutations.uniq{|mut| "#{mut.full_sample_name};#{mut.chromosome}:#{mut.mutation_position}" }.size
+    puts '> ' + [chr, from - 1, to, sites.map{|motif, chr, pos| motif }.uniq.join(','), num_mutations, num_samples].join("\t")
+    puts mutations.map{|mut| "#{mut.full_sample_name};#{mut.chromosome}:#{mut.mutation_position}\t#{mut.motif_name}\t#{Math.log2(mut.fold_change)}"}.uniq
+  end
+end
 
 raise 'Specify check mode (disruption/emergence/all)'  unless check_mode = ARGV[0] # :emergence
 raise 'Specify threshold number of mutations on site'  unless threshold_num_mutations_in_site = ARGV[1]
@@ -63,6 +70,8 @@ Dir.glob(File.join(sites_folder, '*.txt')).each{|filename|
   mutations_counts_by_site.select!{|k,v| v >= threshold_num_mutations_in_site }
 }
 
+$stderr.puts 'preliminary estimation of recurrent sites done'
+
 Dir.glob(File.join(sites_folder, '*.txt')).each{|filename|
   $stderr.puts(filename)
   cancer = File.basename(filename, File.extname(filename))
@@ -73,7 +82,6 @@ Dir.glob(File.join(sites_folder, '*.txt')).each{|filename|
     next  unless mutations_counts_by_site[key] >= threshold_num_mutations_in_site
     mutations_by_site[key] << mut_site
   }
-  GC.start
 }
 $stderr.puts 'loaded'
 
@@ -82,43 +90,39 @@ uniq_mutations_by_site = mutations_by_site.map{|site, mutations|
 }
 $stderr.puts 'uniqued'
 
-recurrent_mutations_by_sites = uniq_mutations_by_site.select{|site, mutations|
+recurrent_mutations_by_site = uniq_mutations_by_site.select{|site, mutations|
   mutations.size >= threshold_num_mutations_in_site
-}.map{|site, mutations|
-  [Set.new([site]),mutations]
 }
 $stderr.puts 'filtered'
 
-def output_recurrent_mutations(recurrent_mutations_by_sites)
-  recurrent_mutations_by_sites.each do |sites, mutations|
-    from, to = sites.flat_map{|motif, chr, pos|
-      [pos, pos + Bioinform::MotifModel::PWM.from_file("/home/ilya/iogen/hocomoco/#{motif}.pwm").length]
-    }.minmax
-    chr = sites.first[1]
-    puts '=================='
-    puts '> ' + [chr, from - 1, to, sites.map{|motif, chr, pos| motif }.join(',')].join("\t")
-    puts mutations.map{|mut| "#{mut.full_sample_name};#{mut.chromosome}:#{mut.mutation_position}"}.uniq
-  end
-end
+site_mut_pairs = recurrent_mutations_by_site.flat_map{|site,muts|
+  muts.map{|mut|
+    [site, mut]
+  }
+}
 
-output_recurrent_mutations(recurrent_mutations_by_sites)
-puts '----------------------------------------------'
-while true
-  $stderr.puts 'glue'
-  $stderr.puts recurrent_mutations_by_sites.size
-  recurrent_mutations_by_sites.each_with_index{|(sites_1,muts_1), ind_1|
-    muts_1.each{|mut|
-      recurrent_mutations_by_sites.each_with_index{|(sites_2, muts_2), ind_2|
-        next  if (muts_1.map{|mut| [mut.chromosome,mut.mutation_position]} & muts_2.map{|mut| [mut.chromosome,mut.mutation_position]}).empty?
-        # p [sites_1, sites_2]
-        sites = sites_1 | sites_2
-        muts = (muts_1 + muts_2).uniq
-        recurrent_mutations_by_sites[ind_1] = [sites, muts]
-        recurrent_mutations_by_sites[ind_2] = [sites, muts]
-      }
+intervals_by_chromosome = Hash.new{|h,k| h[k] = IntervalNotation::Syntax::Long::Empty }
+site_mut_pairs.map{|site, mut|
+  site_interval = IntervalNotation::Syntax::Long.closed_open(mut.site_position, mut.site_position + mut.length)
+  [mut.chromosome, site_interval]
+}.each{|chr, interval|
+  intervals_by_chromosome[chr] |= interval
+}
+$stderr.puts 'intervals obtained'
+
+site_mut_pairs_by_chromosome = site_mut_pairs.group_by{|site,mut| mut.chromosome }
+
+site_mutations = intervals_by_chromosome.flat_map{|chr, chr_intervals|
+  chr_intervals.intervals.map{|interval|
+    IntervalNotation::IntervalSet.new([interval])
+  }.map{|interval|
+    site_mut_pairs_by_chromosome[chr].select{|site, mut|
+      site_interval = IntervalNotation::Syntax::Long.closed_open(mut.site_position, mut.site_position + mut.length)
+      interval.intersect?(site_interval)
+    }.inject([[],[]]){|(sites, muts), (site, mut)|
+      [sites + [site], muts + [mut]]
     }
   }
-  break  unless recurrent_mutations_by_sites.uniq!
-end
+}
 
-output_recurrent_mutations(recurrent_mutations_by_sites)
+output_recurrent_mutations(site_mutations)
