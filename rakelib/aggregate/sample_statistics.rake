@@ -83,4 +83,23 @@ task :sample_statistics_regulatory_SNVs do
   }
 end
 
+desc 'Calculate number of samples in each cancer'
+task :calculate_number_of_samples  do
+  sample_counts = Configuration.getAlexandrovWholeGenomeCancers.map{|cancer_type|
+    cancer_fn = File.join('results/SNVs', 'Alexandrov', cancer_type.to_s, 'cancer.txt')
+    samples = SNVInfo.each_in_file(cancer_fn).map{|snv_info|
+      snv_info.variant_id.split(';').first
+    }.to_a.uniq
+    [cancer_type, samples.size]
+  }.to_h
+  File.open('results/motif_statistics/numbers_of_samples.txt', 'w') do |fw|
+    sample_counts.each{|cancer_type, num_samples|
+      fw.puts "#{cancer_type}\t#{num_samples}"
+    }
+    fw.puts
+    total_samples = sample_counts.values.inject(&:+)
+    fw.puts "Total\t#{total_samples}"
+  end
+end
+
 task :default => [:sample_statistics_regulatory_SNVs]
