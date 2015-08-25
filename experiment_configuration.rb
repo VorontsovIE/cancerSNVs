@@ -2,6 +2,7 @@ require 'rake'
 require_relative 'lib/genome_reader'
 require_relative 'lib/genome_markup'
 require_relative 'lib/data_import/cancer_mutations_loading'
+require_relative 'lib/motif_family_recognizer'
 
 # Genome assembly, list of all exons and motif collection are huge
 # thus it's possible to download them into any common place to be

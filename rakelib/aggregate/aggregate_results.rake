@@ -16,14 +16,14 @@ def collect_different_sample_statistics_gluing_subfamilies(sample_files, motif_f
     [sample, families]
   }.to_h
 
-  term_occurences_matrix(motif_subfamilies_by_sample)
+  term_occurences_matrix(motif_subfamilies_by_sample, sort_by_method: ->(term){ term.id.split('.').map(&:to_i) })
 end
 
 def collect_different_sample_statistics(sample_files)
   motifs_by_sample = sample_files.map{|header, filename|
     [header, File.readlines(filename).map(&:strip)]
   }
-  term_occurences_matrix(motifs_by_sample)
+  term_occurences_matrix(motifs_by_sample, sort_by_method: ->(x){ x.to_s })
 end
 
 def print_matrix(matrix, stream:)
@@ -32,8 +32,8 @@ def print_matrix(matrix, stream:)
   end
 end
 
-def term_occurences_matrix(terms_by_sample)
-  term_union = terms_by_sample.map{|sample, terms_in_sample| terms_in_sample }.inject(Set.new, :|).sort_by(&:to_s)
+def term_occurences_matrix(terms_by_sample, sort_by_method: )
+  term_union = terms_by_sample.map{|sample, terms_in_sample| terms_in_sample }.inject(Set.new, :|).sort_by(&sort_by_method)
   matrix = []
   matrix << ['Sample', *term_union]
   terms_by_sample.each{|sample, terms_in_sample|
@@ -227,7 +227,7 @@ def make_collect_families_statistics_task(common_motifs_folder:, motif_family_re
 
     matrix = []
     matrix << [nil, nil] + samples.flat_map{|sample| [sample,nil,nil] }
-    matrix << ['Family', 'Total members'] + ['Disrupted', 'Emerged', 'Both'] * samples.size
+    matrix << ['Family', 'Total members'] + ['Loss', 'Gain', 'Both'] * samples.size
     families.each{|family|
       family_statistics = samples.flat_map{|sample|
         [ disrupted_families_by_sample[sample][family],
@@ -252,7 +252,7 @@ task :collect_families_statistics
     make_collect_families_statistics_task common_motifs_folder: 'results/motif_statistics/common/',
                                           motif_family_recognizer: MOTIF_FAMILY_RECOGNIZERS[level],
                                           protected_or_subjected: protected_or_subjected,
-                                          output_file: "results/motif_statistics/aggregated/#{protected_or_subjected}_in_any_context_glued_level_#{level}.tsv",
+                                          output_file: "results/motif_statistics/aggregated/final/#{protected_or_subjected}_in_any_context_glued_level_#{level}.tsv",
                                           task_name: "collect_families_statistics_#{protected_or_subjected}_level_#{level}"
     task :collect_families_statistics => "collect_families_statistics_#{protected_or_subjected}_level_#{level}"
   end
