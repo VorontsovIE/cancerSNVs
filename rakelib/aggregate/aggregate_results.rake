@@ -9,6 +9,9 @@ def load_motif_qualities(filename)
 end
 
 def collect_different_sample_statistics_gluing_subfamilies(sample_files, motif_family_recognizer)
+  motif_names = only_high_quality_motifs( File.readlines(LocalPaths::Secondary::MotifNames).map(&:strip) )
+  total_families_count = motif_family_recognizer.families_count(motif_names)
+
   motif_subfamilies_by_sample = sample_files.map{|sample, filename|
     motifs = File.readlines(filename).map(&:strip)
     # don't use subfamilies_by_multiple_motifs because it removes duplicated inner nodes resulting from different motifs, which we want to count downstream
@@ -16,7 +19,11 @@ def collect_different_sample_statistics_gluing_subfamilies(sample_files, motif_f
     [sample, families]
   }.to_h
 
-  term_occurences_matrix(motif_subfamilies_by_sample, sort_by_method: ->(term){ term.id.split('.').map(&:to_i) })
+  result = term_occurences_matrix(motif_subfamilies_by_sample, sort_by_method: ->(term){ term.id.split('.').map(&:to_i) })
+  families = result.transpose.first.drop(1)
+  family_counts = families.map{|family| total_families_count.fetch(family, 0) }
+
+  (result.transpose.first(1) + [['Total members', *family_counts]] + result.transpose.drop(1)).transpose
 end
 
 def collect_different_sample_statistics(sample_files)
@@ -35,7 +42,7 @@ end
 def term_occurences_matrix(terms_by_sample, sort_by_method: )
   term_union = terms_by_sample.map{|sample, terms_in_sample| terms_in_sample }.inject(Set.new, :|).sort_by(&sort_by_method)
   matrix = []
-  matrix << ['Sample', *term_union]
+  matrix << ['Family', *term_union]
   terms_by_sample.each{|sample, terms_in_sample|
     term_count = term_union.map{|term|
       terms_in_sample.count{|el| el == term }
