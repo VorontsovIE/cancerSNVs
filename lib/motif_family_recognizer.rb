@@ -1,8 +1,8 @@
 require_relative 'tf_ontology'
-require_relative 'uniprot_reader'
+require_relative 'uniprot_info'
 
 def read_uniprot_acs_by_id(uniprots_filename)
-  result = UniprotEntry.each_in_file(uniprots_filename)
+  result = UniprotInfo.each_in_file(uniprots_filename)
                       .group_by(&:uniprot_id)
                       .map{|uniprot_id, uniprots|
                         [uniprot_id, uniprots.map(&:uniprot_ac)]
@@ -13,8 +13,8 @@ end
 
 def read_uniprot_ids_by_motif(filename)
   File.readlines(filename).drop(1).map{|line|
-    motif, gene, quality, weight, human_uniprot, mouse_uniprot, consensus = line.chomp.split("\t")
-    [motif, human_uniprot.split(',')]
+    motif, human_uniprots, mouse_uniprots = line.chomp.split("\t")
+    [motif, human_uniprots.split(',')]
   }.to_h
 end
 

@@ -2,9 +2,9 @@ require 'set'
 require_relative '../../lib/motif_family_recognizer'
 
 def load_motif_qualities(filename)
-  File.readlines(filename).drop(1).map{|line|
-    motif, gene, quality, weight, human_uniprot, mouse_uniprot, consensus = line.chomp.split("\t")
-    [motif, quality]
+  File.readlines(filename).map{|line|
+    motif, quality = line.chomp.split("\t")
+    [motif, quality.to_sym]
   }.to_h
 end
 
@@ -115,7 +115,7 @@ def make_aggregation_task(common_motifs_folder:, output_folder:, task_name:, tas
   directory output_folder
   desc task_description  if task_description
   task task_name => output_folder do
-    motif_qualities = load_motif_qualities(LocalPaths::Secondary::GeneInfos)
+    motif_qualities = load_motif_qualities(LocalPaths::Secondary::MotifQualities)
     [:protected, :subjected].each do |protected_or_subjected|
       ['disruption', 'emergence', 'substitution-in-core'].each do |characteristic|
         prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
@@ -153,7 +153,7 @@ directory 'results/motif_statistics/aggregated_comparison'
 desc 'Compare motif sets for experiment with and without fitting'
 task :compare_fitted_to_unfitted => 'results/motif_statistics/aggregated_comparison' do
   output_folder = 'results/motif_statistics/aggregated_comparison/'
-  motif_qualities = load_motif_qualities(LocalPaths::Secondary::GeneInfos)
+  motif_qualities = load_motif_qualities(LocalPaths::Secondary::MotifQualities)
 
   [:protected, :subjected].each do |protected_or_subjected|
     ['disruption', 'emergence', 'substitution-in-core'].each do |characteristic|
@@ -184,8 +184,8 @@ task :compare_fitted_to_unfitted => 'results/motif_statistics/aggregated_compari
 end
 
 def only_high_quality_motifs(motifs)
-  motif_qualities = load_motif_qualities(LocalPaths::Secondary::GeneInfos)
-  possible_qualities = Configuration::MotifQualities.split(',')
+  motif_qualities = load_motif_qualities(LocalPaths::Secondary::MotifQualities)
+  possible_qualities = Configuration::MotifQualities.split(',').map(&:to_sym)
   motifs.select{|motif|
     possible_qualities.include?(motif_qualities[motif])
   }

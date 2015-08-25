@@ -5,7 +5,7 @@ require_relative '../../lib/motif_family_recognizer'
 directory 'results/motif_statistics/disruption_and_emergence'
 desc 'Find motifs subjected or protected from both disruption and emergence'
 task :find_both_disrupted_and_emerged => 'results/motif_statistics/disruption_and_emergence' do
-  motif_qualities = load_motif_qualities(LocalPaths::Secondary::GeneInfos)
+  motif_qualities = load_motif_qualities(LocalPaths::Secondary::MotifQualities)
 
   [:protected, :subjected].each do |protected_or_subjected|
     prep = (protected_or_subjected == :subjected) ? 'to' : 'from'

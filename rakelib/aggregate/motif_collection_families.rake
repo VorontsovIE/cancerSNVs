@@ -1,7 +1,7 @@
 desc 'Extract motif collection table'
 task :motif_collection_families do
 	motifs = File.readlines(LocalPaths::Secondary::MotifNames).map(&:strip)
-	motif_qualities = load_motif_qualities(LocalPaths::Secondary::GeneInfos)
+	motif_qualities = load_motif_qualities(LocalPaths::Secondary::MotifQualities)
 
 	File.open('results/motif_collection.tsv', 'w') do |fw|
 		motifs.each do |motif|

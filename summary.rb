@@ -3,6 +3,7 @@ require 'statistics/statistical_significance'
 require 'rate_comparison_infos'
 require 'statistics/fisher_table'
 require 'fitting/fitting_logs'
+require 'uniprot_info'
 require 'optparse'
 require_relative 'experiment_configuration'
 
@@ -13,18 +14,14 @@ def read_motif_counts(filename)
   }.to_h
 end
 
-def load_motif_infos(filename)
-  results = Hash.new{|h,k| h[k] = {} }
-  File.readlines(filename).drop(1).each{|line|
-    motif, gene, quality, weight, human_uniprot, mouse_uniprot, consensus = line.chomp.split("\t")
-    results[:gene][motif] = gene.split.join(',')
-    results[:quality][motif] = quality.upcase.to_sym
-    results[:official_gene_name][motif] = gene.split.first
-  }
-  results
+def load_motif_qualities(filename)
+  File.readlines(filename).map{|line|
+    motif, quality = line.chomp.split("\t")
+    [motif, quality.to_sym]
+  }.to_h
 end
 
-motif_qualities = [:A, :B, :C]
+motif_qualities_to_take = [:A, :B, :C]
 pvalue_correction_method = 'fdr'
 control_set_multiplier = 1
 ignore_underfitting = false
@@ -46,7 +43,7 @@ OptionParser.new do |opts|
     fitting_log_filename = filename
   }
   opts.on('--motif-qualities QUALITIES', 'Take motifs of given qualities (comma-separated). Default is A,B,C') {|value|
-    motif_qualities = value.upcase.split(',').map(&:to_sym)
+    motif_qualities_to_take = value.upcase.split(',').map(&:to_sym)
   }
 end.parse!(ARGV)
 
@@ -54,7 +51,10 @@ raise 'Specify folder for cancer statistics'  unless cancer_dirname = ARGV[0] # 
 raise 'Specify folder for random statistics'  unless random_dirname = ARGV[1] # './results/motif_statistics/cpg/random'
 
 motif_names = File.readlines(LocalPaths::Secondary::MotifNames).map(&:strip)
-motif_collection_infos = load_motif_infos(LocalPaths::Secondary::GeneInfos)
+motif_qualities = load_motif_qualities(LocalPaths::Secondary::MotifQualities)
+
+uniprot_infos_by_motif = read_uniprot_infos_by_motif(LocalPaths::Secondary::HocomocoUniprots, LocalPaths::Secondary::UniprotDump)
+
 fitting_logs = load_motif_underfitting_rates(fitting_log_filename)
 
 motif_infos = {
@@ -78,7 +78,7 @@ motif_infos = {
 significance_corrector = PvalueCorrector.new(pvalue_correction_method)
 
 motif_statistics = motif_names.select{|motif|
-  motif_qualities.include?( motif_collection_infos[:quality][motif] )
+  motif_qualities_to_take.include?( motif_qualities[motif] )
 }.map{|motif|
   MotifStatistics.new(
     motif: motif,
@@ -103,9 +103,9 @@ motif_statistics = motif_names.select{|motif|
     ),
     random_unclassified: ignore_underfitting ? 0 : fitting_logs.fetch(motif, 0) * control_set_multiplier,
 
-    gene: motif_collection_infos[:gene][motif],
-    quality: motif_collection_infos[:quality][motif],
-    official_gene_name: motif_collection_infos[:official_gene_name][motif]
+    gene: uniprot_infos_by_motif[motif].map(&:all_gene_names).uniq.join(','),
+    quality: motif_qualities[motif],
+    official_gene_name: uniprot_infos_by_motif[motif].map(&:primary_gene_name).uniq.join(',')
   )
 }
 

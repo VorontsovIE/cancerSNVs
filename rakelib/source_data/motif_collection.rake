@@ -6,7 +6,7 @@ namespace 'source_data' do
     desc 'Download and prepare TFBS model collection'
     task prepare: [:motifs, :calculate_thresholds]
 
-    task motifs: [LocalPaths::MotifCollection, LocalPaths::MotifCollectionPCM, LocalPaths::Secondary::MotifNames, LocalPaths::Secondary::GeneInfos]
+    task motifs: [LocalPaths::MotifCollection, LocalPaths::MotifCollectionPCM, LocalPaths::Secondary::MotifNames, LocalPaths::Secondary::HocomocoUniprots, LocalPaths::Secondary::MotifQualities]
     file LocalPaths::MotifCollection => [SystemPaths::MotifCollection] do
       rm_rf LocalPaths::MotifCollection # not to put a link into folder in already created folder
       ln_sf SystemPaths::MotifCollection, LocalPaths::MotifCollection
@@ -20,8 +20,12 @@ namespace 'source_data' do
       File.write(LocalPaths::Secondary::MotifNames, motif_names.join("\n"))
     end
 
-    file LocalPaths::Secondary::GeneInfos do
-      sh 'wget', '-O', LocalPaths::Secondary::GeneInfos, 'http://opera.autosome.ru/downloads/motif_collections/hocomoco_genes_infos.csv'
+    file LocalPaths::Secondary::MotifQualities do
+      sh 'wget', '-O', LocalPaths::Secondary::MotifQualities, 'http://opera.autosome.ru/downloads/motif_collections/hocomoco_qualities.tsv'
+    end
+
+    file LocalPaths::Secondary::HocomocoUniprots do
+      sh 'wget', '-O', LocalPaths::Secondary::HocomocoUniprots, 'http://opera.autosome.ru/downloads/motif_collections/HOCOMOCOv9_motifs2uniprot.txt'
     end
 
     file SystemPaths::MotifCollection do

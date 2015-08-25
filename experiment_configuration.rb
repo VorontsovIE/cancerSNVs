@@ -36,7 +36,9 @@ module LocalPaths
     AlexandrovData        = File.absolute_path('./source_data/AlexandrovEtAl', __dir__)
     CoordinatesOfKataegis = File.absolute_path('./source_data/AlexandrovEtAl/coordinates_of_kataegis.csv', __dir__)
     NikZainalSNVsOriginal = File.absolute_path('./source_data/SNV_infos_original.txt', __dir__)
-    GeneInfos             = File.absolute_path('./source_data/hocomoco_genes_infos.csv', __dir__)
+    MotifQualities        = File.absolute_path('./source_data/hocomoco_qualities.tsv', __dir__)
+    HocomocoUniprots      = File.absolute_path('./source_data/HOCOMOCOv9_motifs2uniprot.txt', __dir__)
+    UniprotDump           = File.absolute_path('./source_data/human_uniprot.txt', __dir__)
     MotifNames            = File.absolute_path('./source_data/motif_names.txt', __dir__) # To be removed
 
     SNVs                  = File.absolute_path('./results/SNVs', __dir__)
@@ -238,7 +240,7 @@ MOTIF_FAMILY_RECOGNIZERS = Hash.new{|hsh, deepness|
   hsh[deepness] = motif_family_recognizer_by_motif(
     deepness: deepness,
     tf_classification_filename: 'source_data/TFOntologies/TFClass_human.obo',
-    uniprot_acs_by_id_filename: 'source_data/human_uniprot.txt',
-    uniprot_ids_by_motif_filename: 'source_data/hocomoco_genes_infos.csv'
+    uniprot_acs_by_id_filename: LocalPaths::Secondary::UniprotDump,
+    uniprot_ids_by_motif_filename: LocalPaths::Secondary::HocomocoUniprots
   )
 }
