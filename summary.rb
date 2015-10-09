@@ -95,11 +95,11 @@ motif_statistics = motif_names.select{|motif|
       class_b_positive: motif_infos[:random_emerged][motif] * control_set_multiplier
     ),
 
-    core_flank_table: FisherTable.by_two_classes(
+    core_flank_table: FisherTable.by_class_and_total(
+      class_a_total: motif_infos[:cancer_total_before_substitution][motif],
       class_a_positive: motif_infos[:cancer_core][motif],
-      class_a_negative: motif_infos[:cancer_flank][motif],
-      class_b_positive: motif_infos[:random_core][motif],
-      class_b_negative: motif_infos[:random_flank][motif]
+      class_b_total: motif_infos[:random_total_before_substitution][motif],
+      class_b_positive: motif_infos[:random_core][motif]
     ),
     random_unclassified: ignore_underfitting ? 0 : fitting_logs.fetch(motif, 0) * control_set_multiplier,
 
