@@ -25,7 +25,7 @@ end
 # Attention! These should not be redefined!
 module LocalPaths
   Root            = File.absolute_path(__dir__)
-  Results         = File.absolute_path('./results/', __dir__)
+  Results         = ENV['RESULTS_FOLDER'] || File.absolute_path('./results/', __dir__)
 
   MotifCollection = File.absolute_path('./source_data/motif_collection', __dir__)
   MotifCollectionPCM = File.absolute_path('./source_data/motif_collection_pcm', __dir__)
