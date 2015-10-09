@@ -30,19 +30,19 @@ def markup_dont_filter_SNVInfos_to_file(snv_infos_stream, genome_markup, output_
 end
 
 # Nik-Zainal
-folder = 'results/AllSNVs/NikZainal/'
+folder = File.join(LocalPaths::Results, 'AllSNVs/NikZainal/')
 directory folder
-file 'results/AllSNVs/NikZainal/cancer.txt' => [LocalPaths::Secondary::NikZainalSNVsOriginal, folder] do
+file File.join(LocalPaths::Results, 'AllSNVs/NikZainal/cancer.txt') => [LocalPaths::Secondary::NikZainalSNVsOriginal, folder] do
   snv_infos_stream = BreastCancerSNV \
     .each_in_file(LocalPaths::Secondary::NikZainalSNVsOriginal) \
     .map{|snv| snv.to_snv_info(GENOME_READER, flank_length: 50) }
   genome_markup = GENOME_MARKUP_LOADER.load_markup(dhs_accessible_filename: Configuration::DHS_BED_FILES[:Breast])
-  markup_dont_filter_SNVInfos_to_file(snv_infos_stream, genome_markup, output_file: 'results/AllSNVs/NikZainal/cancer.txt')
+  markup_dont_filter_SNVInfos_to_file(snv_infos_stream, genome_markup, output_file: File.join(LocalPaths::Results, 'AllSNVs/NikZainal/cancer.txt'))
 end
 
 # Alexandrov
 AlexandrovWholeGenomeCancers.each do |cancer_type|
-  output_folder = File.join('results/AllSNVs', 'Alexandrov', cancer_type.to_s)
+  output_folder = File.join(LocalPaths::Results, 'AllSNVs', 'Alexandrov', cancer_type.to_s)
   cancer_filename = File.join(output_folder, 'cancer.txt')
   mutations_filename = File.join(LocalPaths::Secondary::Alexandrov::Mutations,
                                 cancer_type.to_s,
@@ -67,7 +67,7 @@ end
 
 YeastApobecSamples.each do |sample|
   source_file = File.join('source_data/YeastApobec', "#{sample}.mfa")
-  output_folder = File.join('results/AllSNVs/YeastApobec', sample.to_s)
+  output_folder = File.join(LocalPaths::Results, 'AllSNVs/YeastApobec', sample.to_s)
   resulting_file = File.join(output_folder, 'cancer.txt')
   directory output_folder
   file resulting_file => [output_folder, source_file] do
@@ -82,7 +82,7 @@ namespace 'preparations' do
   task extractAllSNVs: ['extractAllSNVs:NikZainalEtAl', 'extractAllSNVs:Alexandrov', 'extractAllSNVs:YeastApobec']
   namespace 'extractAllSNVs' do
     desc 'Convert Nik-Zainal\'s mutations to a common format. Convert format, DOESN\'T filter regulatory only SNVs, remove duplicates.'
-    task :NikZainalEtAl => ['results/AllSNVs/NikZainal/cancer.txt']
+    task :NikZainalEtAl => [File.join(LocalPaths::Results, 'AllSNVs/NikZainal/cancer.txt')]
 
     desc 'Convert Alexandrov\'s mutations to a common format. Convert format, DOESN\'T filter regulatory only SNVs, remove duplicates.'
     task :Alexandrov

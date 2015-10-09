@@ -34,7 +34,7 @@ AlexandrovWholeGenomeCancers.each do |cancer_type|
                         task_name: "slicing:Alexandrov:#{cancer_type}:#{context}:#{dataset}")
 
       make_slicing_task(sites_file: File.join(LocalPaths::Secondary::Sites, 'Alexandrov', cancer_type.to_s, context.to_s, "sites_#{dataset}.txt"),
-                        output_folder: File.join('results/motif_statistics/slices_wo_fitting', 'Alexandrov', cancer_type.to_s, context.to_s, dataset),
+                        output_folder: File.join(LocalPaths::Results, 'motif_statistics/slices_wo_fitting', 'Alexandrov', cancer_type.to_s, context.to_s, dataset),
                         task_name: "slicing_wo_fitting:Alexandrov:#{cancer_type}:#{context}:#{dataset}")
     end
   end
@@ -57,7 +57,7 @@ Configuration::NikZainalContexts.each do |context|
                       task_name: "slicing:NikZainal:#{context}:#{dataset}")
 
     make_slicing_task(sites_file: File.join(LocalPaths::Secondary::Sites, 'NikZainal', context.to_s, "sites_#{dataset}.txt"),
-                      output_folder: File.join('results/motif_statistics/slices_wo_fitting', 'NikZainal', context.to_s, dataset),
+                      output_folder: File.join(LocalPaths::Results, 'motif_statistics/slices_wo_fitting', 'NikZainal', context.to_s, dataset),
                       task_name: "slicing_wo_fitting:NikZainal:#{context}:#{dataset}")
   end
 end
@@ -83,7 +83,7 @@ YeastApobecSamples.each do |sample|
                         task_name: "slicing:YeastApobec:#{sample}:#{context}:#{dataset}")
 
       make_slicing_task(sites_file: File.join(LocalPaths::Secondary::Sites, 'YeastApobec', sample.to_s, context.to_s, "sites_#{dataset}.txt"),
-                        output_folder: File.join('results/motif_statistics/slices_wo_fitting', 'YeastApobec', sample.to_s, context.to_s, dataset),
+                        output_folder: File.join(LocalPaths::Results, 'motif_statistics/slices_wo_fitting', 'YeastApobec', sample.to_s, context.to_s, dataset),
                         task_name: "slicing_wo_fitting:YeastApobec:#{sample}:#{context}:#{dataset}")
     end
   end

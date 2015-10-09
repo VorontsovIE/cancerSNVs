@@ -5,7 +5,7 @@ require_relative 'experiment_configuration'
 
 random_variants = ARGV
 motif_names = File.readlines(LocalPaths::Secondary::MotifNames).map(&:chomp)
-sample_names = Dir.glob('./results/motif_statistics/full/any/samples/*').select{|fn| 
+sample_names = Dir.glob(File.join(LocalPaths::Results, 'motif_statistics/full/any/samples/*')).select{|fn| 
   File.directory?(fn) 
 }.map{|fn|
   File.basename(fn)
@@ -13,7 +13,7 @@ sample_names = Dir.glob('./results/motif_statistics/full/any/samples/*').select{
 
 sample_infos = sample_names.map{|sample_name|
   rate_infos_by_sample = random_variants.flat_map{|random_variant|
-    filename = File.join('./results/motif_statistics/full/any/samples/', sample_name, "#{random_variant}.csv")
+    filename = File.join(LocalPaths::Results, 'motif_statistics/full/any/samples/', sample_name, "#{random_variant}.csv")
     MotifCollectionStatistics.each_in_file(filename).to_a
   }.group_by(&:motif)
   [sample_name, rate_infos_by_sample]

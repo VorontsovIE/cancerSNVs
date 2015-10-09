@@ -66,12 +66,12 @@ AlexandrovWholeGenomeCancers.each do |cancer_type|
   task 'preparations:extractSNVs:Alexandrov' => cancer_filename
 end
 
-directory 'results/SNVs/YeastApobec'
+directory File.join(LocalPaths::Results, 'SNVs/YeastApobec')
 YeastApobecSamples.each do |sample|
-  directory File.join('results/SNVs/YeastApobec', sample.to_s)
-  resulting_file = File.join('results/SNVs/YeastApobec', sample.to_s, 'cancer.txt')
+  directory File.join(LocalPaths::Results, 'SNVs/YeastApobec', sample.to_s)
+  resulting_file = File.join(LocalPaths::Results, 'SNVs/YeastApobec', sample.to_s, 'cancer.txt')
   source_file = File.join('source_data/YeastApobec', "#{sample}.mfa")
-  file resulting_file => [File.join('results/SNVs/YeastApobec', sample.to_s), source_file] do
+  file resulting_file => [File.join(LocalPaths::Results, 'SNVs/YeastApobec', sample.to_s), source_file] do
     rm resulting_file  if File.exist?(resulting_file)
     cp source_file, resulting_file
   end

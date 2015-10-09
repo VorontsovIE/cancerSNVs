@@ -110,7 +110,7 @@ end
 
 fitting_wo_fitting_settings = [
   ['motif_statistics', LocalPaths::Secondary::Slices, LocalPaths::Secondary::LogFolder, 'full', 'filtered', 'common'],
-  ['motif_statistics_wo_fitting', 'results/motif_statistics/slices_wo_fitting', nil, 'full_wo_fitting', 'filtered_wo_fitting', 'common_wo_fitting']
+  ['motif_statistics_wo_fitting', File.join(LocalPaths::Results, 'motif_statistics/slices_wo_fitting'), nil, 'full_wo_fitting', 'filtered_wo_fitting', 'common_wo_fitting']
 ]
 
 fitting_wo_fitting_settings.each do |task_prefix, slices_folder, log_folder, full_folder, filtered_folder, common_folder|

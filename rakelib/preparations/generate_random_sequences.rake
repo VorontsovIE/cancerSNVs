@@ -120,9 +120,9 @@ end
 # APOBEC mutations in yeast
 # We generate only shuffle control because genomic control needs different yeast genomes
 YeastApobecSamples.each do |sample|
-  sample_filename = File.join('results/SNVs/YeastApobec', sample.to_s, 'cancer.txt') # not actually a cancer
+  sample_filename = File.join(LocalPaths::Results, 'SNVs/YeastApobec', sample.to_s, 'cancer.txt') # not actually a cancer
 
-  generate_random_shuffle_task(output_filename: File.join('results/SNVs/YeastApobec', sample.to_s, 'random_shuffle.txt'),
+  generate_random_shuffle_task(output_filename: File.join(LocalPaths::Results, 'SNVs/YeastApobec', sample.to_s, 'random_shuffle.txt'),
                               task_name: 'preparations:generate_random_SNVs:YeastApobec:shuffle',
                               cancer_filename: sample_filename,
                               fold: Configuration::YeastApobec::RandomShuffleFold[sample],

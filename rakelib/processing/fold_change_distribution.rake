@@ -25,7 +25,7 @@ end
 
 desc 'Fold change distribution plots'
 task 'fold_change_distribution_plot' do
-  plot_inputs = Dir.glob('results/motif_statistics/fold_change_distribution/**/*.csv')
+  plot_inputs = Dir.glob(File.join(LocalPaths::Results, 'motif_statistics/fold_change_distribution/**/*.csv'))
 
   plot_inputs.map{|fn|
     File.dirname(fn.pathmap('%d/plot/%n.png'))
@@ -53,7 +53,7 @@ AlexandrovWholeGenomeCancers.each do |cancer_type|
 
     input_folder = File.join(LocalPaths::Secondary::Fitting, 'Alexandrov', cancer_type.to_s, context.to_s)
     input_files = Configuration::Alexandrov::Datasets.map{|dataset| File.join(input_folder, "sites_#{dataset}.txt") }
-    output_folder = File.join('results/motif_statistics/fold_change_distribution', 'Alexandrov', cancer_type.to_s, context.to_s)
+    output_folder = File.join(LocalPaths::Results, 'motif_statistics/fold_change_distribution', 'Alexandrov', cancer_type.to_s, context.to_s)
 
     fold_change_distribution_task(
       input_files: input_files,
@@ -83,7 +83,7 @@ Configuration::NikZainalContexts.each do |context|
 
   input_folder = File.join(LocalPaths::Secondary::Fitting, 'NikZainal', context.to_s)
   input_files = Configuration::NikZainal::Datasets.map{|dataset| File.join(input_folder, "sites_#{dataset}.txt") }
-  output_folder = File.join('results/motif_statistics/fold_change_distribution', 'NikZainal', context.to_s)
+  output_folder = File.join(LocalPaths::Results, 'motif_statistics/fold_change_distribution', 'NikZainal', context.to_s)
 
   fold_change_distribution_task(
     input_files: input_files,
@@ -114,7 +114,7 @@ YeastApobecSamples.each do |sample|
 
     input_folder = File.join(LocalPaths::Secondary::Fitting, 'YeastApobec', sample.to_s, context.to_s)
     input_files = Configuration::YeastApobec::Datasets.map{|dataset| File.join(input_folder, "sites_#{dataset}.txt") }
-    output_folder = File.join('results/motif_statistics/fold_change_distribution', 'YeastApobec', sample.to_s, context.to_s)
+    output_folder = File.join(LocalPaths::Results, 'motif_statistics/fold_change_distribution', 'YeastApobec', sample.to_s, context.to_s)
 
     fold_change_distribution_task(
       input_files: input_files,

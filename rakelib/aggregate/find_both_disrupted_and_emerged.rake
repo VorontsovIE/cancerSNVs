@@ -2,17 +2,17 @@ require 'set'
 require_relative '../../lib/motif_family_recognizer'
 
 
-directory 'results/motif_statistics/disruption_and_emergence'
+directory File.join(LocalPaths::Results, 'motif_statistics/disruption_and_emergence')
 desc 'Find motifs subjected or protected from both disruption and emergence'
-task :find_both_disrupted_and_emerged => 'results/motif_statistics/disruption_and_emergence' do
+task :find_both_disrupted_and_emerged => File.join(LocalPaths::Results, 'motif_statistics/disruption_and_emergence') do
   motif_qualities = load_motif_qualities(LocalPaths::Secondary::MotifQualities)
 
   [:protected, :subjected].each do |protected_or_subjected|
     prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
 
     both_disrupted_and_emerged_by_sample = Configuration.sample_paths(with_nik_zainal: false, with_yeast: false).map{|sample_name, sample_folder|
-      disruption_motifs_fn = File.join('results/motif_statistics/common', sample_folder, 'any', protected_or_subjected.to_s, 'disruption/compared_to_each.txt')
-      emergence_motifs_fn = File.join('results/motif_statistics/common', sample_folder, 'any', protected_or_subjected.to_s, 'emergence/compared_to_each.txt')
+      disruption_motifs_fn = File.join(LocalPaths::Results, 'motif_statistics/common', sample_folder, 'any', protected_or_subjected.to_s, 'disruption/compared_to_each.txt')
+      emergence_motifs_fn = File.join(LocalPaths::Results, 'motif_statistics/common', sample_folder, 'any', protected_or_subjected.to_s, 'emergence/compared_to_each.txt')
       disruption_motifs = File.readlines(disruption_motifs_fn).map(&:strip)
       emergence_motifs = File.readlines(emergence_motifs_fn).map(&:strip)
       both_disrupted_and_emerged = Set.new(disruption_motifs) & Set.new(emergence_motifs)
@@ -32,7 +32,7 @@ task :find_both_disrupted_and_emerged => 'results/motif_statistics/disruption_an
       results << [motif, quality, families_3, families_4, *occurences_in_sample]
     }
 
-    output_filename = File.join('results/motif_statistics/disruption_and_emergence', "#{protected_or_subjected}_#{prep}_both_in_any_context.tsv")
+    output_filename = File.join(LocalPaths::Results, 'motif_statistics/disruption_and_emergence', "#{protected_or_subjected}_#{prep}_both_in_any_context.tsv")
     File.write(output_filename, results.map{|row| row.join("\t") }.join("\n"))
   end
 end

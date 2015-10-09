@@ -25,6 +25,7 @@ end
 # Attention! These should not be redefined!
 module LocalPaths
   Root            = File.absolute_path(__dir__)
+  Results         = File.absolute_path('./results/', __dir__)
 
   MotifCollection = File.absolute_path('./source_data/motif_collection', __dir__)
   MotifCollectionPCM = File.absolute_path('./source_data/motif_collection_pcm', __dir__)
@@ -42,29 +43,26 @@ module LocalPaths
     UniprotDump           = File.absolute_path('./source_data/human_uniprot.txt', __dir__)
     MotifNames            = File.absolute_path('./source_data/motif_names.txt', __dir__) # To be removed
 
-    SNVs                  = File.absolute_path('./results/SNVs', __dir__)
-    Sequences             = File.absolute_path('./results/sequences', __dir__) # To be removed
-    Chunks                = File.absolute_path('./results/sequence_chunks', __dir__)
-    Sites                 = File.absolute_path('./results/sites')
-    Fitting               = File.absolute_path('./results/fitted_sites')
-    MotifStatistics       = File.absolute_path('./results/motif_statistics')
-    Slices                = File.absolute_path('./results/motif_statistics/slices')
-    LogFolder             = File.absolute_path('./results/fitting_log')
+    SNVs                  = File.join(Results, 'SNVs')
+    Sequences             = File.join(Results, 'sequences') # To be removed
+    Chunks                = File.join(Results, 'sequence_chunks')
+    Sites                 = File.join(Results, 'sites')
+    Fitting               = File.join(Results, 'fitted_sites')
+    MotifStatistics       = File.join(Results, 'motif_statistics')
+    Slices                = File.join(Results, 'motif_statistics/slices')
+    LogFolder             = File.join(Results, 'fitting_log')
 
     module Alexandrov
       Mutations           = File.join(AlexandrovData, 'somatic_mutation_data')
       SamplesSummary      = File.join(AlexandrovData, 'samples_summary.txt')
+
+      MutationTypesStatisticsResults = File.join(Results, 'AlexandrovEtAl/mutation_types_statistics.txt')
+      ContextStatisticsResults       = File.join(Results, 'AlexandrovEtAl/mutation_contexts.txt')
     end
 
     NikZainalSNVs         = File.join(SNVs, 'NikZainal/cancer.txt')
   end
 
-  module Results
-    module Alexandrov
-      MutationTypesStatistics = File.join(Root, 'results/AlexandrovEtAl/mutation_types_statistics.txt')
-      ContextStatistics       = File.join(Root, 'results/AlexandrovEtAl/mutation_contexts.txt')
-    end
-  end
 end
 
 module Configuration

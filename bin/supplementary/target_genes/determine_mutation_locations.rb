@@ -7,7 +7,7 @@ require 'snv_info'
 require 'perfectosape/results_short'
 
 snv_infos_filename = LocalPaths::Secondary::NikZainalSNVsOriginal
-snv_sequences_filename = './results/intermediate/SNV_sequences.txt'
+snv_sequences_filename = File.join(LocalPaths::Results, 'intermediate/SNV_sequences.txt')
 sites_filename = './source_data/sites_cancer.txt'
 ensg_hgnc_conversion_filename = './unnecessary/source_data_unnecessary/mart_export_ensg_hgnc.txt'
 gene_tss_filename = './source_data/deprecated/gene_tss_hg19.txt'

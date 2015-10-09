@@ -6,8 +6,8 @@ task :sample_statistics_regulatory_SNVs do
   matrix = [ [*header, *possible_contexts] ]
   short_matrix = [ [*header, *possible_short_contexts] ]
   Configuration.getAlexandrovWholeGenomeCancers.each{|cancer_type|
-    context_counts = context_counts_in_file(File.join('results/SNVs', 'Alexandrov', cancer_type.to_s, 'cancer.txt'))
-    short_context_counts = short_context_counts_in_file(File.join('results/SNVs', 'Alexandrov', cancer_type.to_s, 'cancer.txt'))
+    context_counts = context_counts_in_file(File.join(LocalPaths::Results, 'SNVs', 'Alexandrov', cancer_type.to_s, 'cancer.txt'))
+    short_context_counts = short_context_counts_in_file(File.join(LocalPaths::Results, 'SNVs', 'Alexandrov', cancer_type.to_s, 'cancer.txt'))
     cancer_infos = ["#{cancer_type} (Alexandrov et al. sample)",
                     Configuration::Alexandrov::RandomGenomeFold[cancer_type],
                     Configuration::Alexandrov::RandomShuffleFold[cancer_type],
@@ -23,8 +23,8 @@ task :sample_statistics_regulatory_SNVs do
   }
 
   Configuration.getYeastApobecSamples.each{|cancer_type|
-    context_counts = context_counts_in_file(File.join('results/SNVs', 'YeastApobec', cancer_type.to_s, 'cancer.txt'))
-    short_context_counts = short_context_counts_in_file(File.join('results/SNVs', 'YeastApobec', cancer_type.to_s, 'cancer.txt'))
+    context_counts = context_counts_in_file(File.join(LocalPaths::Results, 'SNVs', 'YeastApobec', cancer_type.to_s, 'cancer.txt'))
+    short_context_counts = short_context_counts_in_file(File.join(LocalPaths::Results, 'SNVs', 'YeastApobec', cancer_type.to_s, 'cancer.txt'))
     cancer_infos = ["#{cancer_type} (Yeast APOBEC sample)",
                     'N/A',
                     Configuration::YeastApobec::RandomShuffleFold[cancer_type],
@@ -38,8 +38,8 @@ task :sample_statistics_regulatory_SNVs do
                     *possible_short_contexts.map{|context| short_context_counts[context] }]
   }
 
-  context_counts = context_counts_in_file(File.join('results/SNVs', 'NikZainal', 'cancer.txt'))
-  short_context_counts = short_context_counts_in_file(File.join('results/SNVs', 'NikZainal', 'cancer.txt'))
+  context_counts = context_counts_in_file(File.join(LocalPaths::Results, 'SNVs', 'NikZainal', 'cancer.txt'))
+  short_context_counts = short_context_counts_in_file(File.join(LocalPaths::Results, 'SNVs', 'NikZainal', 'cancer.txt'))
   cancer_infos = ['Breast (NikZainal samples)',
                   Configuration::NikZainal::RandomGenomeFold,
                   Configuration::NikZainal::RandomShuffleFold,
@@ -53,10 +53,10 @@ task :sample_statistics_regulatory_SNVs do
                   short_context_counts.each_value.inject(0, &:+),
                   *possible_short_contexts.map{|context| short_context_counts[context] }]
 
-  File.open('results/motif_statistics/regulatory_SNVs_sample_statistics.tsv', 'w'){|fw|
+  File.open(File.join(LocalPaths::Results, 'motif_statistics/regulatory_SNVs_sample_statistics.tsv'), 'w'){|fw|
     print_matrix(matrix.transpose, stream: fw)
   }
-  File.open('results/motif_statistics/regulatory_SNVs_sample_statistics_wo_mutation_direction.tsv', 'w'){|fw|
+  File.open(File.join(LocalPaths::Results, 'motif_statistics/regulatory_SNVs_sample_statistics_wo_mutation_direction.tsv'), 'w'){|fw|
     print_matrix(short_matrix.transpose, stream: fw)
   }
 
@@ -67,7 +67,7 @@ task :sample_statistics_regulatory_SNVs do
     total_count = row[cancer_infos.size]
     rates_matrix << [*row.first(cancer_infos.size), total_count, *row.drop(cancer_infos.size + 1).map{|count| (count.to_f / total_count).round(5) } ]
   }
-  File.open('results/motif_statistics/regulatory_SNVs_sample_statistics_rates.tsv', 'w'){|fw|
+  File.open(File.join(LocalPaths::Results, 'motif_statistics/regulatory_SNVs_sample_statistics_rates.tsv'), 'w'){|fw|
     print_matrix(rates_matrix.transpose, stream: fw)
   }
 
@@ -78,7 +78,7 @@ task :sample_statistics_regulatory_SNVs do
     total_count = row[cancer_infos.size]
     short_matrix_rates << [*row.first(cancer_infos.size), total_count, *row.drop(cancer_infos.size + 1).map{|count| (count.to_f / total_count).round(5) } ]
   }
-  File.open('results/motif_statistics/regulatory_SNVs_sample_statistics_rates_wo_mutation_direction.tsv', 'w'){|fw|
+  File.open(File.join(LocalPaths::Results, 'motif_statistics/regulatory_SNVs_sample_statistics_rates_wo_mutation_direction.tsv'), 'w'){|fw|
     print_matrix(short_matrix_rates.transpose, stream: fw)
   }
 end
@@ -86,13 +86,13 @@ end
 desc 'Calculate number of samples in each cancer'
 task :calculate_number_of_samples  do
   sample_counts = Configuration.getAlexandrovWholeGenomeCancers.map{|cancer_type|
-    cancer_fn = File.join('results/SNVs', 'Alexandrov', cancer_type.to_s, 'cancer.txt')
+    cancer_fn = File.join(LocalPaths::Results, 'SNVs', 'Alexandrov', cancer_type.to_s, 'cancer.txt')
     samples = SNVInfo.each_in_file(cancer_fn).map{|snv_info|
       snv_info.variant_id.split(';').first
     }.to_a.uniq
     [cancer_type, samples.size]
   }.to_h
-  File.open('results/motif_statistics/numbers_of_samples.txt', 'w') do |fw|
+  File.open(File.join(LocalPaths::Results, 'motif_statistics/numbers_of_samples.txt'), 'w') do |fw|
     sample_counts.each{|cancer_type, num_samples|
       fw.puts "#{cancer_type}\t#{num_samples}"
     }

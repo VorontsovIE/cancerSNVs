@@ -145,21 +145,21 @@ def make_aggregation_task(common_motifs_folder:, output_folder:, task_name:, tas
   end
 end
 
-make_aggregation_task common_motifs_folder: 'results/motif_statistics/common/',
-                      output_folder: 'results/motif_statistics/aggregated/',
+make_aggregation_task common_motifs_folder: File.join(LocalPaths::Results, 'motif_statistics/common/'),
+                      output_folder: File.join(LocalPaths::Results, 'motif_statistics/aggregated/'),
                       task_name: 'aggregate_common_motifs',
                       task_description: 'Aggregate common motifs over samples'
 
-make_aggregation_task common_motifs_folder: 'results/motif_statistics/common_wo_fitting/',
-                      output_folder: 'results/motif_statistics/aggregated_wo_fitting/',
+make_aggregation_task common_motifs_folder: File.join(LocalPaths::Results, 'motif_statistics/common_wo_fitting/'),
+                      output_folder: File.join(LocalPaths::Results, 'motif_statistics/aggregated_wo_fitting/'),
                       task_name: 'aggregate_common_motifs_wo_fitting',
                       task_description: 'Aggregate common motifs over samples (w/o fitting)'
 
 
-directory 'results/motif_statistics/aggregated_comparison'
+directory File.join(LocalPaths::Results, 'motif_statistics/aggregated_comparison')
 desc 'Compare motif sets for experiment with and without fitting'
-task :compare_fitted_to_unfitted => 'results/motif_statistics/aggregated_comparison' do
-  output_folder = 'results/motif_statistics/aggregated_comparison/'
+task :compare_fitted_to_unfitted => File.join(LocalPaths::Results, 'motif_statistics/aggregated_comparison') do
+  output_folder = File.join(LocalPaths::Results, 'motif_statistics/aggregated_comparison/')
   motif_qualities = load_motif_qualities(LocalPaths::Secondary::MotifQualities)
 
   [:protected, :subjected].each do |protected_or_subjected|
@@ -169,14 +169,14 @@ task :compare_fitted_to_unfitted => 'results/motif_statistics/aggregated_compari
 
       motifs_fitted_by_sample = Configuration.sample_with_context_paths(with_nik_zainal: false, with_yeast: false).map{|sample_name, sample_path|
         motifs = File.readlines(
-          File.join('results/motif_statistics/common/', sample_path, filename_last_part)
+          File.join(LocalPaths::Results, 'motif_statistics/common/', sample_path, filename_last_part)
         ).map(&:chomp).to_set
         [sample_name, motifs]
       }.to_h
 
       motifs_nonfitted_by_sample = Configuration.sample_with_context_paths(with_nik_zainal: false, with_yeast: false).map{|sample_name, sample_path|
         motifs = File.readlines(
-          File.join('results/motif_statistics/common_wo_fitting/', sample_path, filename_last_part)
+          File.join(LocalPaths::Results, 'motif_statistics/common_wo_fitting/', sample_path, filename_last_part)
         ).map(&:chomp).to_set
         [sample_name, motifs]
       }.to_h
@@ -256,10 +256,10 @@ task :collect_families_statistics
 
 [3, 4].each do |level|
   [:protected, :subjected].each do |protected_or_subjected|
-    make_collect_families_statistics_task common_motifs_folder: 'results/motif_statistics/common/',
+    make_collect_families_statistics_task common_motifs_folder: File.join(LocalPaths::Results, 'motif_statistics/common/'),
                                           motif_family_recognizer: MOTIF_FAMILY_RECOGNIZERS[level],
                                           protected_or_subjected: protected_or_subjected,
-                                          output_file: "results/motif_statistics/aggregated/final/#{protected_or_subjected}_in_any_context_glued_level_#{level}.tsv",
+                                          output_file: File.join(LocalPaths::Results, "motif_statistics/aggregated/final/#{protected_or_subjected}_in_any_context_glued_level_#{level}.tsv"),
                                           task_name: "collect_families_statistics_#{protected_or_subjected}_level_#{level}"
     task :collect_families_statistics => "collect_families_statistics_#{protected_or_subjected}_level_#{level}"
   end

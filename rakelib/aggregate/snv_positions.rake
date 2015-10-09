@@ -8,11 +8,11 @@ Configuration.getAlexandrovWholeGenomeCancers.each do |cancer_type|
     Configuration::Alexandrov::Datasets.each do |dataset|
       task "extract_snv_positions:Alexandrov:#{cancer_type}:#{context}" => "extract_snv_positions:Alexandrov:#{cancer_type}:#{context}:#{dataset}"
 
-      output_folder = File.join('results/snv_positions', 'Alexandrov', cancer_type.to_s, context.to_s)
+      output_folder = File.join(LocalPaths::Results, 'snv_positions', 'Alexandrov', cancer_type.to_s, context.to_s)
       directory output_folder
       task "extract_snv_positions:Alexandrov:#{cancer_type}:#{context}:#{dataset}" => [output_folder] do
         ruby 'extract_snv_position_profile.rb',
-              File.join('results/fitted_sites', 'Alexandrov', cancer_type.to_s, context.to_s, "sites_#{dataset}.txt"),
+              File.join(LocalPaths::Results, 'fitted_sites', 'Alexandrov', cancer_type.to_s, context.to_s, "sites_#{dataset}.txt"),
               {out: File.join(output_folder, "#{dataset}.txt")}, {}
       end
     end
@@ -26,11 +26,11 @@ Configuration.getYeastApobecSamples.each do |cancer_type|
     Configuration::YeastApobec::Datasets.each do |dataset|
       task "extract_snv_positions:YeastApobec:#{cancer_type}:#{context}" => "extract_snv_positions:YeastApobec:#{cancer_type}:#{context}:#{dataset}"
 
-      output_folder = File.join('results/snv_positions', 'YeastApobec', cancer_type.to_s, context.to_s)
+      output_folder = File.join(LocalPaths::Results, 'snv_positions', 'YeastApobec', cancer_type.to_s, context.to_s)
       directory output_folder
       task "extract_snv_positions:YeastApobec:#{cancer_type}:#{context}:#{dataset}" => [output_folder] do
         ruby 'extract_snv_position_profile.rb',
-              File.join('results/fitted_sites', 'YeastApobec', cancer_type.to_s, context.to_s, "sites_#{dataset}.txt"),
+              File.join(LocalPaths::Results, 'fitted_sites', 'YeastApobec', cancer_type.to_s, context.to_s, "sites_#{dataset}.txt"),
               {out: File.join(output_folder, "#{dataset}.txt")}, {}
       end
     end
@@ -42,11 +42,11 @@ Configuration::NikZainalContexts.each do |context|
   Configuration::NikZainal::Datasets.each do |dataset|
     task "extract_snv_positions:NikZainal:#{context}" => "extract_snv_positions:NikZainal:#{context}:#{dataset}"
 
-    output_folder = File.join('results/snv_positions', 'NikZainal', context.to_s)
+    output_folder = File.join(LocalPaths::Results, 'snv_positions', 'NikZainal', context.to_s)
     directory output_folder
     task "extract_snv_positions:NikZainal:#{context}:#{dataset}" => [output_folder] do
       ruby 'extract_snv_position_profile.rb',
-            File.join('results/fitted_sites', 'NikZainal', context.to_s, "sites_#{dataset}.txt"),
+            File.join(LocalPaths::Results, 'fitted_sites', 'NikZainal', context.to_s, "sites_#{dataset}.txt"),
             {out: File.join(output_folder, "#{dataset}.txt")}, {}
     end
   end
@@ -116,15 +116,15 @@ end
 desc 'Aggregate SNV mean KDICs'
 task :aggregate_snv_positions do
   samples_with_contexts_and_config.each do |sample_path, config|
-    output_folder = File.join('results/snv_positions_aggregated', sample_path)
+    output_folder = File.join(LocalPaths::Results, 'snv_positions_aggregated', sample_path)
     mkdir_p output_folder  unless Dir.exist?(output_folder)
-    cancer_fn = File.join('results/snv_positions', sample_path, 'cancer.txt')
+    cancer_fn = File.join(LocalPaths::Results, 'snv_positions', sample_path, 'cancer.txt')
     ics_random_on_core = config.const_get(:RandomDatasets).map{|dataset|
-      random_fn = File.join('results/snv_positions', sample_path, "#{dataset}.txt")
+      random_fn = File.join(LocalPaths::Results, 'snv_positions', sample_path, "#{dataset}.txt")
       [dataset, ic_averaged_on_core_by_motif(motif_infos_in_snv_positions_file(random_fn))]
     }.to_h
     ics_random_on_everything = config.const_get(:RandomDatasets).map{|dataset|
-      random_fn = File.join('results/snv_positions', sample_path, "#{dataset}.txt")
+      random_fn = File.join(LocalPaths::Results, 'snv_positions', sample_path, "#{dataset}.txt")
       [dataset, ic_averaged_on_everything_by_motif(motif_infos_in_snv_positions_file(random_fn))]
     }.to_h
     motif_ics_on_core = motif_IC_matrix(
