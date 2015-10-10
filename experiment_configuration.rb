@@ -77,8 +77,8 @@ module Configuration
 
   ExpandControlSetFold = 1 # one can artificially expand control set several time to quickly check whether expansion of control set will increase significance
 
-  RandomGenomeSeeds = [13,15,17]
-  RandomShuffleSeeds = [135,137,139]
+  RandomGenomeSeeds = [] #[13,15,17]
+  RandomShuffleSeeds = [] #[135,137,139]
 
   # Not using DHS profile data
   DHS_BED_FILES = { }
@@ -162,7 +162,8 @@ module Configuration
       if ENV['YEAST_SAMPLES']
         ENV['YEAST_SAMPLES'].split(',').map(&:to_sym).sort
       else
-        Dir.glob('source_data/YeastApobec/*.mfa').map{|fn| File.basename(fn, '.mfa').to_sym }
+        # Dir.glob('source_data/YeastApobec/*.mfa').map{|fn| File.basename(fn, '.mfa').to_sym }
+        []
       end
     end
   end
