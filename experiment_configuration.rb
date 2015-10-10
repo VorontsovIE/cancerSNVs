@@ -80,7 +80,10 @@ module Configuration
   RandomGenomeSeeds = [13,15,17]
   RandomShuffleSeeds = [135,137,139]
 
+  # Not using DHS profile data
   DHS_BED_FILES = { }
+
+  # Using DHS profile data
   # DHS_BED_FILES = {:'Lung Adeno' => './source_data/dhs/LUNG_Roadmap_EncodeSet_merged.bed',
   #   :Breast => './source_data/dhs/BREAST_Roadmap_EncodeSet_merged.bed',
   #   :Liver => './source_data/dhs/LIVER_EncodeSet_merged.bed'}
