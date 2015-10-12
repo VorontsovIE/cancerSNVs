@@ -32,7 +32,7 @@ def prepare_core_folder(core_folder)
       sites_filename = "./sites_#{basename}.txt".shellescape
       fw.puts ['java', '${MEMORY_LIMIT}',
               '-cp ape.jar', 'ru.autosome.perfectosape.SNPScan',
-              './motif_collection', filename.shellescape,
+              './motif_collection', "./#{File.basename(filename).shellescape}",
               '--fold-change-cutoff 1', '--precalc ./motif_thresholds', 
               '${EXPAND_FLANKS}', '--compact',
               "> #{sites_filename}",
@@ -150,7 +150,7 @@ namespace :preparations do
         fw.puts '#!/bin/bash'
         fw.puts 'cd "$(dirname "$0")"'
         AlexandrovWholeGenomeCancers.each do |cancer_type|
-          fw.puts  File.join(LocalPaths::Secondary::Chunks, 'Alexandrov', cancer_type.to_s, 'run_perfectosape_multithread.sh').shellescape
+          fw.puts "./#{cancer_type}/run_perfectosape_multithread.sh".shellescape
         end
       end
       chmod 0755, File.join(LocalPaths::Secondary::Chunks, 'Alexandrov', 'run_all.sh')
