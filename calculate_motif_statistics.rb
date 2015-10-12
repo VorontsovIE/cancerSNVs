@@ -47,6 +47,12 @@ PerfectosAPE::ResultShort.each_in_file(mutated_site_infos_filename) do |site_inf
     if site_info.disrupted?(fold_change_cutoff: fold_change_cutoff)
       num_sites_disrupted[motif_name] += 1
     end
+
+    if site_info.substitution_in_core?
+      num_substitutions_in_core[motif_name] += 1
+    else
+      num_substitutions_in_flank[motif_name] += 1
+    end
   end
 
   if site_info.site_after_substitution?(pvalue_cutoff: pvalue_cutoff)
@@ -56,11 +62,6 @@ PerfectosAPE::ResultShort.each_in_file(mutated_site_infos_filename) do |site_inf
     end
   end
 
-  if site_info.substitution_in_core?
-    num_substitutions_in_core[motif_name] += 1
-  else
-    num_substitutions_in_flank[motif_name] += 1
-  end
 end
 
 motif_names = File.readlines(LocalPaths::Secondary::MotifNames).map(&:strip).map(&:to_sym)
