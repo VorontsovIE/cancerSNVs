@@ -1,3 +1,4 @@
+desc 'Make summary for all experiments in a single table'
 task 'pretty_summary' do
   SUMMARY_HEADERS = {
     motif: 'Motif name (HOCOMOCO v9)',
@@ -103,7 +104,7 @@ task 'pretty_summary' do
 
   Configuration.getAlexandrovWholeGenomeCancers.each do |cancer_type|
     folder = File.join(LocalPaths::Results, "motif_statistics/full/Alexandrov/#{cancer_type}/any/")
-    output_folder = File.join(LocalPaths::Results, "pretty_summary/")
+    output_folder = File.join(LocalPaths::Results, "motif_statistics/pretty_summary/")
 
     genome_control_infos = File.readlines(File.join(folder, "random_genome.csv")).drop(1)
     shuffle_control_infos = File.readlines(File.join(folder, "random_shuffle.csv")).drop(1)
@@ -112,7 +113,7 @@ task 'pretty_summary' do
       motif, gene, quality, \
         affinity_loss_rate_genomic_control, affinity_loss_significance_genomic_control, \
         affinity_gain_rate_genomic_control, affinity_gain_significance_genomic_control, \
-        mutations_within_site_rate_genomic_control, mutations_within_site_significance_genomic_control, \
+        mutations_within_site_relative_rate_genomic_control, mutations_within_site_significance_genomic_control, \
 
         affinity_loss_sites_genomic_control, \
         affinity_gain_sites_genomic_control, \
@@ -135,7 +136,7 @@ task 'pretty_summary' do
       _motif, _gene, _quality, \
         affinity_loss_rate_shuffle_control, affinity_loss_significance_shuffle_control, \
         affinity_gain_rate_shuffle_control, affinity_gain_significance_shuffle_control, \
-        mutations_within_site_rate_shuffle_control, mutations_within_site_significance_shuffle_control, \
+        mutations_within_site_relative_rate_shuffle_control, mutations_within_site_significance_shuffle_control, \
 
         affinity_loss_sites_shuffle_control, \
         affinity_gain_sites_shuffle_control, \
