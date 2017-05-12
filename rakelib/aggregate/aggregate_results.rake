@@ -67,17 +67,11 @@ def with_motif_info_rows(matrix, motif_family_recognizers, motif_qualities)
   result
 end
 
-def sample_files(folder_common_motifs, context, protected_or_subjected, characteristic, with_yeast: true)
+def sample_files(folder_common_motifs, context, protected_or_subjected, characteristic)
   result = AlexandrovWholeGenomeCancers.map{|sample|
     [sample, File.join(folder_common_motifs, 'Alexandrov', sample.to_s,
                         context.to_s, protected_or_subjected.to_s, characteristic.to_s, 'compared_to_each.txt') ]
   }
-  if with_yeast
-    result += YeastApobecSamples.map{|sample|
-      [sample, File.join(folder_common_motifs, 'YeastApobec', sample.to_s,
-                          context.to_s, protected_or_subjected.to_s, characteristic.to_s, 'compared_to_each.txt') ]
-    }
-  end
   result.to_h
 end
 
@@ -104,7 +98,7 @@ def fitted_non_fitted_occurence_matrix(motifs_fitted_by_sample, motifs_nonfitted
   results << ['Motif quality', *qualities]
   results << ['Motif families (level 3)', *motifs_subfamilies_3]
   results << ['Motif families (level 4)', *motifs_subfamilies_4]
-  Configuration.sample_with_context_paths(with_nik_zainal: false, with_yeast: false).each_key{|sample_name|
+  Configuration.sample_with_context_paths.each_key{|sample_name|
     motifs_fitted = motifs_fitted_by_sample[sample_name]
     motifs_nonfitted = motifs_nonfitted_by_sample[sample_name]
     motifs_occurences = all_motifs.map{|motif|
@@ -126,7 +120,7 @@ def make_aggregation_task(common_motifs_folder:, output_folder:, task_name:, tas
     [:protected, :subjected].each do |protected_or_subjected|
       ['disruption', 'emergence', 'substitution-in-core'].each do |characteristic|
         prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
-        files = sample_files(common_motifs_folder, 'any', protected_or_subjected, characteristic, with_yeast: false)
+        files = sample_files(common_motifs_folder, 'any', protected_or_subjected, characteristic)
         File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}_in_any_context.tsv"), 'w') {|fw|
           matrix = collect_different_sample_statistics(files)
           matrix_augmented = with_motif_info_rows(matrix, MOTIF_FAMILY_RECOGNIZERS, motif_qualities)
@@ -167,14 +161,14 @@ task :compare_fitted_to_unfitted => File.join(LocalPaths::Results, 'motif_statis
       prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
       filename_last_part = File.join(protected_or_subjected.to_s, characteristic.to_s, 'compared_to_each.txt')
 
-      motifs_fitted_by_sample = Configuration.sample_with_context_paths(with_nik_zainal: false, with_yeast: false).map{|sample_name, sample_path|
+      motifs_fitted_by_sample = Configuration.sample_with_context_paths.map{|sample_name, sample_path|
         motifs = File.readlines(
           File.join(LocalPaths::Results, 'motif_statistics/common/', sample_path, filename_last_part)
         ).map(&:chomp).to_set
         [sample_name, motifs]
       }.to_h
 
-      motifs_nonfitted_by_sample = Configuration.sample_with_context_paths(with_nik_zainal: false, with_yeast: false).map{|sample_name, sample_path|
+      motifs_nonfitted_by_sample = Configuration.sample_with_context_paths.map{|sample_name, sample_path|
         motifs = File.readlines(
           File.join(LocalPaths::Results, 'motif_statistics/common_wo_fitting/', sample_path, filename_last_part)
         ).map(&:chomp).to_set
@@ -212,12 +206,12 @@ def make_collect_families_statistics_task(common_motifs_folder:, motif_family_re
     total_families_count = motif_family_recognizer.families_count(motif_names)
 
     # either subjected to or protected from disruption
-    disrupted_motifs_by_sample = sample_files(common_motifs_folder, 'any', protected_or_subjected, 'disruption', with_yeast: false).map{|header, filename|
+    disrupted_motifs_by_sample = sample_files(common_motifs_folder, 'any', protected_or_subjected, 'disruption').map{|header, filename|
       [header, only_high_quality_motifs( File.readlines(filename).map(&:strip) )]
     }.to_h
 
     # either subjected to or protected from emergence
-    emerged_motifs_by_sample = sample_files(common_motifs_folder, 'any', protected_or_subjected, 'emergence', with_yeast: false).map{|header, filename|
+    emerged_motifs_by_sample = sample_files(common_motifs_folder, 'any', protected_or_subjected, 'emergence').map{|header, filename|
       [header, only_high_quality_motifs( File.readlines(filename).map(&:strip) )]
     }.to_h
 

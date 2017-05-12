@@ -30,16 +30,6 @@ def markup_and_filter_SNVInfos_to_file(snv_infos_stream, genome_markup, output_f
   end
 end
 
-# Nik-Zainal
-folder = File.join(LocalPaths::Secondary::SNVs, 'NikZainal')
-directory folder
-file LocalPaths::Secondary::NikZainalSNVs => [LocalPaths::Secondary::NikZainalSNVsOriginal, folder] do
-  snv_infos_stream = BreastCancerSNV \
-    .each_in_file(LocalPaths::Secondary::NikZainalSNVsOriginal) \
-    .map{|snv| snv.to_snv_info(GENOME_READER, flank_length: 50) }
-  genome_markup = GENOME_MARKUP_LOADER.load_markup(dhs_accessible_filename: Configuration::DHS_BED_FILES[:Breast])
-  markup_and_filter_SNVInfos_to_file(snv_infos_stream, genome_markup, output_file: LocalPaths::Secondary::NikZainalSNVs)
-end
 
 # Alexandrov
 AlexandrovWholeGenomeCancers.each do |cancer_type|
@@ -66,30 +56,12 @@ AlexandrovWholeGenomeCancers.each do |cancer_type|
   task 'preparations:extractSNVs:Alexandrov' => cancer_filename
 end
 
-directory File.join(LocalPaths::Results, 'SNVs/YeastApobec')
-YeastApobecSamples.each do |sample|
-  directory File.join(LocalPaths::Results, 'SNVs/YeastApobec', sample.to_s)
-  resulting_file = File.join(LocalPaths::Results, 'SNVs/YeastApobec', sample.to_s, 'cancer.txt')
-  source_file = File.join('source_data/YeastApobec', "#{sample}.mfa")
-  file resulting_file => [File.join(LocalPaths::Results, 'SNVs/YeastApobec', sample.to_s), source_file] do
-    rm resulting_file  if File.exist?(resulting_file)
-    cp source_file, resulting_file
-  end
-  task 'preparations:extractSNVs:YeastApobec' => resulting_file
-end
-
 namespace 'preparations' do
   desc 'Convert SNVs to proper place, filter regulatory mutations, remove duplicates.'
-  task extractSNVs: ['extractSNVs:NikZainalEtAl', 'extractSNVs:Alexandrov', 'extractSNVs:YeastApobec']
+  task extractSNVs: ['extractSNVs:Alexandrov']
   namespace 'extractSNVs' do
-    desc 'Convert Nik-Zainal\'s mutations to a common format. Convert format, filter regulatory only SNVs, remove duplicates.'
-    task :NikZainalEtAl => [LocalPaths::Secondary::NikZainalSNVs]
-
     desc 'Convert Alexandrov\'s mutations to a common format. Convert format, filter regulatory only SNVs, remove duplicates.'
     task :Alexandrov
-
-    desc 'Copy APOBEC mutations in yeast in proper format to necessary place.'
-    task :YeastApobec
   end
 end
 

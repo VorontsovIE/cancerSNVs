@@ -43,7 +43,7 @@ task 'fold_change_distribution_plot' do
 end
 
 desc 'Fold change distribution profiles for each motif across cancer and control datasets'
-task 'fold_change_distribution' => ['fold_change_distribution:Alexandrov', 'fold_change_distribution:NikZainal', 'fold_change_distribution:YeastApobec']
+task 'fold_change_distribution' => ['fold_change_distribution:Alexandrov']
 
 task 'fold_change_distribution:Alexandrov'
 AlexandrovWholeGenomeCancers.each do |cancer_type|
@@ -74,66 +74,5 @@ AlexandrovWholeGenomeCancers.each do |cancer_type|
 
     task "fold_change_distribution:Alexandrov:#{cancer_type}:#{context}" => "fold_change_distribution:Alexandrov:#{cancer_type}:#{context}:all"
     task "fold_change_distribution:Alexandrov:#{cancer_type}:#{context}" => "fold_change_distribution:Alexandrov:#{cancer_type}:#{context}:actual_sites"
-  end
-end
-
-task 'fold_change_distribution:NikZainal'
-Configuration::NikZainalContexts.each do |context|
-  task 'fold_change_distribution:NikZainal' => "fold_change_distribution:NikZainal:#{context}"
-
-  input_folder = File.join(LocalPaths::Secondary::Fitting, 'NikZainal', context.to_s)
-  input_files = Configuration::NikZainal::Datasets.map{|dataset| File.join(input_folder, "sites_#{dataset}.txt") }
-  output_folder = File.join(LocalPaths::Results, 'motif_statistics/fold_change_distribution', 'NikZainal', context.to_s)
-
-  fold_change_distribution_task(
-    input_files: input_files,
-    output_folder: File.join(output_folder, 'all'),
-    only_actual_sites: false,
-    only_substitutions_in_core: false,
-    task_name: "fold_change_distribution:NikZainal:#{context}:all"
-  )
-
-  fold_change_distribution_task(
-    input_files: input_files,
-    output_folder: File.join(output_folder, 'actual_sites'),
-    only_actual_sites: true,
-    pvalue_cutoff: Configuration::PvalueCutoff,
-    only_substitutions_in_core: false,
-    task_name: "fold_change_distribution:NikZainal:#{context}:actual_sites"
-  )
-
-  task "fold_change_distribution:NikZainal:#{context}" => "fold_change_distribution:NikZainal:#{context}:actual_sites"
-  task "fold_change_distribution:NikZainal:#{context}" => "fold_change_distribution:NikZainal:#{context}:all"
-end
-
-task 'fold_change_distribution:YeastApobec'
-YeastApobecSamples.each do |sample|
-  task 'fold_change_distribution:YeastApobec' => "fold_change_distribution:YeastApobec:#{sample}"
-  Configuration::YeastApobec.contexts_by_cancer_type(sample).each do |context| # not actually a cancer type but sample name
-    task "fold_change_distribution:YeastApobec:#{sample}" => "fold_change_distribution:YeastApobec:#{sample}:#{context}"
-
-    input_folder = File.join(LocalPaths::Secondary::Fitting, 'YeastApobec', sample.to_s, context.to_s)
-    input_files = Configuration::YeastApobec::Datasets.map{|dataset| File.join(input_folder, "sites_#{dataset}.txt") }
-    output_folder = File.join(LocalPaths::Results, 'motif_statistics/fold_change_distribution', 'YeastApobec', sample.to_s, context.to_s)
-
-    fold_change_distribution_task(
-      input_files: input_files,
-      output_folder: File.join(output_folder, 'all'),
-      only_actual_sites: false,
-      only_substitutions_in_core: false,
-      task_name: "fold_change_distribution:YeastApobec:#{sample}:#{context}:all"
-    )
-
-    fold_change_distribution_task(
-      input_files: input_files,
-      output_folder: File.join(output_folder, 'actual_sites'),
-      only_actual_sites: true,
-      pvalue_cutoff: Configuration::PvalueCutoff,
-      only_substitutions_in_core: false,
-      task_name: "fold_change_distribution:YeastApobec:#{sample}:#{context}:actual_sites"
-    )
-
-    task "fold_change_distribution:YeastApobec:#{sample}:#{context}" => "fold_change_distribution:YeastApobec:#{sample}:#{context}:actual_sites"
-    task "fold_change_distribution:YeastApobec:#{sample}:#{context}" => "fold_change_distribution:YeastApobec:#{sample}:#{context}:all"
   end
 end

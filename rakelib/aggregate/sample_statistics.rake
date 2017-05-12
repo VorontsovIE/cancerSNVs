@@ -23,37 +23,6 @@ task :sample_statistics_regulatory_SNVs => File.join(LocalPaths::Results, 'motif
                     *possible_short_contexts.map{|context| short_context_counts[context] }]
   }
 
-  Configuration.getYeastApobecSamples.each{|cancer_type|
-    context_counts = context_counts_in_file(File.join(LocalPaths::Results, 'SNVs', 'YeastApobec', cancer_type.to_s, 'cancer.txt'))
-    short_context_counts = short_context_counts_in_file(File.join(LocalPaths::Results, 'SNVs', 'YeastApobec', cancer_type.to_s, 'cancer.txt'))
-    cancer_infos = ["#{cancer_type} (Yeast APOBEC sample)",
-                    'N/A',
-                    Configuration::YeastApobec::RandomShuffleFold[cancer_type],
-                    'N/A',
-                    Configuration::YeastApobec::FittingFoldShuffle[cancer_type]]
-    matrix << [*cancer_infos,
-              context_counts.each_value.inject(0, &:+),
-              *possible_contexts.map{|context| context_counts[context] }]
-    short_matrix << [*cancer_infos,
-                    short_context_counts.each_value.inject(0, &:+),
-                    *possible_short_contexts.map{|context| short_context_counts[context] }]
-  }
-
-#  context_counts = context_counts_in_file(File.join(LocalPaths::Results, 'SNVs', 'NikZainal', 'cancer.txt'))
-#  short_context_counts = short_context_counts_in_file(File.join(LocalPaths::Results, 'SNVs', 'NikZainal', 'cancer.txt'))
-#  cancer_infos = ['Breast (NikZainal samples)',
-#                  Configuration::NikZainal::RandomGenomeFold,
-#                  Configuration::NikZainal::RandomShuffleFold,
-#                  Configuration::NikZainal::FittingFoldGenome,
-#                  Configuration::NikZainal::FittingFoldShuffle,
-#                ]
-#  matrix << [*cancer_infos,
-#              context_counts.each_value.inject(0, &:+),
-#              *possible_contexts.map{|context| context_counts[context] }]
-#  short_matrix << [*cancer_infos,
-#                  short_context_counts.each_value.inject(0, &:+),
-#                  *possible_short_contexts.map{|context| short_context_counts[context] }]
-
   File.open(File.join(LocalPaths::Results, 'motif_statistics/regulatory_SNVs_sample_statistics.tsv'), 'w'){|fw|
     print_matrix(matrix.transpose, stream: fw)
   }

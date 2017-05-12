@@ -6,6 +6,7 @@ require 'import_information'
 require 'snv_info'
 require 'perfectosape/results_short'
 
+# (obsolete script) Don't work due to absence of NikZainal SNVs in the current workflow
 snv_infos_filename = LocalPaths::Secondary::NikZainalSNVsOriginal
 snv_sequences_filename = File.join(LocalPaths::Results, 'intermediate/SNV_sequences.txt')
 sites_filename = './source_data/sites_cancer.txt'

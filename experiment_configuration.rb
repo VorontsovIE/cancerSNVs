@@ -37,7 +37,6 @@ module LocalPaths
   module Secondary
     AlexandrovData        = File.absolute_path('./source_data/AlexandrovEtAl', __dir__)
     CoordinatesOfKataegis = File.absolute_path('./source_data/AlexandrovEtAl/coordinates_of_kataegis.csv', __dir__)
-    NikZainalSNVsOriginal = File.absolute_path('./source_data/SNV_infos_original.txt', __dir__)
     MotifQualities        = File.absolute_path('./source_data/hocomoco_qualities.tsv', __dir__)
     HocomocoUniprots      = File.absolute_path('./source_data/HOCOMOCOv9_motifs2uniprot.txt', __dir__)
     UniprotDump           = File.absolute_path('./source_data/human_uniprot.txt', __dir__)
@@ -60,7 +59,6 @@ module LocalPaths
       ContextStatisticsResults       = File.join(Results, 'AlexandrovEtAl/mutation_contexts.txt')
     end
 
-    NikZainalSNVs         = File.join(SNVs, 'NikZainal/cancer.txt')
   end
 
 end
@@ -92,18 +90,6 @@ module Configuration
   AlexandrovRandomGenomeSeeds = 13
   AlexandrovRandomShuffleSeeds = 31
 
-  module NikZainal
-    RandomGenomeFold = 100
-    RandomShuffleFold = 100
-    RandomGenomeDatasets = RandomGenomeSeeds.map{|seed| "random_genome_#{seed}"}
-    RandomShuffleDatasets = RandomShuffleSeeds.map{|seed| "random_shuffle_#{seed}"}
-    RandomDatasets = RandomGenomeDatasets + RandomShuffleDatasets
-    Datasets = RandomDatasets + ['cancer']
-
-    FittingFoldGenome = 20
-    FittingFoldShuffle = 20
-  end
-
   module Alexandrov
     RandomGenomeDatasets = ['random_genome']
     RandomShuffleDatasets = ['random_shuffle']
@@ -129,23 +115,6 @@ module Configuration
   #  FittingFoldShuffle = Hash.new(20).merge({:'Lung Adeno' => 2, :Breast => 1})
   end
 
-  module YeastApobec
-    RandomShuffleFold = Hash.new(500).merge({:A1 => 5000, :A3G => 25000, :AID => 5000, :HAP_sub1 => 1000})
-    FittingFoldShuffle = Hash.new(100).merge({:A1 => 1000, :A3G => 5000, :AID => 1000, :HAP_sub1 => 200})
-    RandomShuffleSeeds = 98765
-
-    RandomGenomeDatasets = []
-    RandomShuffleDatasets = ['random_shuffle']
-    RandomDatasets = RandomGenomeDatasets + RandomShuffleDatasets
-    Datasets = RandomDatasets + ['cancer']
-
-    def self.contexts_by_cancer_type(sample) # not actually a cancer type but sample name
-      [:any]
-    end
-  end
-
-  NikZainalContexts = [:any]
-
   NumberOfCores = 24
   MemoryLimitOption = '-Xmx1G' # ''
   ExpandFlanksLength = 11
@@ -164,55 +133,23 @@ module Configuration
     end
   end
 
-  def self.getYeastApobecSamples
-    @yeast_apobec_samples ||= begin
-      if ENV['YEAST_SAMPLES']
-        ENV['YEAST_SAMPLES'].split(',').map(&:to_sym).sort
-      else
-        # Dir.glob('source_data/YeastApobec/*.mfa').map{|fn| File.basename(fn, '.mfa').to_sym }
-        []
-      end
-    end
-  end
-
-  def self.sample_paths(with_nik_zainal: true, with_yeast: true)
+  def self.sample_paths
     results = []
     results += Configuration.getAlexandrovWholeGenomeCancers.map{|cancer_type|
       ["#{cancer_type} (Alexandrov et al. sample)", File.join('Alexandrov', cancer_type.to_s)]
     }
 
-    if with_yeast
-      results += Configuration.getYeastApobecSamples.map{|cancer_type|
-        ["#{cancer_type} (Yeast APOBEC sample)", File.join('YeastApobec', cancer_type.to_s)]
-      }
-    end
-
-    if with_nik_zainal
-      results += [ ["Breast (NikZainal et al. samples)", 'NikZainal'] ]
-    end
     results.to_h
   end
 
   # part of pathname specifying sample with context for each cancer type for each experiment in each context
-  def self.sample_with_context_paths(with_nik_zainal: true, with_yeast: true)
+  def self.sample_with_context_paths
     results = []
     results += getAlexandrovWholeGenomeCancers.flat_map{|cancer_type|
       Alexandrov.contexts_by_cancer_type(cancer_type).map{|context|
         ["#{cancer_type} (Alexandrov et al. sample) in #{context} context", File.join('Alexandrov', cancer_type.to_s, context.to_s)]
       }
     }
-
-    if with_yeast
-      results += getYeastApobecSamples.flat_map{|cancer_type|
-        YeastApobec.contexts_by_cancer_type(cancer_type).map{|context|
-          ["#{cancer_type} (Yeast APOBEC sample) in #{context} context", File.join('YeastApobec', cancer_type.to_s, context.to_s)]
-        }
-      }
-    end
-
-    if with_nik_zainal
-      results += NikZainalContexts.map{|context| ["Breast (NikZainal et al. samples) in #{context} context", File.join('NikZainal', context.to_s)] }
-    end
     results.to_h
   end
 end
@@ -220,17 +157,17 @@ end
 ONE_BASED_INCLUSIVE = GenomeReader::CoordinateSystem::ONE_BASED_INCLUSIVE
 ZERO_BASED_EXCLUSIVE = GenomeReader::CoordinateSystem::ZERO_BASED_EXCLUSIVE
 
-# GENOME_READER = GenomeReader::DiskReader.new(
-#   GENOME_FOLDER,
-#   chromosome_file_by_name: ->(chr){ "chr#{chr}.plain" },
-#   chromosome_name_matcher: /^chr(?<chromosome>\w+)\.plain$/
-# )
-
 GENOME_READER = GenomeReader::DiskReader.new(
   LocalPaths::Genome,
-  chromosome_file_by_name: ->(chr){ "Homo_sapiens.GRCh37.75.dna_sm.chromosome.#{chr}.plain" },
-  chromosome_name_matcher: /^Homo_sapiens\.GRCh37.75\.dna_sm\.chromosome\.(?<chromosome>\w+)\.plain$/
+  chromosome_file_by_name: ->(chr){ "chr#{chr}.plain" },
+  chromosome_name_matcher: /^chr(?<chromosome>\w+)\.plain$/
 )
+
+# GENOME_READER = GenomeReader::DiskReader.new(
+#   LocalPaths::Genome,
+#   chromosome_file_by_name: ->(chr){ "Homo_sapiens.GRCh37.75.dna_sm.chromosome.#{chr}.plain" },
+#   chromosome_name_matcher: /^Homo_sapiens\.GRCh37.75\.dna_sm\.chromosome\.(?<chromosome>\w+)\.plain$/
+# )
 
 # One-based, inclusive
 GENOME_MARKUP_LOADER = GenomeMarkupLoader.create(
