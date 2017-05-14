@@ -32,7 +32,7 @@ end
 
 
 # Alexandrov
-AlexandrovWholeGenomeCancers.each do |cancer_type|
+WholeGenomeCancers.each do |cancer_type|
   folder = File.join(LocalPaths::Secondary::SNVs, 'Alexandrov', cancer_type.to_s)
   cancer_filename = File.join(folder, 'cancer.txt')
   mutations_filename = File.join(LocalPaths::Secondary::Alexandrov::Mutations,

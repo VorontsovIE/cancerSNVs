@@ -81,7 +81,7 @@ namespace 'preparations' do
 end
 
 # Alexandrov
-AlexandrovWholeGenomeCancers.each do |cancer_type|
+WholeGenomeCancers.each do |cancer_type|
   cancer_filename = File.join(LocalPaths::Secondary::SNVs, 'Alexandrov', cancer_type.to_s, 'cancer.txt')
 
   generate_random_genome_task(output_filename: File.join(LocalPaths::Secondary::SNVs, 'Alexandrov', cancer_type.to_s, 'random_genome.txt'),

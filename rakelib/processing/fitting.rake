@@ -34,7 +34,7 @@ desc 'Fit random sites to make control datasets with same site and mutation cont
 task 'fitting' => ['fitting:Alexandrov']
 
 task 'fitting:Alexandrov'
-AlexandrovWholeGenomeCancers.each do |cancer_type|
+WholeGenomeCancers.each do |cancer_type|
   task 'fitting:Alexandrov' => "fitting:Alexandrov:#{cancer_type}"
   
   folder_from = File.join(LocalPaths::Secondary::Sites, 'Alexandrov', cancer_type.to_s)

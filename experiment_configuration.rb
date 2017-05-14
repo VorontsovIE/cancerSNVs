@@ -114,7 +114,7 @@ module Configuration
   MemoryLimitOption = '-Xmx1G' # ''
   ExpandFlanksLength = 11
 
-  def self.getAlexandrovWholeGenomeCancers
+  def self.WholeGenomeCancers
     @alexandrov_samples ||= begin
       if ENV['ALEXANDROV_SAMPLES']
         ENV['ALEXANDROV_SAMPLES'].split(',').map(&:to_sym).sort
@@ -128,18 +128,9 @@ module Configuration
     end
   end
 
-  def self.sample_paths
-    results = []
-    results += Configuration.getAlexandrovWholeGenomeCancers.map{|cancer_type|
-      ["#{cancer_type} (Alexandrov et al. sample)", File.join('Alexandrov', cancer_type.to_s)]
-    }
-
-    results.to_h
-  end
-
   # part of pathname specifying sample with context for each cancer type for each experiment in each context
   def self.sample_with_paths
-    getAlexandrovWholeGenomeCancers.map{|cancer_type|
+    WholeGenomeCancers.map{|cancer_type|
       ["#{cancer_type} (Alexandrov et al. sample)", File.join('Alexandrov', cancer_type.to_s)]
     }.to_h
   end

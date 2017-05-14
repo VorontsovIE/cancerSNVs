@@ -102,7 +102,7 @@ task 'pretty_summary' do
     :underfitted_sites_shuffle_control,
   ].map{|column| SUMMARY_HEADERS[column] }
 
-  Configuration.getAlexandrovWholeGenomeCancers.each do |cancer_type|
+  Configuration.WholeGenomeCancers.each do |cancer_type|
     folder = File.join(LocalPaths::Results, "motif_statistics/full/Alexandrov/#{cancer_type}/")
     output_folder = File.join(LocalPaths::Results, "motif_statistics/pretty_summary/")
 

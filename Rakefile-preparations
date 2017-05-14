@@ -1,5 +1,5 @@
 require_relative 'experiment_configuration'
 
-AlexandrovWholeGenomeCancers = Configuration.getAlexandrovWholeGenomeCancers
+WholeGenomeCancers = Configuration.WholeGenomeCancers
 
 import *FileList['rakelib/preparations/*.rake']

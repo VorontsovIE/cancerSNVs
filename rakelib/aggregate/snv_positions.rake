@@ -1,7 +1,7 @@
 desc 'Extract SNV profiles and mean information content of affected positions'
 task :extract_snv_positions => ['extract_snv_positions:Alexandrov']
 
-Configuration.getAlexandrovWholeGenomeCancers.each do |cancer_type|
+Configuration.WholeGenomeCancers.each do |cancer_type|
   task 'extract_snv_positions:Alexandrov' => "extract_snv_positions:Alexandrov:#{cancer_type}"
   Configuration::Alexandrov::Datasets.each do |dataset|
     task "extract_snv_positions:Alexandrov:#{cancer_type}" => "extract_snv_positions:Alexandrov:#{cancer_type}:#{dataset}"
@@ -58,7 +58,7 @@ end
 
 desc 'Aggregate SNV mean KDICs'
 task :aggregate_snv_positions do
-  Configuration.getAlexandrovWholeGenomeCancers.each do |cancer_type|
+  Configuration.WholeGenomeCancers.each do |cancer_type|
     sample_path = File.join('Alexandrov', cancer_type.to_s)
     output_folder = File.join(LocalPaths::Results, 'snv_positions_aggregated', sample_path)
     mkdir_p output_folder  unless Dir.exist?(output_folder)

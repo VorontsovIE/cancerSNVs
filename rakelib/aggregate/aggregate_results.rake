@@ -68,11 +68,10 @@ def with_motif_info_rows(matrix, motif_family_recognizers, motif_qualities)
 end
 
 def sample_files(folder_common_motifs, protected_or_subjected, characteristic)
-  result = AlexandrovWholeGenomeCancers.map{|sample|
+  WholeGenomeCancers.map{|sample|
     [sample, File.join(folder_common_motifs, 'Alexandrov', sample.to_s,
                         protected_or_subjected.to_s, characteristic.to_s, 'compared_to_each.txt') ]
-  }
-  result.to_h
+  }.to_h
 end
 
 def fitted_non_fitted_occurence_state(in_fitted, in_nonfitted)

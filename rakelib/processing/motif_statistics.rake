@@ -116,7 +116,7 @@ fitting_wo_fitting_settings = [
 fitting_wo_fitting_settings.each do |task_prefix, slices_folder, log_folder, full_folder, filtered_folder, common_folder|
   ####################################
   prefixed_motif_statistics_task 'Alexandrov', []
-  AlexandrovWholeGenomeCancers.each do |cancer_type|
+  WholeGenomeCancers.each do |cancer_type|
     prefixed_motif_statistics_task 'Alexandrov', ["Alexandrov:#{cancer_type}"]
     
     Configuration::Alexandrov::RandomDatasets.each do |random_dataset|

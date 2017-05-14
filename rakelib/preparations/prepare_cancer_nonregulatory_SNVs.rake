@@ -30,7 +30,7 @@ def markup_dont_filter_SNVInfos_to_file(snv_infos_stream, genome_markup, output_
 end
 
 # Alexandrov
-AlexandrovWholeGenomeCancers.each do |cancer_type|
+WholeGenomeCancers.each do |cancer_type|
   output_folder = File.join(LocalPaths::Results, 'AllSNVs', 'Alexandrov', cancer_type.to_s)
   cancer_filename = File.join(output_folder, 'cancer.txt')
   mutations_filename = File.join(LocalPaths::Secondary::Alexandrov::Mutations,

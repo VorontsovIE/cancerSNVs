@@ -6,7 +6,7 @@ task :sample_statistics_regulatory_SNVs => File.join(LocalPaths::Results, 'motif
   header = ['Sample', 'Genomic control fold', 'Shuffle control fold', 'Genomic control fitting fold', 'Shuffle control fitting fold', 'Mutations total']
   matrix = [ [*header, *possible_contexts] ]
   short_matrix = [ [*header, *possible_short_contexts] ]
-  Configuration.getAlexandrovWholeGenomeCancers.each{|cancer_type|
+  Configuration.WholeGenomeCancers.each{|cancer_type|
     context_counts = context_counts_in_file(File.join(LocalPaths::Results, 'SNVs', 'Alexandrov', cancer_type.to_s, 'cancer.txt'))
     short_context_counts = short_context_counts_in_file(File.join(LocalPaths::Results, 'SNVs', 'Alexandrov', cancer_type.to_s, 'cancer.txt'))
     cancer_infos = ["#{cancer_type} (Alexandrov et al. sample)",
@@ -56,7 +56,7 @@ end
 
 desc 'Calculate number of samples in each cancer'
 task :calculate_number_of_samples  do
-  sample_counts = Configuration.getAlexandrovWholeGenomeCancers.map{|cancer_type|
+  sample_counts = Configuration.WholeGenomeCancers.map{|cancer_type|
     cancer_fn = File.join(LocalPaths::Results, 'SNVs', 'Alexandrov', cancer_type.to_s, 'cancer.txt')
     samples = SNVInfo.each_in_file(cancer_fn).map{|snv_info|
       snv_info.variant_id.split(';').first

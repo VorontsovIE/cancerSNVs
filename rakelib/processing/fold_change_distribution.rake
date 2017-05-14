@@ -46,7 +46,7 @@ desc 'Fold change distribution profiles for each motif across cancer and control
 task 'fold_change_distribution' => ['fold_change_distribution:Alexandrov']
 
 task 'fold_change_distribution:Alexandrov'
-AlexandrovWholeGenomeCancers.each do |cancer_type|
+WholeGenomeCancers.each do |cancer_type|
   task 'fold_change_distribution:Alexandrov' => "fold_change_distribution:Alexandrov:#{cancer_type}"
 
   input_folder = File.join(LocalPaths::Secondary::Fitting, 'Alexandrov', cancer_type.to_s)

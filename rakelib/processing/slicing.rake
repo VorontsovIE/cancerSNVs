@@ -18,7 +18,7 @@ task 'slicing:Alexandrov'
 desc 'Make slices of motif statistics for Alexandrov datasets (w/o fitting)'
 task 'slicing_wo_fitting:Alexandrov'
 
-AlexandrovWholeGenomeCancers.each do |cancer_type|
+WholeGenomeCancers.each do |cancer_type|
   task 'slicing:Alexandrov' => "slicing:Alexandrov:#{cancer_type}"
   task 'slicing_wo_fitting:Alexandrov' => "slicing_wo_fitting:Alexandrov:#{cancer_type}"
   

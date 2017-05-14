@@ -7,7 +7,7 @@ task :sample_statistics_all_SNVs => File.join(LocalPaths::Results, 'motif_statis
   header = ['Sample', 'Genomic control fold', 'Shuffle control fold', 'Genomic control fitting fold', 'Shuffle control fitting fold', 'Mutations total']
   matrix = [ [*header, *possible_contexts] ]
   short_matrix = [ [*header, *possible_short_contexts] ]
-  Configuration.getAlexandrovWholeGenomeCancers.each{|cancer_type|
+  Configuration.WholeGenomeCancers.each{|cancer_type|
     context_counts = context_counts_in_file(File.join(LocalPaths::Results, 'AllSNVs', 'Alexandrov', cancer_type.to_s, 'cancer.txt'))
     short_context_counts = short_context_counts_in_file(File.join(LocalPaths::Results, 'AllSNVs', 'Alexandrov', cancer_type.to_s, 'cancer.txt'))
     cancer_infos = ["#{cancer_type} (Alexandrov et al. sample)",

@@ -6,7 +6,7 @@ task :compare_genome_and_shuffle_control => File.join(LocalPaths::Results, 'moti
     ['disruption', 'emergence', 'substitution-in-core'].each do |characteristic|
       results = []
       results << ['Sample', 'Number of significant motifs compared to shuffle control', 'Number of significant motifs compared to genome control', 'Number of significant motifs compared to both controls']
-      Configuration.getAlexandrovWholeGenomeCancers.each do |cancer_type|
+      Configuration.WholeGenomeCancers.each do |cancer_type|
         folder = File.join(LocalPaths::Results, 'motif_statistics/common/', 'Alexandrov', cancer_type.to_s, protected_or_subjected.to_s, characteristic.to_s)
         motifs_determined_by_shuffle_control = File.readlines(File.join(folder, 'compared_to_each_shuffle.txt'))
         motifs_determined_by_genome_control  = File.readlines(File.join(folder, 'compared_to_each_genome.txt'))

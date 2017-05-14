@@ -11,7 +11,7 @@ desc 'Shuffle sites from perfectosape output (from chunks folder) and put them t
 task 'preparations:shuffle_sites' => ['preparations:shuffle_sites:Alexandrov']
 
 task 'preparations:shuffle_sites:Alexandrov'
-AlexandrovWholeGenomeCancers.each do |cancer_type|
+WholeGenomeCancers.each do |cancer_type|
   Dir.glob(File.join(LocalPaths::Secondary::Chunks, 'Alexandrov', cancer_type.to_s, 'sites_*.txt')).each do |from|
     site_shuffle_task(file_from: from,
                   folder_to: File.join(LocalPaths::Secondary::Sites, 'Alexandrov', cancer_type.to_s),
