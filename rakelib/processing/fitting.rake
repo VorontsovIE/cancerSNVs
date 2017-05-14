@@ -36,26 +36,24 @@ task 'fitting' => ['fitting:Alexandrov']
 task 'fitting:Alexandrov'
 AlexandrovWholeGenomeCancers.each do |cancer_type|
   task 'fitting:Alexandrov' => "fitting:Alexandrov:#{cancer_type}"
-  Configuration::Alexandrov.contexts_by_cancer_type(cancer_type).each do |context|
-    task "fitting:Alexandrov:#{cancer_type}" => "fitting:Alexandrov:#{cancer_type}:#{context}"
-    folder_from = File.join(LocalPaths::Secondary::Sites, 'Alexandrov', cancer_type.to_s, context.to_s)
-    folder_to = File.join(LocalPaths::Secondary::Fitting, 'Alexandrov', cancer_type.to_s, context.to_s)
+  
+  folder_from = File.join(LocalPaths::Secondary::Sites, 'Alexandrov', cancer_type.to_s)
+  folder_to = File.join(LocalPaths::Secondary::Fitting, 'Alexandrov', cancer_type.to_s)
 
-    copy_cancer_sites_as_fitted_task(folder_from: folder_from, folder_to: folder_to, task_name: "fitting:Alexandrov:#{cancer_type}:#{context}")
+  copy_cancer_sites_as_fitted_task(folder_from: folder_from, folder_to: folder_to, task_name: "fitting:Alexandrov:#{cancer_type}")
 
-    Configuration::Alexandrov::RandomDatasets.each do |random_dataset|
-      case random_dataset
-      when /genome/
-        fold = Configuration::Alexandrov::FittingFoldGenome[cancer_type]
-      when /shuffle/
-        fold = Configuration::Alexandrov::FittingFoldShuffle[cancer_type]
-      else
-        next
-      end
-      fit_sites_task(random_dataset: random_dataset, fold: fold,
-                    folder_from: folder_from, folder_to: folder_to,
-                    log_folder: File.join(LocalPaths::Secondary::LogFolder, 'Alexandrov', cancer_type.to_s, context.to_s),
-                    task_name: "fitting:Alexandrov:#{cancer_type}:#{context}")
+  Configuration::Alexandrov::RandomDatasets.each do |random_dataset|
+    case random_dataset
+    when /genome/
+      fold = Configuration::Alexandrov::FittingFoldGenome[cancer_type]
+    when /shuffle/
+      fold = Configuration::Alexandrov::FittingFoldShuffle[cancer_type]
+    else
+      next
     end
+    fit_sites_task(random_dataset: random_dataset, fold: fold,
+                  folder_from: folder_from, folder_to: folder_to,
+                  log_folder: File.join(LocalPaths::Secondary::LogFolder, 'Alexandrov', cancer_type.to_s),
+                  task_name: "fitting:Alexandrov:#{cancer_type}")
   end
 end

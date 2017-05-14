@@ -96,11 +96,6 @@ module Configuration
     RandomDatasets = RandomGenomeDatasets + RandomShuffleDatasets
     Datasets = RandomDatasets + ['cancer']
 
-
-    def self.contexts_by_cancer_type(cancer_type)
-      [:any]
-    end
-
     RandomGenomeFold = Hash.new(100).merge({:'Lung Adeno' => 10, :Breast => 30, :Liver => 20, :ALL => 1500, :AML => 3000, :'Pilocytic Astrocytoma' => 1000, :CLL => 200})
     RandomShuffleFold = Hash.new(100).merge({:'Lung Adeno' => 10, :Breast => 30, :Liver => 20, :ALL => 1500, :AML => 3000, :'Pilocytic Astrocytoma' => 1000, :CLL => 200})
 
@@ -143,14 +138,10 @@ module Configuration
   end
 
   # part of pathname specifying sample with context for each cancer type for each experiment in each context
-  def self.sample_with_context_paths
-    results = []
-    results += getAlexandrovWholeGenomeCancers.flat_map{|cancer_type|
-      Alexandrov.contexts_by_cancer_type(cancer_type).map{|context|
-        ["#{cancer_type} (Alexandrov et al. sample) in #{context} context", File.join('Alexandrov', cancer_type.to_s, context.to_s)]
-      }
-    }
-    results.to_h
+  def self.sample_with_paths
+    getAlexandrovWholeGenomeCancers.map{|cancer_type|
+      ["#{cancer_type} (Alexandrov et al. sample)", File.join('Alexandrov', cancer_type.to_s)]
+    }.to_h
   end
 end
 

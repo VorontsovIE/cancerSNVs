@@ -21,21 +21,17 @@ task 'slicing_wo_fitting:Alexandrov'
 AlexandrovWholeGenomeCancers.each do |cancer_type|
   task 'slicing:Alexandrov' => "slicing:Alexandrov:#{cancer_type}"
   task 'slicing_wo_fitting:Alexandrov' => "slicing_wo_fitting:Alexandrov:#{cancer_type}"
-  Configuration::Alexandrov.contexts_by_cancer_type(cancer_type).each do |context|
-    task "slicing:Alexandrov:#{cancer_type}" => "slicing:Alexandrov:#{cancer_type}:#{context}"
-    task "slicing_wo_fitting:Alexandrov:#{cancer_type}" => "slicing_wo_fitting:Alexandrov:#{cancer_type}:#{context}"
+  
+  Configuration::Alexandrov::Datasets.each do |dataset|
+    task "slicing:Alexandrov:#{cancer_type}" => "slicing:Alexandrov:#{cancer_type}:#{dataset}"
+    task "slicing_wo_fitting:Alexandrov:#{cancer_type}" => "slicing_wo_fitting:Alexandrov:#{cancer_type}:#{dataset}"
 
-    Configuration::Alexandrov::Datasets.each do |dataset|
-      task "slicing:Alexandrov:#{cancer_type}:#{context}" => "slicing:Alexandrov:#{cancer_type}:#{context}:#{dataset}"
-      task "slicing_wo_fitting:Alexandrov:#{cancer_type}:#{context}" => "slicing_wo_fitting:Alexandrov:#{cancer_type}:#{context}:#{dataset}"
+    make_slicing_task(sites_file: File.join(LocalPaths::Secondary::Fitting, 'Alexandrov', cancer_type.to_s, "sites_#{dataset}.txt"),
+                      output_folder: File.join(LocalPaths::Secondary::Slices, 'Alexandrov', cancer_type.to_s, dataset),
+                      task_name: "slicing:Alexandrov:#{cancer_type}:#{dataset}")
 
-      make_slicing_task(sites_file: File.join(LocalPaths::Secondary::Fitting, 'Alexandrov', cancer_type.to_s, context.to_s, "sites_#{dataset}.txt"),
-                        output_folder: File.join(LocalPaths::Secondary::Slices, 'Alexandrov', cancer_type.to_s, context.to_s, dataset),
-                        task_name: "slicing:Alexandrov:#{cancer_type}:#{context}:#{dataset}")
-
-      make_slicing_task(sites_file: File.join(LocalPaths::Secondary::Sites, 'Alexandrov', cancer_type.to_s, context.to_s, "sites_#{dataset}.txt"),
-                        output_folder: File.join(LocalPaths::Results, 'motif_statistics/slices_wo_fitting', 'Alexandrov', cancer_type.to_s, context.to_s, dataset),
-                        task_name: "slicing_wo_fitting:Alexandrov:#{cancer_type}:#{context}:#{dataset}")
-    end
+    make_slicing_task(sites_file: File.join(LocalPaths::Secondary::Sites, 'Alexandrov', cancer_type.to_s, "sites_#{dataset}.txt"),
+                      output_folder: File.join(LocalPaths::Results, 'motif_statistics/slices_wo_fitting', 'Alexandrov', cancer_type.to_s, dataset),
+                      task_name: "slicing_wo_fitting:Alexandrov:#{cancer_type}:#{dataset}")
   end
 end

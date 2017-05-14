@@ -50,12 +50,12 @@ def make_common_motifs_tasks(folder:, random_datasets:, output_folder:, output_f
 end
 
 
-def make_all_common_motifs_tasks(folder:, output_folder:, configuration_module:, task_name:)
+def make_all_common_motifs_tasks(folder:, output_folder:, task_name:)
   task  task_name => ["#{task_name}:genome", "#{task_name}:shuffle", "#{task_name}:all"]
 
   make_common_motifs_tasks(
     folder: folder,
-    random_datasets: configuration_module.const_get(:RandomGenomeDatasets),
+    random_datasets: Configuration::Alexandrov::RandomGenomeDatasets,
     output_folder: output_folder,
     output_file: 'compared_to_each_genome.txt',
     task_name: "#{task_name}:genome"
@@ -63,7 +63,7 @@ def make_all_common_motifs_tasks(folder:, output_folder:, configuration_module:,
 
   make_common_motifs_tasks(
     folder: folder,
-    random_datasets: configuration_module.const_get(:RandomShuffleDatasets),
+    random_datasets: Configuration::Alexandrov::RandomShuffleDatasets,
     output_folder: output_folder,
     output_file: 'compared_to_each_shuffle.txt',
     task_name: "#{task_name}:shuffle"
@@ -72,7 +72,7 @@ def make_all_common_motifs_tasks(folder:, output_folder:, configuration_module:,
 
   make_common_motifs_tasks(
     folder: folder,
-    random_datasets: configuration_module.const_get(:RandomDatasets),
+    random_datasets: Configuration::Alexandrov::RandomDatasets,
     output_folder: output_folder,
     output_file: 'compared_to_each.txt',
     task_name: "#{task_name}:all"
@@ -118,30 +118,26 @@ fitting_wo_fitting_settings.each do |task_prefix, slices_folder, log_folder, ful
   prefixed_motif_statistics_task 'Alexandrov', []
   AlexandrovWholeGenomeCancers.each do |cancer_type|
     prefixed_motif_statistics_task 'Alexandrov', ["Alexandrov:#{cancer_type}"]
-    Configuration::Alexandrov.contexts_by_cancer_type(cancer_type).each do |context|
-      prefixed_motif_statistics_task "Alexandrov:#{cancer_type}", ["Alexandrov:#{cancer_type}:#{context}"]
-
-      Configuration::Alexandrov::RandomDatasets.each do |random_dataset|
-        prefixed_motif_statistics_task "Alexandrov:#{cancer_type}:#{context}", "Alexandrov:#{cancer_type}:#{context}:#{random_dataset}", common_motifs: false
-        make_statistics_comparison_task(
-          cancer_slices_folder: File.join(slices_folder, 'Alexandrov', cancer_type.to_s, context.to_s, 'cancer'),
-          random_slices_folder: File.join(slices_folder, 'Alexandrov', cancer_type.to_s, context.to_s, random_dataset),
-          fitting_log: log_folder && File.join(log_folder, 'Alexandrov', cancer_type.to_s, context.to_s, "#{random_dataset}.log"),
-          output_file: File.join(LocalPaths::Secondary::MotifStatistics, full_folder, 'Alexandrov', cancer_type.to_s, context.to_s, "#{random_dataset}.csv"),
-          task_name: "#{task_prefix}:Alexandrov:#{cancer_type}:#{context}:#{random_dataset}"
-        )
-
-        make_filtered_statistics_task(motif_statistics_file: File.join(LocalPaths::Secondary::MotifStatistics, full_folder, 'Alexandrov', cancer_type.to_s, context.to_s, "#{random_dataset}.csv"),
-                                      output_folder: File.join(LocalPaths::Secondary::MotifStatistics, filtered_folder, 'Alexandrov', cancer_type.to_s, context.to_s),
-                                      task_name: "filtered_#{task_prefix}:Alexandrov:#{cancer_type}:#{context}:#{random_dataset}")
-      end
-
-      make_all_common_motifs_tasks(
-        folder: File.join(LocalPaths::Secondary::MotifStatistics, filtered_folder, 'Alexandrov', cancer_type.to_s, context.to_s),
-        output_folder: File.join(LocalPaths::Secondary::MotifStatistics, common_folder, 'Alexandrov', cancer_type.to_s, context.to_s),
-        configuration_module: Configuration::Alexandrov,
-        task_name: "common_#{task_prefix}:Alexandrov:#{cancer_type}:#{context}"
+    
+    Configuration::Alexandrov::RandomDatasets.each do |random_dataset|
+      prefixed_motif_statistics_task "Alexandrov:#{cancer_type}", "Alexandrov:#{cancer_type}:#{random_dataset}", common_motifs: false
+      make_statistics_comparison_task(
+        cancer_slices_folder: File.join(slices_folder, 'Alexandrov', cancer_type.to_s, 'cancer'),
+        random_slices_folder: File.join(slices_folder, 'Alexandrov', cancer_type.to_s, random_dataset),
+        fitting_log: log_folder && File.join(log_folder, 'Alexandrov', cancer_type.to_s, "#{random_dataset}.log"),
+        output_file: File.join(LocalPaths::Secondary::MotifStatistics, full_folder, 'Alexandrov', cancer_type.to_s, "#{random_dataset}.csv"),
+        task_name: "#{task_prefix}:Alexandrov:#{cancer_type}:#{random_dataset}"
       )
+
+      make_filtered_statistics_task(motif_statistics_file: File.join(LocalPaths::Secondary::MotifStatistics, full_folder, 'Alexandrov', cancer_type.to_s, "#{random_dataset}.csv"),
+                                    output_folder: File.join(LocalPaths::Secondary::MotifStatistics, filtered_folder, 'Alexandrov', cancer_type.to_s),
+                                    task_name: "filtered_#{task_prefix}:Alexandrov:#{cancer_type}:#{random_dataset}")
     end
+
+    make_all_common_motifs_tasks(
+      folder: File.join(LocalPaths::Secondary::MotifStatistics, filtered_folder, 'Alexandrov', cancer_type.to_s),
+      output_folder: File.join(LocalPaths::Secondary::MotifStatistics, common_folder, 'Alexandrov', cancer_type.to_s),
+      task_name: "common_#{task_prefix}:Alexandrov:#{cancer_type}"
+    )
   end
 end

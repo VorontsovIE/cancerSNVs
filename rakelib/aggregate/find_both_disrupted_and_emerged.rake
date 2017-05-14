@@ -11,8 +11,8 @@ task :find_both_disrupted_and_emerged => File.join(LocalPaths::Results, 'motif_s
     prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
 
     both_disrupted_and_emerged_by_sample = Configuration.sample_paths.map{|sample_name, sample_folder|
-      disruption_motifs_fn = File.join(LocalPaths::Results, 'motif_statistics/common', sample_folder, 'any', protected_or_subjected.to_s, 'disruption/compared_to_each.txt')
-      emergence_motifs_fn = File.join(LocalPaths::Results, 'motif_statistics/common', sample_folder, 'any', protected_or_subjected.to_s, 'emergence/compared_to_each.txt')
+      disruption_motifs_fn = File.join(LocalPaths::Results, 'motif_statistics/common', sample_folder, protected_or_subjected.to_s, 'disruption/compared_to_each.txt')
+      emergence_motifs_fn = File.join(LocalPaths::Results, 'motif_statistics/common', sample_folder, protected_or_subjected.to_s, 'emergence/compared_to_each.txt')
       disruption_motifs = File.readlines(disruption_motifs_fn).map(&:strip)
       emergence_motifs = File.readlines(emergence_motifs_fn).map(&:strip)
       both_disrupted_and_emerged = Set.new(disruption_motifs) & Set.new(emergence_motifs)
@@ -32,7 +32,7 @@ task :find_both_disrupted_and_emerged => File.join(LocalPaths::Results, 'motif_s
       results << [motif, quality, families_3, families_4, *occurences_in_sample]
     }
 
-    output_filename = File.join(LocalPaths::Results, 'motif_statistics/disruption_and_emergence', "#{protected_or_subjected}_#{prep}_both_in_any_context.tsv")
+    output_filename = File.join(LocalPaths::Results, 'motif_statistics/disruption_and_emergence', "#{protected_or_subjected}_#{prep}_both.tsv")
     File.write(output_filename, results.map{|row| row.join("\t") }.join("\n"))
   end
 end

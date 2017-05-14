@@ -103,7 +103,7 @@ task 'pretty_summary' do
   ].map{|column| SUMMARY_HEADERS[column] }
 
   Configuration.getAlexandrovWholeGenomeCancers.each do |cancer_type|
-    folder = File.join(LocalPaths::Results, "motif_statistics/full/Alexandrov/#{cancer_type}/any/")
+    folder = File.join(LocalPaths::Results, "motif_statistics/full/Alexandrov/#{cancer_type}/")
     output_folder = File.join(LocalPaths::Results, "motif_statistics/pretty_summary/")
 
     genome_control_infos = File.readlines(File.join(folder, "random_genome.csv")).drop(1)
