@@ -29,17 +29,19 @@ def markup_dont_filter_SNVInfos_to_file(snv_infos_stream, genome_markup, output_
   end
 end
 
-# Alexandrov
+desc 'Convert SNVs to proper place; DOESN\'T filter regulatory mutations as extractSNVs task do. But it also does remove duplicates. Necessary task to calculate number of non-regulatory mutations'
+task 'preparations:extractAllSNVs'
+
 WholeGenomeCancers.each do |cancer_type|
-  output_folder = File.join(LocalPaths::Results, 'AllSNVs', 'Alexandrov', cancer_type.to_s)
+  output_folder = File.join(LocalPaths::Results, 'AllSNVs', cancer_type.to_s)
   cancer_filename = File.join(output_folder, 'cancer.txt')
-  mutations_filename = File.join(LocalPaths::Secondary::Alexandrov::Mutations,
+  mutations_filename = File.join(LocalPaths::Secondary::Mutations,
                                 cancer_type.to_s,
                                 "#{cancer_type}_clean_somatic_mutations_for_signature_analysis.txt")
 
   directory output_folder
-  file  cancer_filename => [mutations_filename, LocalPaths::Secondary::Alexandrov::SamplesSummary, output_folder] do
-    sample_infos = load_sample_infos(LocalPaths::Secondary::Alexandrov::SamplesSummary)
+  file  cancer_filename => [mutations_filename, LocalPaths::Secondary::SamplesSummary, output_folder] do
+    sample_infos = load_sample_infos(LocalPaths::Secondary::SamplesSummary)
     snv_infos_stream = mutations_filered_by_sample(mutations_filename, sample_infos[cancer_type])
       .select(&:snv?)
       .map{|mutation|
@@ -51,16 +53,7 @@ WholeGenomeCancers.each do |cancer_type|
     genome_markup = GENOME_MARKUP_LOADER.load_markup(dhs_accessible_filename: Configuration::DHS_BED_FILES[cancer_type])
     markup_dont_filter_SNVInfos_to_file(snv_infos_stream, genome_markup, output_file: cancer_filename)
   end
-  task 'preparations:extractAllSNVs:Alexandrov' => cancer_filename
-end
-
-namespace 'preparations' do
-  desc 'Convert SNVs to proper place; DOESN\'T filter regulatory mutations as extractSNVs task do. But it also does remove duplicates. Necessary task to calculate number of non-regulatory mutations'
-  task extractAllSNVs: ['extractAllSNVs:Alexandrov']
-  namespace 'extractAllSNVs' do
-    desc 'Convert Alexandrov\'s mutations to a common format. Convert format, DOESN\'T filter regulatory only SNVs, remove duplicates.'
-    task :Alexandrov
-  end
+  task 'preparations:extractAllSNVs' => cancer_filename
 end
 
 def load_sample_infos(filename)

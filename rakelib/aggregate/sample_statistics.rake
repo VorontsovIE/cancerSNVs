@@ -7,13 +7,13 @@ task :sample_statistics_regulatory_SNVs => File.join(LocalPaths::Results, 'motif
   matrix = [ [*header, *possible_contexts] ]
   short_matrix = [ [*header, *possible_short_contexts] ]
   Configuration.WholeGenomeCancers.each{|cancer_type|
-    context_counts = context_counts_in_file(File.join(LocalPaths::Results, 'SNVs', 'Alexandrov', cancer_type.to_s, 'cancer.txt'))
-    short_context_counts = short_context_counts_in_file(File.join(LocalPaths::Results, 'SNVs', 'Alexandrov', cancer_type.to_s, 'cancer.txt'))
-    cancer_infos = ["#{cancer_type} (Alexandrov et al. sample)",
-                    Configuration::Alexandrov::RandomGenomeFold[cancer_type],
-                    Configuration::Alexandrov::RandomShuffleFold[cancer_type],
-                    Configuration::Alexandrov::FittingFoldGenome[cancer_type],
-                    Configuration::Alexandrov::FittingFoldShuffle[cancer_type]]
+    context_counts = context_counts_in_file(File.join(LocalPaths::Results, 'SNVs', cancer_type.to_s, 'cancer.txt'))
+    short_context_counts = short_context_counts_in_file(File.join(LocalPaths::Results, 'SNVs', cancer_type.to_s, 'cancer.txt'))
+    cancer_infos = ["#{cancer_type}",
+                    Configuration::RandomGenomeFold[cancer_type],
+                    Configuration::RandomShuffleFold[cancer_type],
+                    Configuration::FittingFoldGenome[cancer_type],
+                    Configuration::FittingFoldShuffle[cancer_type]]
 
     matrix << [*cancer_infos,
               context_counts.each_value.inject(0, &:+),
@@ -57,7 +57,7 @@ end
 desc 'Calculate number of samples in each cancer'
 task :calculate_number_of_samples  do
   sample_counts = Configuration.WholeGenomeCancers.map{|cancer_type|
-    cancer_fn = File.join(LocalPaths::Results, 'SNVs', 'Alexandrov', cancer_type.to_s, 'cancer.txt')
+    cancer_fn = File.join(LocalPaths::Results, 'SNVs', cancer_type.to_s, 'cancer.txt')
     samples = SNVInfo.each_in_file(cancer_fn).map{|snv_info|
       snv_info.variant_id.split(';').first
     }.to_a.uniq

@@ -73,27 +73,26 @@ namespace 'preparations' do
   task generate_random_SNVs: ['preparations:generate_random_SNVs:shuffle', 'preparations:generate_random_SNVs:genome']
   namespace 'generate_random_SNVs' do
     desc 'Generate random SNVs with shuffled flanks.'
-    task :shuffle => ['preparations:generate_random_SNVs:Alexandrov:shuffle']
+    task :shuffle => ['preparations:generate_random_SNVs:shuffle']
 
     desc 'Generate random SNVs from genome, mimic context distribution of original SNVs.'
-    task :genome => ['preparations:generate_random_SNVs:Alexandrov:genome']
+    task :genome => ['preparations:generate_random_SNVs:genome']
   end
 end
 
-# Alexandrov
 WholeGenomeCancers.each do |cancer_type|
-  cancer_filename = File.join(LocalPaths::Secondary::SNVs, 'Alexandrov', cancer_type.to_s, 'cancer.txt')
+  cancer_filename = File.join(LocalPaths::Secondary::SNVs, cancer_type.to_s, 'cancer.txt')
 
-  generate_random_genome_task(output_filename: File.join(LocalPaths::Secondary::SNVs, 'Alexandrov', cancer_type.to_s, 'random_genome.txt'),
-                              task_name: 'preparations:generate_random_SNVs:Alexandrov:genome',
+  generate_random_genome_task(output_filename: File.join(LocalPaths::Secondary::SNVs, cancer_type.to_s, 'random_genome.txt'),
+                              task_name: 'preparations:generate_random_SNVs:genome',
                               cancer_filename: cancer_filename,
                               dhs_filename: Configuration::DHS_BED_FILES[cancer_type],
-                              fold: Configuration::Alexandrov::RandomGenomeFold[cancer_type],
-                              random_seed: "#{Configuration::AlexandrovRandomGenomeSeeds}_#{cancer_type}".hash)
+                              fold: Configuration::RandomGenomeFold[cancer_type],
+                              random_seed: "#{Configuration::RandomGenomeSeeds}_#{cancer_type}".hash)
 
-  generate_random_shuffle_task(output_filename: File.join(LocalPaths::Secondary::SNVs, 'Alexandrov', cancer_type.to_s, 'random_shuffle.txt'),
-                              task_name: 'preparations:generate_random_SNVs:Alexandrov:shuffle',
+  generate_random_shuffle_task(output_filename: File.join(LocalPaths::Secondary::SNVs, cancer_type.to_s, 'random_shuffle.txt'),
+                              task_name: 'preparations:generate_random_SNVs:shuffle',
                               cancer_filename: cancer_filename,
-                              fold: Configuration::Alexandrov::RandomShuffleFold[cancer_type],
-                              random_generator: Random.new("{Configuration::AlexandrovRandomShuffleSeeds}_#{cancer_type}".hash))
+                              fold: Configuration::RandomShuffleFold[cancer_type],
+                              random_generator: Random.new("{Configuration::RandomShuffleSeeds}_#{cancer_type}".hash))
 end

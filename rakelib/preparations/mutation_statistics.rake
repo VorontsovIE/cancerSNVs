@@ -14,10 +14,10 @@ end
 namespace :statistics do
   namespace :Alexandrov do
     desc 'Statistics of mutation types(SNV,DNV,TNV,indel) in different region types of different cancer types'
-    task mutation_types: [LocalPaths::Secondary::Alexandrov::MutationTypesStatisticsResults]
-    file LocalPaths::Secondary::Alexandrov::MutationTypesStatisticsResults do
+    task mutation_types: [LocalPaths::Secondary::MutationTypesStatisticsResults]
+    file LocalPaths::Secondary::MutationTypesStatisticsResults do
       mutations_by_cancer_type = ALEXANDROV_MUTATIONS_LOADER.load
-      File.open(LocalPaths::Secondary::Alexandrov::MutationTypesStatisticsResults, 'w') do |fw|
+      File.open(LocalPaths::Secondary::MutationTypesStatisticsResults, 'w') do |fw|
         mutations_by_cancer_type.each do |cancer_type, mutations|
           fw.puts "> #{cancer_type}"
 
@@ -33,9 +33,9 @@ namespace :statistics do
       end
     end
 
-    desc 'Statistics of contexts of SNVs in different cancer types of Alexandrov data set'
-    task context_types: [LocalPaths::Secondary::Alexandrov::ContextStatisticsResults]
-    file LocalPaths::Secondary::Alexandrov::ContextStatisticsResults do
+    desc 'Statistics of contexts of SNVs in different cancer types'
+    task context_types: [LocalPaths::Secondary::ContextStatisticsResults]
+    file LocalPaths::Secondary::ContextStatisticsResults do
       mutations_by_cancer_type = ALEXANDROV_MUTATIONS_LOADER.load
       File.open(File.join(LocalPaths::Results, 'alexandrov_somatic_mutations_contexts.txt'), 'w') do |fw|
         fw.puts 'regulatory'

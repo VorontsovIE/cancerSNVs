@@ -30,18 +30,19 @@ def markup_and_filter_SNVInfos_to_file(snv_infos_stream, genome_markup, output_f
   end
 end
 
+desc 'Convert SNVs to proper place, filter regulatory mutations, remove duplicates.'
+task 'preparations:extractSNVs'
 
-# Alexandrov
 WholeGenomeCancers.each do |cancer_type|
-  folder = File.join(LocalPaths::Secondary::SNVs, 'Alexandrov', cancer_type.to_s)
+  folder = File.join(LocalPaths::Secondary::SNVs, cancer_type.to_s)
   cancer_filename = File.join(folder, 'cancer.txt')
-  mutations_filename = File.join(LocalPaths::Secondary::Alexandrov::Mutations,
+  mutations_filename = File.join(LocalPaths::Secondary::Mutations,
                                 cancer_type.to_s,
                                 "#{cancer_type}_clean_somatic_mutations_for_signature_analysis.txt")
 
   directory folder
-  file  cancer_filename => [mutations_filename, LocalPaths::Secondary::Alexandrov::SamplesSummary, folder] do
-    sample_infos = load_sample_infos(LocalPaths::Secondary::Alexandrov::SamplesSummary)
+  file  cancer_filename => [mutations_filename, LocalPaths::Secondary::SamplesSummary, folder] do
+    sample_infos = load_sample_infos(LocalPaths::Secondary::SamplesSummary)
     snv_infos_stream = mutations_filered_by_sample(mutations_filename, sample_infos[cancer_type])
       .select(&:snv?)
       .map{|mutation|
@@ -53,16 +54,7 @@ WholeGenomeCancers.each do |cancer_type|
     genome_markup = GENOME_MARKUP_LOADER.load_markup(dhs_accessible_filename: Configuration::DHS_BED_FILES[cancer_type])
     markup_and_filter_SNVInfos_to_file(snv_infos_stream, genome_markup, output_file: cancer_filename)
   end
-  task 'preparations:extractSNVs:Alexandrov' => cancer_filename
-end
-
-namespace 'preparations' do
-  desc 'Convert SNVs to proper place, filter regulatory mutations, remove duplicates.'
-  task extractSNVs: ['extractSNVs:Alexandrov']
-  namespace 'extractSNVs' do
-    desc 'Convert Alexandrov\'s mutations to a common format. Convert format, filter regulatory only SNVs, remove duplicates.'
-    task :Alexandrov
-  end
+  task 'preparations:extractSNVs' => cancer_filename
 end
 
 def load_sample_infos(filename)

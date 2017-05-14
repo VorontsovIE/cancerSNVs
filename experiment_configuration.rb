@@ -51,13 +51,11 @@ module LocalPaths
     Slices                = File.join(Results, 'motif_statistics/slices')
     LogFolder             = File.join(Results, 'fitting_log')
 
-    module Alexandrov
-      Mutations           = File.join(AlexandrovData, 'somatic_mutation_data')
-      SamplesSummary      = File.join(AlexandrovData, 'samples_summary.txt')
+    Mutations           = File.join(AlexandrovData, 'somatic_mutation_data')
+    SamplesSummary      = File.join(AlexandrovData, 'samples_summary.txt')
 
-      MutationTypesStatisticsResults = File.join(Results, 'AlexandrovEtAl/mutation_types_statistics.txt')
-      ContextStatisticsResults       = File.join(Results, 'AlexandrovEtAl/mutation_contexts.txt')
-    end
+    MutationTypesStatisticsResults = File.join(Results, 'mutation_types_statistics.txt')
+    ContextStatisticsResults       = File.join(Results, 'mutation_contexts.txt')
 
   end
 
@@ -75,9 +73,6 @@ module Configuration
 
   ExpandControlSetFold = 1 # one can artificially expand control set several time to quickly check whether expansion of control set will increase significance
 
-  RandomGenomeSeeds = [] #[13,15,17]
-  RandomShuffleSeeds = [] #[135,137,139]
-
   # Not using DHS profile data
   DHS_BED_FILES = { }
 
@@ -86,21 +81,19 @@ module Configuration
   #   :Breast => './source_data/dhs/BREAST_Roadmap_EncodeSet_merged.bed',
   #   :Liver => './source_data/dhs/LIVER_EncodeSet_merged.bed'}
 
-  # Alexandrov works with the only seed
-  AlexandrovRandomGenomeSeeds = 13
-  AlexandrovRandomShuffleSeeds = 31
+  RandomGenomeSeeds = 13
+  RandomShuffleSeeds = 31
 
-  module Alexandrov
-    RandomGenomeDatasets = ['random_genome']
-    RandomShuffleDatasets = ['random_shuffle']
-    RandomDatasets = RandomGenomeDatasets + RandomShuffleDatasets
-    Datasets = RandomDatasets + ['cancer']
+  RandomGenomeDatasets = ['random_genome']
+  RandomShuffleDatasets = ['random_shuffle']
+  RandomDatasets = RandomGenomeDatasets + RandomShuffleDatasets
+  Datasets = RandomDatasets + ['cancer']
 
-    RandomGenomeFold = Hash.new(100).merge({:'Lung Adeno' => 10, :Breast => 30, :Liver => 20, :ALL => 1500, :AML => 3000, :'Pilocytic Astrocytoma' => 1000, :CLL => 200})
-    RandomShuffleFold = Hash.new(100).merge({:'Lung Adeno' => 10, :Breast => 30, :Liver => 20, :ALL => 1500, :AML => 3000, :'Pilocytic Astrocytoma' => 1000, :CLL => 200})
+  RandomGenomeFold = Hash.new(100).merge({:'Lung Adeno' => 10, :Breast => 30, :Liver => 20, :ALL => 1500, :AML => 3000, :'Pilocytic Astrocytoma' => 1000, :CLL => 200})
+  RandomShuffleFold = Hash.new(100).merge({:'Lung Adeno' => 10, :Breast => 30, :Liver => 20, :ALL => 1500, :AML => 3000, :'Pilocytic Astrocytoma' => 1000, :CLL => 200})
 
-    FittingFoldGenome = Hash.new(20).merge({:'Lung Adeno' => 2, :Breast => 6, :Liver => 4, :ALL => 300, :AML => 600, :'Pilocytic Astrocytoma' => 200, :CLL => 40})
-    FittingFoldShuffle = Hash.new(20).merge({:'Lung Adeno' => 2, :Breast => 6, :Liver => 4, :ALL => 300, :AML => 600, :'Pilocytic Astrocytoma' => 200, :CLL => 40})
+  FittingFoldGenome = Hash.new(20).merge({:'Lung Adeno' => 2, :Breast => 6, :Liver => 4, :ALL => 300, :AML => 600, :'Pilocytic Astrocytoma' => 200, :CLL => 40})
+  FittingFoldShuffle = Hash.new(20).merge({:'Lung Adeno' => 2, :Breast => 6, :Liver => 4, :ALL => 300, :AML => 600, :'Pilocytic Astrocytoma' => 200, :CLL => 40})
 
   # # DHS
   #  RandomGenomeFold = Hash.new(20).merge({:'Lung Adeno' => 10, :Breast => 5})
@@ -108,7 +101,6 @@ module Configuration
 
   #  FittingFoldGenome = Hash.new(20).merge({:'Lung Adeno' => 2, :Breast => 1})
   #  FittingFoldShuffle = Hash.new(20).merge({:'Lung Adeno' => 2, :Breast => 1})
-  end
 
   NumberOfCores = 24
   MemoryLimitOption = '-Xmx1G' # ''
@@ -119,7 +111,7 @@ module Configuration
       if ENV['ALEXANDROV_SAMPLES']
         ENV['ALEXANDROV_SAMPLES'].split(',').map(&:to_sym).sort
       else
-        SampleInfo.each_in_file(LocalPaths::Secondary::Alexandrov::SamplesSummary)
+        SampleInfo.each_in_file(LocalPaths::Secondary::SamplesSummary)
                   .group_by(&:cancer_type)
                   .select{|cancer_type, samples| samples.any?(&:whole_genome?) }
                   .map{|cancer_type, samples| cancer_type }
@@ -131,7 +123,7 @@ module Configuration
   # part of pathname specifying sample with context for each cancer type for each experiment in each context
   def self.sample_with_paths
     WholeGenomeCancers.map{|cancer_type|
-      ["#{cancer_type} (Alexandrov et al. sample)", File.join('Alexandrov', cancer_type.to_s)]
+      ["#{cancer_type}", File.join(cancer_type.to_s)]
     }.to_h
   end
 end
@@ -161,8 +153,8 @@ GENOME_MARKUP_LOADER = GenomeMarkupLoader.create(
 )
 
 ALEXANDROV_MUTATIONS_LOADER = MutationsByCancerTypeLoader.create(
-                                mutations_folder: LocalPaths::Secondary::Alexandrov::Mutations,
-                                samples_summary_filename: LocalPaths::Secondary::Alexandrov::SamplesSummary
+                                mutations_folder: LocalPaths::Secondary::Mutations,
+                                samples_summary_filename: LocalPaths::Secondary::SamplesSummary
                               )
 
 MOTIF_FAMILY_RECOGNIZERS = Hash.new{|hsh, deepness|

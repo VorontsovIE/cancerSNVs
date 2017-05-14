@@ -127,32 +127,20 @@ end
 
 namespace :preparations do
   desc 'Split sequences into equal chunks in order to run chunks in parallel'
-  task generate_chunks: ['generate_chunks:Alexandrov'] do
+  task :generate_chunks do
+    WholeGenomeCancers.each do |cancer_type|
+      prepare_chunks_for_sites(
+        File.join(LocalPaths::Secondary::SNVs, cancer_type.to_s),
+        File.join(LocalPaths::Secondary::Chunks, cancer_type.to_s)
+      )
+    end
     File.open(File.join(LocalPaths::Secondary::Chunks, 'run_all.sh'), 'w') do |fw|
       fw.puts '#!/bin/bash'
       fw.puts 'cd "$(dirname "$0")"'
-      fw.puts  File.join(LocalPaths::Secondary::Chunks, 'Alexandrov', 'run_all.sh')
-    end
-    chmod 0755, File.join(LocalPaths::Secondary::Chunks, 'run_all.sh')
-  end
-
-  namespace 'generate_chunks' do
-    task 'Alexandrov' do
       WholeGenomeCancers.each do |cancer_type|
-        prepare_chunks_for_sites(
-          File.join(LocalPaths::Secondary::SNVs, 'Alexandrov', cancer_type.to_s),
-          File.join(LocalPaths::Secondary::Chunks, 'Alexandrov', cancer_type.to_s)
-        )
+        fw.puts "./#{cancer_type}/run_perfectosape_multithread.sh".shellescape
       end
-      File.open(File.join(LocalPaths::Secondary::Chunks, 'Alexandrov', 'run_all.sh'), 'w') do |fw|
-        fw.puts '#!/bin/bash'
-        fw.puts 'cd "$(dirname "$0")"'
-        WholeGenomeCancers.each do |cancer_type|
-          fw.puts "./#{cancer_type}/run_perfectosape_multithread.sh".shellescape
-        end
-      end
-      chmod 0755, File.join(LocalPaths::Secondary::Chunks, 'Alexandrov', 'run_all.sh')
     end
-
+    chmod 0755, File.join(LocalPaths::Secondary::Chunks, 'run_all.sh')  
   end
 end

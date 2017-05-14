@@ -69,7 +69,7 @@ end
 
 def sample_files(folder_common_motifs, protected_or_subjected, characteristic)
   WholeGenomeCancers.map{|sample|
-    [sample, File.join(folder_common_motifs, 'Alexandrov', sample.to_s,
+    [sample, File.join(folder_common_motifs, sample.to_s,
                         protected_or_subjected.to_s, characteristic.to_s, 'compared_to_each.txt') ]
   }.to_h
 end

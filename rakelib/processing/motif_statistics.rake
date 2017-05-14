@@ -55,7 +55,7 @@ def make_all_common_motifs_tasks(folder:, output_folder:, task_name:)
 
   make_common_motifs_tasks(
     folder: folder,
-    random_datasets: Configuration::Alexandrov::RandomGenomeDatasets,
+    random_datasets: Configuration::RandomGenomeDatasets,
     output_folder: output_folder,
     output_file: 'compared_to_each_genome.txt',
     task_name: "#{task_name}:genome"
@@ -63,7 +63,7 @@ def make_all_common_motifs_tasks(folder:, output_folder:, task_name:)
 
   make_common_motifs_tasks(
     folder: folder,
-    random_datasets: Configuration::Alexandrov::RandomShuffleDatasets,
+    random_datasets: Configuration::RandomShuffleDatasets,
     output_folder: output_folder,
     output_file: 'compared_to_each_shuffle.txt',
     task_name: "#{task_name}:shuffle"
@@ -72,7 +72,7 @@ def make_all_common_motifs_tasks(folder:, output_folder:, task_name:)
 
   make_common_motifs_tasks(
     folder: folder,
-    random_datasets: Configuration::Alexandrov::RandomDatasets,
+    random_datasets: Configuration::RandomDatasets,
     output_folder: output_folder,
     output_file: 'compared_to_each.txt',
     task_name: "#{task_name}:all"
@@ -80,31 +80,35 @@ def make_all_common_motifs_tasks(folder:, output_folder:, task_name:)
 end
 
 desc 'Calculate motif statistics; 1-st stage'
-task 'motif_statistics' => ['motif_statistics:Alexandrov']
+task 'motif_statistics'
 
 desc 'Calculate motif statistics (w/o fitting); 1-st stage'
-task 'motif_statistics_wo_fitting' => ['motif_statistics_wo_fitting:Alexandrov']
+task 'motif_statistics_wo_fitting'
 
 desc 'Process motif statistics; 2-nd stage'
-task 'filtered_motif_statistics' => ['filtered_motif_statistics:Alexandrov']
+task 'filtered_motif_statistics'
 
 desc 'Process motif statistics (w/o fitting); 2-nd stage'
-task 'filtered_motif_statistics_wo_fitting' => ['filtered_motif_statistics_wo_fitting:Alexandrov']
+task 'filtered_motif_statistics_wo_fitting'
 
 desc 'Collect common motifs from motif statistics; 3-rd stage'
-task 'common_motif_statistics' => ['common_motif_statistics:Alexandrov']
+task 'common_motif_statistics'
 
 desc 'Collect common motifs from motif statistics (w/o fitting); 3-rd stage'
-task 'common_motif_statistics_wo_fitting' => ['common_motif_statistics_wo_fitting:Alexandrov']
+task 'common_motif_statistics_wo_fitting'
 
-def prefixed_motif_statistics_task(task, dependencies, perform_calculation: true, filtering: true, common_motifs: true)
+def prefixed_motif_statistics_task(task_name, dependencies, perform_calculation: true, filtering: true, common_motifs: true)
   task_prefixes = []
   task_prefixes += ['motif_statistics', 'motif_statistics_wo_fitting']  if perform_calculation
   task_prefixes += ['filtered_motif_statistics', 'filtered_motif_statistics_wo_fitting']  if filtering
   task_prefixes += ['common_motif_statistics', 'common_motif_statistics_wo_fitting']  if common_motifs
 
   task_prefixes.each{|task_prefix|
-    task "#{task_prefix}:#{task}" => Array(dependencies).map{|dependency| "#{task_prefix}:#{dependency}" }
+    if task_name
+      task "#{task_prefix}:#{task_name}" => Array(dependencies).map{|dependency| "#{task_prefix}:#{dependency}" }
+    else
+      task "#{task_prefix}" => Array(dependencies).map{|dependency| "#{task_prefix}:#{dependency}" }
+    end
   }
 end
 
@@ -114,30 +118,28 @@ fitting_wo_fitting_settings = [
 ]
 
 fitting_wo_fitting_settings.each do |task_prefix, slices_folder, log_folder, full_folder, filtered_folder, common_folder|
-  ####################################
-  prefixed_motif_statistics_task 'Alexandrov', []
   WholeGenomeCancers.each do |cancer_type|
-    prefixed_motif_statistics_task 'Alexandrov', ["Alexandrov:#{cancer_type}"]
+    prefixed_motif_statistics_task nil, [cancer_type]
     
-    Configuration::Alexandrov::RandomDatasets.each do |random_dataset|
-      prefixed_motif_statistics_task "Alexandrov:#{cancer_type}", "Alexandrov:#{cancer_type}:#{random_dataset}", common_motifs: false
+    Configuration::RandomDatasets.each do |random_dataset|
+      prefixed_motif_statistics_task  cancer_type, "#{cancer_type}:#{random_dataset}", common_motifs: false
       make_statistics_comparison_task(
-        cancer_slices_folder: File.join(slices_folder, 'Alexandrov', cancer_type.to_s, 'cancer'),
-        random_slices_folder: File.join(slices_folder, 'Alexandrov', cancer_type.to_s, random_dataset),
-        fitting_log: log_folder && File.join(log_folder, 'Alexandrov', cancer_type.to_s, "#{random_dataset}.log"),
-        output_file: File.join(LocalPaths::Secondary::MotifStatistics, full_folder, 'Alexandrov', cancer_type.to_s, "#{random_dataset}.csv"),
-        task_name: "#{task_prefix}:Alexandrov:#{cancer_type}:#{random_dataset}"
+        cancer_slices_folder: File.join(slices_folder, cancer_type.to_s, 'cancer'),
+        random_slices_folder: File.join(slices_folder, cancer_type.to_s, random_dataset),
+        fitting_log: log_folder && File.join(log_folder, cancer_type.to_s, "#{random_dataset}.log"),
+        output_file: File.join(LocalPaths::Secondary::MotifStatistics, full_folder, cancer_type.to_s, "#{random_dataset}.csv"),
+        task_name: "#{task_prefix}:#{cancer_type}:#{random_dataset}"
       )
 
-      make_filtered_statistics_task(motif_statistics_file: File.join(LocalPaths::Secondary::MotifStatistics, full_folder, 'Alexandrov', cancer_type.to_s, "#{random_dataset}.csv"),
-                                    output_folder: File.join(LocalPaths::Secondary::MotifStatistics, filtered_folder, 'Alexandrov', cancer_type.to_s),
-                                    task_name: "filtered_#{task_prefix}:Alexandrov:#{cancer_type}:#{random_dataset}")
+      make_filtered_statistics_task(motif_statistics_file: File.join(LocalPaths::Secondary::MotifStatistics, full_folder, cancer_type.to_s, "#{random_dataset}.csv"),
+                                    output_folder: File.join(LocalPaths::Secondary::MotifStatistics, filtered_folder, cancer_type.to_s),
+                                    task_name: "filtered_#{task_prefix}:#{cancer_type}:#{random_dataset}")
     end
 
     make_all_common_motifs_tasks(
-      folder: File.join(LocalPaths::Secondary::MotifStatistics, filtered_folder, 'Alexandrov', cancer_type.to_s),
-      output_folder: File.join(LocalPaths::Secondary::MotifStatistics, common_folder, 'Alexandrov', cancer_type.to_s),
-      task_name: "common_#{task_prefix}:Alexandrov:#{cancer_type}"
+      folder: File.join(LocalPaths::Secondary::MotifStatistics, filtered_folder, cancer_type.to_s),
+      output_folder: File.join(LocalPaths::Secondary::MotifStatistics, common_folder, cancer_type.to_s),
+      task_name: "common_#{task_prefix}:#{cancer_type}"
     )
   end
 end

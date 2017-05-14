@@ -31,29 +31,28 @@ def fit_sites_task(random_dataset:, fold:, folder_from:, folder_to:, log_folder:
 end
 
 desc 'Fit random sites to make control datasets with same site and mutation context rates as cancer ones'
-task 'fitting' => ['fitting:Alexandrov']
+task 'fitting'
 
-task 'fitting:Alexandrov'
 WholeGenomeCancers.each do |cancer_type|
-  task 'fitting:Alexandrov' => "fitting:Alexandrov:#{cancer_type}"
+  task 'fitting' => "fitting:#{cancer_type}"
   
-  folder_from = File.join(LocalPaths::Secondary::Sites, 'Alexandrov', cancer_type.to_s)
-  folder_to = File.join(LocalPaths::Secondary::Fitting, 'Alexandrov', cancer_type.to_s)
+  folder_from = File.join(LocalPaths::Secondary::Sites, cancer_type.to_s)
+  folder_to = File.join(LocalPaths::Secondary::Fitting, cancer_type.to_s)
 
-  copy_cancer_sites_as_fitted_task(folder_from: folder_from, folder_to: folder_to, task_name: "fitting:Alexandrov:#{cancer_type}")
+  copy_cancer_sites_as_fitted_task(folder_from: folder_from, folder_to: folder_to, task_name: "fitting:#{cancer_type}")
 
-  Configuration::Alexandrov::RandomDatasets.each do |random_dataset|
+  Configuration::RandomDatasets.each do |random_dataset|
     case random_dataset
     when /genome/
-      fold = Configuration::Alexandrov::FittingFoldGenome[cancer_type]
+      fold = Configuration::FittingFoldGenome[cancer_type]
     when /shuffle/
-      fold = Configuration::Alexandrov::FittingFoldShuffle[cancer_type]
+      fold = Configuration::FittingFoldShuffle[cancer_type]
     else
       next
     end
     fit_sites_task(random_dataset: random_dataset, fold: fold,
                   folder_from: folder_from, folder_to: folder_to,
-                  log_folder: File.join(LocalPaths::Secondary::LogFolder, 'Alexandrov', cancer_type.to_s),
-                  task_name: "fitting:Alexandrov:#{cancer_type}")
+                  log_folder: File.join(LocalPaths::Secondary::LogFolder, cancer_type.to_s),
+                  task_name: "fitting:#{cancer_type}")
   end
 end

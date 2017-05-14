@@ -43,22 +43,21 @@ task 'fold_change_distribution_plot' do
 end
 
 desc 'Fold change distribution profiles for each motif across cancer and control datasets'
-task 'fold_change_distribution' => ['fold_change_distribution:Alexandrov']
+task 'fold_change_distribution'
 
-task 'fold_change_distribution:Alexandrov'
 WholeGenomeCancers.each do |cancer_type|
-  task 'fold_change_distribution:Alexandrov' => "fold_change_distribution:Alexandrov:#{cancer_type}"
+  task 'fold_change_distribution' => "fold_change_distribution:#{cancer_type}"
 
-  input_folder = File.join(LocalPaths::Secondary::Fitting, 'Alexandrov', cancer_type.to_s)
-  input_files = Configuration::Alexandrov::Datasets.map{|dataset| File.join(input_folder, "sites_#{dataset}.txt") }
-  output_folder = File.join(LocalPaths::Results, 'motif_statistics/fold_change_distribution', 'Alexandrov', cancer_type.to_s)
+  input_folder = File.join(LocalPaths::Secondary::Fitting, cancer_type.to_s)
+  input_files = Configuration::Datasets.map{|dataset| File.join(input_folder, "sites_#{dataset}.txt") }
+  output_folder = File.join(LocalPaths::Results, 'motif_statistics/fold_change_distribution', cancer_type.to_s)
 
   fold_change_distribution_task(
     input_files: input_files,
     output_folder: File.join(output_folder, 'all'),
     only_actual_sites: false,
     only_substitutions_in_core: false,
-    task_name: "fold_change_distribution:Alexandrov:#{cancer_type}:all"
+    task_name: "fold_change_distribution:#{cancer_type}:all"
   )
 
   fold_change_distribution_task(
@@ -67,9 +66,9 @@ WholeGenomeCancers.each do |cancer_type|
     only_actual_sites: true,
     pvalue_cutoff: Configuration::PvalueCutoff,
     only_substitutions_in_core: false,
-    task_name: "fold_change_distribution:Alexandrov:#{cancer_type}:actual_sites"
+    task_name: "fold_change_distribution:#{cancer_type}:actual_sites"
   )
 
-  task "fold_change_distribution:Alexandrov:#{cancer_type}" => "fold_change_distribution:Alexandrov:#{cancer_type}:all"
-  task "fold_change_distribution:Alexandrov:#{cancer_type}" => "fold_change_distribution:Alexandrov:#{cancer_type}:actual_sites"
+  task "fold_change_distribution:#{cancer_type}" => "fold_change_distribution:#{cancer_type}:all"
+  task "fold_change_distribution:#{cancer_type}" => "fold_change_distribution:#{cancer_type}:actual_sites"
 end

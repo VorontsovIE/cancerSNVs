@@ -1,16 +1,16 @@
 desc 'Extract SNV profiles and mean information content of affected positions'
-task :extract_snv_positions => ['extract_snv_positions:Alexandrov']
+task :extract_snv_positions
 
 Configuration.WholeGenomeCancers.each do |cancer_type|
-  task 'extract_snv_positions:Alexandrov' => "extract_snv_positions:Alexandrov:#{cancer_type}"
-  Configuration::Alexandrov::Datasets.each do |dataset|
-    task "extract_snv_positions:Alexandrov:#{cancer_type}" => "extract_snv_positions:Alexandrov:#{cancer_type}:#{dataset}"
+  task 'extract_snv_positions' => "extract_snv_positions:#{cancer_type}"
+  Configuration::Datasets.each do |dataset|
+    task "extract_snv_positions:#{cancer_type}" => "extract_snv_positions:#{cancer_type}:#{dataset}"
 
-    output_folder = File.join(LocalPaths::Results, 'snv_positions', 'Alexandrov', cancer_type.to_s)
+    output_folder = File.join(LocalPaths::Results, 'snv_positions', cancer_type.to_s)
     directory output_folder
-    task "extract_snv_positions:Alexandrov:#{cancer_type}:#{dataset}" => [output_folder] do
+    task "extract_snv_positions:#{cancer_type}:#{dataset}" => [output_folder] do
       ruby 'extract_snv_position_profile.rb',
-            File.join(LocalPaths::Results, 'fitted_sites', 'Alexandrov', cancer_type.to_s, "sites_#{dataset}.txt"),
+            File.join(LocalPaths::Results, 'fitted_sites', cancer_type.to_s, "sites_#{dataset}.txt"),
             {out: File.join(output_folder, "#{dataset}.txt")}, {}
     end
   end
@@ -59,16 +59,15 @@ end
 desc 'Aggregate SNV mean KDICs'
 task :aggregate_snv_positions do
   Configuration.WholeGenomeCancers.each do |cancer_type|
-    sample_path = File.join('Alexandrov', cancer_type.to_s)
-    output_folder = File.join(LocalPaths::Results, 'snv_positions_aggregated', sample_path)
+    output_folder = File.join(LocalPaths::Results, 'snv_positions_aggregated', cancer_type.to_s)
     mkdir_p output_folder  unless Dir.exist?(output_folder)
-    cancer_fn = File.join(LocalPaths::Results, 'snv_positions', sample_path, 'cancer.txt')
-    ics_random_on_core = Configuration::Alexandrov::RandomDatasets.map{|dataset|
-      random_fn = File.join(LocalPaths::Results, 'snv_positions', sample_path, "#{dataset}.txt")
+    cancer_fn = File.join(LocalPaths::Results, 'snv_positions', cancer_type.to_s, 'cancer.txt')
+    ics_random_on_core = Configuration::RandomDatasets.map{|dataset|
+      random_fn = File.join(LocalPaths::Results, 'snv_positions', cancer_type.to_s, "#{dataset}.txt")
       [dataset, ic_averaged_on_core_by_motif(motif_infos_in_snv_positions_file(random_fn))]
     }.to_h
-    ics_random_on_everything = Configuration::Alexandrov::RandomDatasets.map{|dataset|
-      random_fn = File.join(LocalPaths::Results, 'snv_positions', sample_path, "#{dataset}.txt")
+    ics_random_on_everything = Configuration::RandomDatasets.map{|dataset|
+      random_fn = File.join(LocalPaths::Results, 'snv_positions', cancer_type.to_s, "#{dataset}.txt")
       [dataset, ic_averaged_on_everything_by_motif(motif_infos_in_snv_positions_file(random_fn))]
     }.to_h
     motif_ics_on_core = motif_IC_matrix(

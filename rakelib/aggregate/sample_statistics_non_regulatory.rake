@@ -8,13 +8,13 @@ task :sample_statistics_all_SNVs => File.join(LocalPaths::Results, 'motif_statis
   matrix = [ [*header, *possible_contexts] ]
   short_matrix = [ [*header, *possible_short_contexts] ]
   Configuration.WholeGenomeCancers.each{|cancer_type|
-    context_counts = context_counts_in_file(File.join(LocalPaths::Results, 'AllSNVs', 'Alexandrov', cancer_type.to_s, 'cancer.txt'))
-    short_context_counts = short_context_counts_in_file(File.join(LocalPaths::Results, 'AllSNVs', 'Alexandrov', cancer_type.to_s, 'cancer.txt'))
-    cancer_infos = ["#{cancer_type} (Alexandrov et al. sample)",
-                    Configuration::Alexandrov::RandomGenomeFold[cancer_type],
-                    Configuration::Alexandrov::RandomShuffleFold[cancer_type],
-                    Configuration::Alexandrov::FittingFoldGenome[cancer_type],
-                    Configuration::Alexandrov::FittingFoldShuffle[cancer_type]]
+    context_counts = context_counts_in_file(File.join(LocalPaths::Results, 'AllSNVs', cancer_type.to_s, 'cancer.txt'))
+    short_context_counts = short_context_counts_in_file(File.join(LocalPaths::Results, 'AllSNVs', cancer_type.to_s, 'cancer.txt'))
+    cancer_infos = ["#{cancer_type}",
+                    Configuration::RandomGenomeFold[cancer_type],
+                    Configuration::RandomShuffleFold[cancer_type],
+                    Configuration::FittingFoldGenome[cancer_type],
+                    Configuration::FittingFoldShuffle[cancer_type]]
 
     matrix << [*cancer_infos,
               context_counts.each_value.inject(0, &:+),
