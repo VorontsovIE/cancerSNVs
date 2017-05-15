@@ -36,7 +36,6 @@ module LocalPaths
 
   module Secondary
     AlexandrovData        = File.absolute_path('./source_data/AlexandrovEtAl', __dir__)
-    CoordinatesOfKataegis = File.absolute_path('./source_data/AlexandrovEtAl/coordinates_of_kataegis.csv', __dir__)
     MotifQualities        = File.absolute_path('./source_data/hocomoco_qualities.tsv', __dir__)
     HocomocoUniprots      = File.absolute_path('./source_data/HOCOMOCOv9_motifs2uniprot.txt', __dir__)
     UniprotDump           = File.absolute_path('./source_data/human_uniprot.txt', __dir__)
@@ -146,10 +145,8 @@ GENOME_READER = GenomeReader::DiskReader.new(
 # One-based, inclusive
 GENOME_MARKUP_LOADER = GenomeMarkupLoader.create(
   exonic_markup_filename: LocalPaths::ExonicMarkup,
-  kataegis_coordinates_filename: LocalPaths::Secondary::CoordinatesOfKataegis,
   promoter_length_5_prime: 5000,
   promoter_length_3_prime: 500,
-  kataegis_expansion_length: 1000
 )
 
 ALEXANDROV_MUTATIONS_LOADER = MutationsByCancerTypeLoader.create(

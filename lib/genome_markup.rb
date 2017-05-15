@@ -5,19 +5,17 @@ require_relative 'region_type'
 class GenomeMarkup
   attr_reader :introns_by_chromosome
   attr_reader :promoters_by_chromosome
-  attr_reader :kataegis_regions_by_chromosome
   attr_reader :coding_regions_by_chromosome
   attr_reader :regulatory_by_chromosome
   attr_reader :dhs_accessible_by_chromosome
 
   # To load genome markup from source files, use GenomeMarkupLoader
   def initialize(introns_by_chromosome:, promoters_by_chromosome:,
-                kataegis_regions_by_chromosome:, coding_regions_by_chromosome:,
+                coding_regions_by_chromosome:,
                 dhs_accessible_by_chromosome: nil)
     @introns_by_chromosome = Hash.new(IntervalNotation::Syntax::Long::Empty).merge(introns_by_chromosome)
     @promoters_by_chromosome = Hash.new(IntervalNotation::Syntax::Long::Empty).merge(promoters_by_chromosome)
     @coding_regions_by_chromosome = Hash.new(IntervalNotation::Syntax::Long::Empty).merge(coding_regions_by_chromosome)
-    @kataegis_regions_by_chromosome = Hash.new(IntervalNotation::Syntax::Long::Empty).merge(kataegis_regions_by_chromosome)
     if dhs_accessible_by_chromosome
       @dhs_accessible_by_chromosome = Hash.new(IntervalNotation::Syntax::Long::Empty).merge(dhs_accessible_by_chromosome)
     else
@@ -27,7 +25,7 @@ class GenomeMarkup
     @regulatory_by_chromosome = Hash.new(IntervalNotation::Syntax::Long::Empty)
 
     chromosomes = [ @introns_by_chromosome, @promoters_by_chromosome, @coding_regions_by_chromosome,
-                    @dhs_accessible_by_chromosome, @kataegis_regions_by_chromosome
+                    @dhs_accessible_by_chromosome,
                   ].flat_map(&:keys).uniq
     chromosomes.each do |chr|
       @regulatory_by_chromosome[chr] = ((@promoters_by_chromosome[chr] | @introns_by_chromosome[chr]) - @coding_regions_by_chromosome[chr]) & @dhs_accessible_by_chromosome[chr]
@@ -51,17 +49,6 @@ class GenomeMarkup
       introns_by_chromosome[chromosome].include_position?(position)
     when IntervalNotation::IntervalSet # position is an interval
       introns_by_chromosome[chromosome].intersect?(position)
-    else
-      raise TypeError, 'Position should be either integer or interval set'
-    end
-  end
-
-  def kataegis?(chromosome, position)
-    case position
-    when Integer
-      kataegis_regions_by_chromosome[chromosome].include_position?(position)
-    when IntervalNotation::IntervalSet # position is an interval
-      kataegis_regions_by_chromosome[chromosome].intersect?(position)
     else
       raise TypeError, 'Position should be either integer or interval set'
     end
@@ -98,15 +85,13 @@ class GenomeMarkup
 
   def chromosome_marked_up?(chromosome)
     promoters_by_chromosome.has_key?(chromosome) || \
-    introns_by_chromosome.has_key?(chromosome) || \
-    kataegis_regions_by_chromosome.has_key?(chromosome)
+    introns_by_chromosome.has_key?(chromosome)
   end
 
   def get_region_type(chromosome, position)
     result = RegionType.new
     result << :intronic  if intronic?(chromosome, position)
     result << :promoter  if promoter?(chromosome, position)
-    result << :kataegis  if kataegis?(chromosome, position)
     result << :coding    if coding?(chromosome, position)
     result << :dhs_accessible  if dhs_accessible?(chromosome, position)
     result
@@ -114,20 +99,17 @@ class GenomeMarkup
 end
 
 # This class can store data necessary to load markup (but do it lazily and caches the result)
-GenomeMarkupLoader = Struct.new(:exonic_markup_filename, :kataegis_coordinates_filename,
+GenomeMarkupLoader = Struct.new(:exonic_markup_filename,
                                 :promoter_length_5_prime,
-                                :promoter_length_3_prime,
-                                :kataegis_expansion_length) do
+                                :promoter_length_3_prime) do
 
   # Just a constructor with human-readable params
-  def self.create(exonic_markup_filename:, kataegis_coordinates_filename:,
+  def self.create(exonic_markup_filename:,
                   promoter_length_5_prime: 5000,
-                  promoter_length_3_prime: 500,
-                  kataegis_expansion_length: 1000)
-    self.new(exonic_markup_filename, kataegis_coordinates_filename,
+                  promoter_length_3_prime: 500)
+    self.new(exonic_markup_filename,
             promoter_length_5_prime,
-            promoter_length_3_prime,
-            kataegis_expansion_length)
+            promoter_length_3_prime)
   end
 
   def introns
@@ -144,23 +126,16 @@ GenomeMarkupLoader = Struct.new(:exonic_markup_filename, :kataegis_coordinates_f
     @coding_regions ||= read_coding_regions_by_chromosome(exonic_markup_filename)
   end
 
-  def kataegis
-    @kataegis ||= load_kataegis_regions_by_chromosome(kataegis_coordinates_filename,
-                                                  expansion_length: kataegis_expansion_length)
-  end
-
   # It can last for a very long time
   def load_markup(dhs_accessible_filename: nil)
     if dhs_accessible_filename
       GenomeMarkup.new(introns_by_chromosome: introns,
                        promoters_by_chromosome: promoters,
-                       kataegis_regions_by_chromosome: kataegis,
                        coding_regions_by_chromosome: coding_regions,
                        dhs_accessible_by_chromosome: read_dhs_accessible_regions_by_chromosome(dhs_accessible_filename))
     else
       @cache ||= GenomeMarkup.new(introns_by_chromosome: introns,
                                  promoters_by_chromosome: promoters,
-                                 kataegis_regions_by_chromosome: kataegis,
                                  coding_regions_by_chromosome: coding_regions,
                                  dhs_accessible_by_chromosome: nil # Hash.new(IntervalNotation::Syntax::Long::R) -- wrong way: default value will be rewritten
                                  )
