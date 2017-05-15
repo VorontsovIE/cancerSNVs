@@ -43,12 +43,12 @@ def generate_random_genome_task(output_filename:, task_name:, cancer_filename:, 
   file cancer_filename
   file output_filename => [cancer_filename] do
     dhs_options = dhs_filename ? ['--dhs-accessible', dhs_filename] : []
-    ruby 'bin/preparations/generate_random_genome_sequences.rb', cancer_filename,
-                                                              '--flank-length', '50',
-                                                              '--fold', fold.to_s,
-                                                              '--seed', random_seed.to_s,
-                                                              *dhs_options,
-                                                              {out: output_filename},{}
+    ruby 'generate_random_genome_sequences.rb', cancer_filename,
+                                                '--flank-length', '50',
+                                                '--fold', fold.to_s,
+                                                '--seed', random_seed.to_s,
+                                                *dhs_options,
+                                                {out: output_filename},{}
   end
   task task_name => output_filename
 end

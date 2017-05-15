@@ -1,7 +1,7 @@
 require 'interval_notation'
-require_relative '../../experiment_configuration'
-require_relative '../../lib/snv_info'
-require_relative '../../lib/sequence'
+require_relative 'experiment_configuration'
+require_relative 'lib/snv_info'
+require_relative 'lib/sequence'
 
 def calculate_SNV_context_distribution(snv_stream)
   snv_context_distribution = Hash.new{|hsh, context| hsh[context] = Hash.new(0) }
