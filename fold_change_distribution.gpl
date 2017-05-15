@@ -1,9 +1,0 @@
-# need num_cols, infile, outfile
-set output outfile
-
-set terminal png font "Arial,8" size 1024, 700
-set xtics rotate
-set pointsize 0.5
-set datafile separator "\t"
-
-plot for [i=2:num_cols] infile using i:xticlabels(1) with linespoints title "Results for ".columnhead(i)
