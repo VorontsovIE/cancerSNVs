@@ -82,26 +82,17 @@ end
 desc 'Calculate motif statistics; 1-st stage'
 task 'motif_statistics'
 
-desc 'Calculate motif statistics (w/o fitting); 1-st stage'
-task 'motif_statistics_wo_fitting'
-
 desc 'Process motif statistics; 2-nd stage'
 task 'filtered_motif_statistics'
-
-desc 'Process motif statistics (w/o fitting); 2-nd stage'
-task 'filtered_motif_statistics_wo_fitting'
 
 desc 'Collect common motifs from motif statistics; 3-rd stage'
 task 'common_motif_statistics'
 
-desc 'Collect common motifs from motif statistics (w/o fitting); 3-rd stage'
-task 'common_motif_statistics_wo_fitting'
-
 def prefixed_motif_statistics_task(task_name, dependencies, perform_calculation: true, filtering: true, common_motifs: true)
   task_prefixes = []
-  task_prefixes += ['motif_statistics', 'motif_statistics_wo_fitting']  if perform_calculation
-  task_prefixes += ['filtered_motif_statistics', 'filtered_motif_statistics_wo_fitting']  if filtering
-  task_prefixes += ['common_motif_statistics', 'common_motif_statistics_wo_fitting']  if common_motifs
+  task_prefixes << 'motif_statistics'  if perform_calculation
+  task_prefixes << 'filtered_motif_statistics'  if filtering
+  task_prefixes << 'common_motif_statistics'  if common_motifs
 
   task_prefixes.each{|task_prefix|
     if task_name
@@ -112,12 +103,11 @@ def prefixed_motif_statistics_task(task_name, dependencies, perform_calculation:
   }
 end
 
-fitting_wo_fitting_settings = [
+fitting_settings = [
   ['motif_statistics', LocalPaths::Secondary::Slices, LocalPaths::Secondary::LogFolder, 'full', 'filtered', 'common'],
-  ['motif_statistics_wo_fitting', File.join(LocalPaths::Results, 'motif_statistics/slices_wo_fitting'), nil, 'full_wo_fitting', 'filtered_wo_fitting', 'common_wo_fitting']
 ]
 
-fitting_wo_fitting_settings.each do |task_prefix, slices_folder, log_folder, full_folder, filtered_folder, common_folder|
+fitting_settings.each do |task_prefix, slices_folder, log_folder, full_folder, filtered_folder, common_folder|
   WholeGenomeCancers.each do |cancer_type|
     prefixed_motif_statistics_task nil, [cancer_type]
     

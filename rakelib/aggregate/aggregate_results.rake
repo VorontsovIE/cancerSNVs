@@ -74,43 +74,6 @@ def sample_files(folder_common_motifs, protected_or_subjected, characteristic)
   }.to_h
 end
 
-def fitted_non_fitted_occurence_state(in_fitted, in_nonfitted)
-  if in_fitted
-    in_nonfitted ? 0 : 1
-  else
-    in_nonfitted ? -1 : nil
-  end
-end
-
-
-def fitted_non_fitted_occurence_matrix(motifs_fitted_by_sample, motifs_nonfitted_by_sample, motif_family_recognizers, motif_qualities)
-  all_motifs = (motifs_fitted_by_sample.values + motifs_nonfitted_by_sample.values).inject(&:|).to_a.sort # values are sets
-  qualities = all_motifs.map{|motif|  motif_qualities[motif]  }
-  motifs_subfamilies_3 = all_motifs.map{|motif|
-    motif_family_recognizers[3].subfamilies_by_motif(motif).map(&:to_s).join('; ')
-  }
-  motifs_subfamilies_4 = all_motifs.map{|motif|
-    motif_family_recognizers[4].subfamilies_by_motif(motif).map(&:to_s).join('; ')
-  }
-  results = []
-  results << ['Motif', *all_motifs]
-  results << ['Motif quality', *qualities]
-  results << ['Motif families (level 3)', *motifs_subfamilies_3]
-  results << ['Motif families (level 4)', *motifs_subfamilies_4]
-  Configuration.sample_with_paths.each_key{|sample_name|
-    motifs_fitted = motifs_fitted_by_sample[sample_name]
-    motifs_nonfitted = motifs_nonfitted_by_sample[sample_name]
-    motifs_occurences = all_motifs.map{|motif|
-      fitted_non_fitted_occurence_state(motifs_fitted.include?(motif), motifs_nonfitted.include?(motif))
-    }
-    results << [sample_name, *motifs_occurences]
-  }
-
-  results.transpose
-end
-
-
-
 def make_aggregation_task(common_motifs_folder:, output_folder:, task_name:, task_description: nil)
   directory output_folder
   desc task_description  if task_description
@@ -142,46 +105,6 @@ make_aggregation_task common_motifs_folder: File.join(LocalPaths::Results, 'moti
                       output_folder: File.join(LocalPaths::Results, 'motif_statistics/aggregated/'),
                       task_name: 'aggregate_common_motifs',
                       task_description: 'Aggregate common motifs over samples'
-
-make_aggregation_task common_motifs_folder: File.join(LocalPaths::Results, 'motif_statistics/common_wo_fitting/'),
-                      output_folder: File.join(LocalPaths::Results, 'motif_statistics/aggregated_wo_fitting/'),
-                      task_name: 'aggregate_common_motifs_wo_fitting',
-                      task_description: 'Aggregate common motifs over samples (w/o fitting)'
-
-
-directory File.join(LocalPaths::Results, 'motif_statistics/aggregated_comparison')
-desc 'Compare motif sets for experiment with and without fitting'
-task :compare_fitted_to_unfitted => File.join(LocalPaths::Results, 'motif_statistics/aggregated_comparison') do
-  output_folder = File.join(LocalPaths::Results, 'motif_statistics/aggregated_comparison/')
-  motif_qualities = load_motif_qualities(LocalPaths::Secondary::MotifQualities)
-
-  [:protected, :subjected].each do |protected_or_subjected|
-    ['disruption', 'emergence', 'substitution-in-core'].each do |characteristic|
-      prep = (protected_or_subjected == :subjected) ? 'to' : 'from'
-      filename_last_part = File.join(protected_or_subjected.to_s, characteristic.to_s, 'compared_to_each.txt')
-
-      motifs_fitted_by_sample = Configuration.sample_with_paths.map{|sample_name, sample_path|
-        motifs = File.readlines(
-          File.join(LocalPaths::Results, 'motif_statistics/common/', sample_path, filename_last_part)
-        ).map(&:chomp).to_set
-        [sample_name, motifs]
-      }.to_h
-
-      motifs_nonfitted_by_sample = Configuration.sample_with_paths.map{|sample_name, sample_path|
-        motifs = File.readlines(
-          File.join(LocalPaths::Results, 'motif_statistics/common_wo_fitting/', sample_path, filename_last_part)
-        ).map(&:chomp).to_set
-        [sample_name, motifs]
-      }.to_h
-
-      occurence_matrix = fitted_non_fitted_occurence_matrix(motifs_fitted_by_sample, motifs_nonfitted_by_sample, MOTIF_FAMILY_RECOGNIZERS, motif_qualities)
-
-      File.open(File.join(output_folder, "#{protected_or_subjected}_#{prep}_#{characteristic}.tsv"), 'w') do |fw|
-        print_matrix(occurence_matrix, stream: fw)
-      end
-    end
-  end
-end
 
 def only_high_quality_motifs(motifs)
   motif_qualities = load_motif_qualities(LocalPaths::Secondary::MotifQualities)
@@ -258,4 +181,4 @@ task :collect_families_statistics
   end
 end
 
-task :default => [:aggregate_common_motifs, :aggregate_common_motifs_wo_fitting, :compare_fitted_to_unfitted, :collect_families_statistics]
+task :default => [:aggregate_common_motifs, :collect_families_statistics]
