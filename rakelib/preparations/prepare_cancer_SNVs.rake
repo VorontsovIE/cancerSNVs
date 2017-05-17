@@ -2,7 +2,6 @@ $:.unshift File.join(LocalPaths::Root, 'lib')
 require 'snv_info'
 require 'region_type'
 require 'genome_markup'
-require 'data_import/breast_cancer_snv'
 require 'data_import/cancer_mutations_from_alexandrov_et_al'
 require 'data_import/sample_info'
 require 'data_import/cancer_mutations_loading'
