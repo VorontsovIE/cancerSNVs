@@ -73,10 +73,10 @@ namespace 'preparations' do
   task generate_random_SNVs: ['preparations:generate_random_SNVs:shuffle', 'preparations:generate_random_SNVs:genome']
   namespace 'generate_random_SNVs' do
     desc 'Generate random SNVs with shuffled flanks.'
-    task :shuffle => ['preparations:generate_random_SNVs:shuffle']
+    task :shuffle
 
     desc 'Generate random SNVs from genome, mimic context distribution of original SNVs.'
-    task :genome => ['preparations:generate_random_SNVs:genome']
+    task :genome
   end
 end
 
